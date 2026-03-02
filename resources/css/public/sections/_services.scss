@@ -12,7 +12,7 @@
     &-title {
         color: var(--color-secondary-medium);
         text-transform: uppercase;
-        font-size: range.build(20, 22);
+        font-size: range.build(18, 20);
     }
 }
 
@@ -66,7 +66,7 @@
     }
 
     .primary-link {
-        color: rgba(var(--color-dark-rgb), .5);
+        color: rgba(var(--color-dark-rgb), .7);
         line-height: 1.6;
         font-size: range.build(16, 18, px, 1440);
 
