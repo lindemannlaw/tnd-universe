@@ -7,7 +7,7 @@
     color: var(--color-white);
     background-color: var(--color-primary-brand-900-darker-silent);
     padding: calc(var(--header-height) + 20px) 0 0;
-    //border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+    border-radius: 0;
     position: relative;
     overflow: hidden;
 }
@@ -194,6 +194,15 @@
 }
 
 .news-article-content-body {
+    picture {
+        border-radius: 0;
+        padding: 0;
+
+        img {
+            margin: 0;
+        }
+    }
+
     :is(.wp-block-embed, .wp-block-video, figure.wp-block-embed, figure.wp-block-video, iframe, video) {
         max-width: none;
         width: 100%;
