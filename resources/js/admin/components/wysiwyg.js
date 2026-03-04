@@ -1,5 +1,6 @@
 import suneditor from 'suneditor';
 import plugins from 'suneditor/src/plugins/index.js';
+import { projectBlockLeft, projectBlockRight } from '../plugins/projectBlock.js';
 //import langUa from 'suneditor/src/lang/ua.js';
 import langDe from 'suneditor/src/lang/de.js';
 
@@ -43,6 +44,7 @@ function init(element) {
 
 	const dataButtonList = element.dataset.buttonList;
 	const charLimit = +element.dataset.charLimit || null;
+	const hasProjectBlocks = element.dataset.projectBlocks === 'true';
 	let buttonList = [
 		['undo', 'redo'],
 		[/*'font', 'fontSize', */'formatBlock'],
@@ -71,10 +73,20 @@ function init(element) {
 		});
 	}
 
+	if (hasProjectBlocks) {
+		buttonList.splice(buttonList.length - 2, 0, ['projectBlockLeft', 'projectBlockRight']);
+	}
+
+	const editorPlugins = { ...plugins };
+	if (hasProjectBlocks) {
+		editorPlugins.projectBlockLeft = projectBlockLeft;
+		editorPlugins.projectBlockRight = projectBlockRight;
+	}
+
 	const options = {
-		plugins: plugins,
+		plugins: editorPlugins,
 		buttonList: buttonList,
-		formats: ['p', /*'div', 'blockquote', 'pre',*/ 'h2', 'h3', 'h4', 'h5', 'h6'],
+		formats: ['p', ...(hasProjectBlocks ? ['div'] : []), 'h2', 'h3', 'h4', 'h5', 'h6'],
 		maxCharCount: charLimit,
 		width: 'auto',
 		height: 'auto',
@@ -85,6 +97,7 @@ function init(element) {
 		},
 		attributesWhitelist: {
 			img: 'src|srcset|alt|style|width|height|data-.+',
+			div: 'class|data-align',
 		},
 		icons: icons(),
 		placeholder: element.getAttribute('placeholder') || null,
