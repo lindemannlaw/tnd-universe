@@ -12,8 +12,8 @@
     --btn-py: 0;
     --btn-fz: 16px;
 
-    --btn-color: var(--color-dark);
-    --btn-color-border: var(--color-dark);
+    --btn-color: var(--color-interaction-primary-default);
+    --btn-color-border: var(--color-interaction-primary-default);
     --btn-color-bg: transparent;
     --btn-color-shadow: transparent;
 
@@ -50,8 +50,9 @@
     }
 
     &:hover {
-        --btn-color-bg: var(--color-primary);
-        --btn-color-border: var(--color-primary);
+        --btn-color: var(--color-interaction-primary-hover);
+        --btn-color-bg: var(--color-interaction-primary-hover);
+        --btn-color-border: var(--color-interaction-primary-hover);
     }
 }
 
@@ -59,10 +60,10 @@
     --btn-size: 0;
     --btn-px: 0;
     --btn-fz: 22px;
-    --btn-fw: bold;
-    --btn-color: var(--color-dark);
+    --btn-fw: var(--font-weight-semibold);
+    --btn-color: var(--color-interaction-primary-default);
 
-    font-weight: bold;
+    font-weight: var(--font-weight-semibold);
     padding-right: 24px;
 
     &::after {
@@ -70,7 +71,7 @@
         content: '';
         width: 12px;
         aspect-ratio: 1;
-        background-color: var(--color-primary);
+        background-color: currentColor;
         mask-image: var(--icon-corner-arrow);
         mask-repeat: no-repeat;
         mask-position: center;
@@ -83,12 +84,23 @@
     }
 
     &:hover {
-        --btn-color: var(--color-primary);
+        --btn-color: var(--color-interaction-primary-hover);
 
         &::after {
             opacity: 1;
             translate: 75% 0;
-            background-color: var(--color-primary);
+            background-color: currentColor;
         }
+    }
+}
+
+.btn-view-all {
+    --btn-fz: #{range.build(16, 20)};
+
+    font-family: var(--font-primary);
+    font-weight: var(--font-weight-light);
+
+    &::after {
+        width: 10px;
     }
 }

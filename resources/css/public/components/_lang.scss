@@ -33,7 +33,7 @@
     translate: -50% 0;
     text-align: center;
     padding: .25em 0;
-    background-color: var(--color-primary);
+    background-color: var(--color-interaction-primary-default);
     border-radius: .25em;
     margin-top: 3em;
     margin-left: -.625em;
@@ -53,11 +53,12 @@
 .lang a {
     display: block;
     padding: .25em 1em;
+    color: var(--color-white);
     transition: var(--transition);
     transition-property: background-color;
 
     &:hover {
-        background-color: rgba(var(--color-black-rgb), .2);
+        background-color: var(--color-interaction-primary-hover);
     }
 }
 

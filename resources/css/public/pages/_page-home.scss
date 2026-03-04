@@ -6,7 +6,7 @@
     min-height: 100vh;
     min-height: 100svh;
     position: relative;
-    padding: calc(var(--header-height) + 50px) 0 50px;
+    padding: calc(var(--header-height) + 50px) 0 80px;
     color: var(--color-white);
 
     &::before {
@@ -35,9 +35,10 @@
 
     h1 {
         font-size: range.build(44, 68, px, 375, 992);
-        font-weight: normal;
+        color: var(--color-white);
+        font-weight: var(--font-weight-semibold);
         text-transform: uppercase;
-        letter-spacing: -0.02em;
+        letter-spacing: -0.01em;
 
         @media (min-width: 992px) {
             width: 14em;
@@ -62,7 +63,12 @@
     }
 
     h2 {
-        font-size: range.build(20, 36);
+        color: var(--color-white);
+        font-family: var(--font-primary);
+        font-weight: var(--font-weight-xlight);
+        font-size: range.build(18, 28);
+        font-variation-settings: 'opsz' 6,
+    'MONO' 1;
     }
 }
 
@@ -101,36 +107,9 @@
 
 .home-portfolio-link {
     justify-self: flex-end;
-    color: var(--color-gray);
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    position: relative;
-    gap: .75em;
-    transition: var(--transition);
-    transition-property: color;
     margin-top: .5em;
 
     @media (min-width: 768px) {
         margin-top: 0;
-    }
-
-    &:hover {
-        color: var(--color-primary);
-    }
-
-    &::before,
-    &::after {
-        display: block;
-        content: '';
-        width: 2em;
-        height: 2px;
-        background-color: var(--color-gray);
-    }
-
-    &::before {
-        @media (min-width: 768px) {
-            display: none;
-        }
     }
 }

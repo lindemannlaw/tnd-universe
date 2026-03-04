@@ -10,9 +10,9 @@
     }
 
     &-title {
-        color: var(--color-secondary-medium);
+        color: var(--color-primary-brand-800-dark);
         text-transform: uppercase;
-        font-size: range.build(20, 22);
+        font-size: range.build(18, 20);
     }
 }
 
@@ -66,12 +66,12 @@
     }
 
     .primary-link {
-        color: rgba(var(--color-dark-rgb), .5);
+        color: var(--color-font-secondary);
         line-height: 1.6;
         font-size: range.build(16, 18, px, 1440);
 
         &:hover {
-            color: var(--color-primary);
+            color: var(--color-interaction-primary-hover);
         }
 
         @media (min-width: 768px) {

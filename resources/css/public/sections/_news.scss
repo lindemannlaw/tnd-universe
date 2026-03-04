@@ -49,11 +49,19 @@
 
     border-bottom: 2px solid transparent;
     border-radius: 0;
+    color: var(--color-font-primary);
 
-    &:hover,
+    &:hover {
+        color: var(--color-interaction-primary-hover);
+        border-bottom-color: var(--color-interaction-primary-hover);
+        /* neutral 
+        color: var(--color-font-primary);
+        border-bottom-color: var(--color-font-primary); */
+    }
+
     &.is-active {
-        color: var(--color-primary);
-        border-bottom-color: var(--color-primary);
+        color: var(--color-font-primary);
+        border-bottom-color: var(--color-font-primary);
     }
 }
 
@@ -76,12 +84,13 @@
 .article-card {
     display: flex;
     flex-direction: column;
-    border-radius: var(--radius);
+    border-radius: var(--radius-sm);
     overflow: hidden;
     position: relative;
     transition: var(--transition);
-    transition-property: color, background-color;
-    background-color: #F7F4F2;
+    transition-property: color, background-color, border-color;
+    background-color: var(--color-50-sand-matte);
+    border: 1px solid transparent;
 
     &::after {
         display: block;
@@ -119,7 +128,7 @@
 
     &-icon {
         --icon-size: min(70%, 320px);
-        --icon-color: var(--color-secondary);
+        --icon-color: var(--color-interaction-primary-hover);
 
         position: absolute;
         top: 10%;
@@ -135,10 +144,11 @@
 
     &-title {
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         position: relative;
         gap: 20px;
-        color: var(--color-secondary-medium);
+        line-height: 1.3;
+        color: var(--color-font-primary);
         transition: var(--transition);
         transition-property: color;
 
@@ -152,6 +162,12 @@
 
         span {
             flex: 1 0 0;
+            min-height: calc(1.3em * 3);
+            line-clamp: 3;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
         &::after {
@@ -159,7 +175,7 @@
             content: '';
             width: 14px;
             aspect-ratio: 1;
-            background-color: var(--color-secondary-medium);
+            background-color: currentColor;
             mask-image: var(--icon-corner-arrow);
             mask-repeat: no-repeat;
             mask-position: center;
@@ -167,6 +183,7 @@
             transition: var(--transition);
             transition-property: rotate, background-color;
             margin-left: auto;
+            margin-top: .2em;
         }
     }
 
@@ -177,6 +194,10 @@
         transition: var(--transition);
         transition-property: color, opacity;
         color: var(--color-gray);
+
+        > *:first-child {
+            margin-top: 0;
+        }
 
         &::before,
         &:after {
@@ -192,14 +213,14 @@
         }
 
         &::before {
-            background-color: var(--color-secondary-medium);
+            display: none;
         }
 
         &::after {
             z-index: 2;
             background: var(--line-gradient);
-            opacity: 0;
-            visibility: hidden;
+            opacity: 1;
+            visibility: visible;
         }
     }
 
@@ -258,13 +279,14 @@
         left: 0;
     }
 
-    &:hover {
+    /*&:hover {
         color: var(--color-white);
-        background-color: #f2f2f7;
+        background-color: var(--color-primary-brand-800-dark);
+        border-color: var(--color-primary-brand-800-dark);
 
         .article-card {
             &-icon {
-                opacity: .3;
+                opacity: .1;
             }
 
             &-title {
@@ -278,16 +300,6 @@
 
             &-description {
                 color: var(--color-dark);
-
-                &::before {
-                    opacity: 0;
-                    visibility: hidden;
-                }
-
-                &::after {
-                    opacity: 1;
-                    visibility: visible;
-                }
             }
 
             &-info {
@@ -300,7 +312,42 @@
                         background-color: var(--color-dark);
                     }
                 }
-            }
+            }*/
+        
+        &:hover {
+            color: var(--color-white);
+            background-color: var(--color-primary-brand-900-darker-silent);
+            //border-color: var(--color-primary-brand-800-dark);
+    
+            .article-card {
+                &-icon {
+                    opacity: .1;
+                }
+    
+                &-title {
+                    color: var(--color-white);
+    
+                    &::after {
+                        background-color: var(--color-white);
+                        rotate: 45deg;
+                    }
+                }
+    
+                &-description {
+                    color: var(--color-white);
+                }
+    
+                &-info {
+                    color: var(--color-white);
+    
+                    time {
+                        opacity: 1;
+    
+                        &::after {
+                            background-color: var(--color-white);
+                        }
+                    }
+                }
         }
     }
 }

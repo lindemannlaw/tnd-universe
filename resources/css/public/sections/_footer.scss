@@ -38,10 +38,10 @@
 }
 
 .footer-logo {
-    color: var(--color-dark);
+    color: var(--color-primary-brand-900-darker-silent);
 
     &:hover {
-        color: var(--color-primary);
+        color: var(--color-interaction-primary-default);
     }
 }
 
@@ -60,7 +60,7 @@
 .footer-contacts-links {
     display: flex;
     flex-direction: column;
-    font-size: range.build(18, 22);
+    font-size: range.build(14, 16);
     line-height: 1.2;
     gap: .75em;
     color: inherit;
@@ -73,6 +73,8 @@
     line-height: 1.2;
     gap: 30px 20px;
     grid-area: menu;
+
+
 
     @media (max-width: 599px) {
         max-width: 360px;
@@ -114,19 +116,43 @@
     }
 
     a {
-        display: inline-block;
-        color: inherit;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
         text-decoration: none;
         transition: var(--transition);
-        text-decoration: underline;
-        text-underline-offset: .25em;
-        text-decoration-color: transparent;
-        transition-property: color, text-decoration-color;
+        transition-property: color;
 
-        &:hover,
+        &,
+        &:visited {
+            color: var(--color-interaction-primary-default);
+        }
+
+        &::before {
+            content: '';
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background-color: currentColor;
+            flex: 0 0 4px;
+            opacity: 0;
+            transition: opacity var(--transition);
+        }
+
+        &:hover {
+            color: var(--color-interaction-primary-hover);
+
+            &::before {
+                opacity: 1;
+            }
+        }
+
         &.is-active {
-            color: var(--color-primary);
-            text-decoration-color: inherit;
+            color: var(--color-interaction-primary-active);
+
+            &::before {
+                opacity: 1;
+            }
         }
     }
 }
@@ -152,7 +178,7 @@
     }
 
     &-title {
-        font-size: range.build(20, 26);
+        font-size: range.build(14, 18);
         line-height: 1.2;
     }
 }
@@ -187,7 +213,7 @@
 
             &:hover,
             &.is-active {
-                color: var(--color-secondary);
+                color: var(--color-primary-brand-700-strongest);
             }
         }
     }

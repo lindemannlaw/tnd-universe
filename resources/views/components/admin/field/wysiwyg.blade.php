@@ -7,11 +7,13 @@
 	'charLimit' => null,
 	'height' => null,
 	'defaultWysiwygTag' => null,
+	'projectBlocks' => false, // Projekt-Block-Buttons (links/rechts) für Portfolio-Description
 ])
 
 <div data-wysiwyg-wrapper {{ $attributes->merge(['class' => 'position-relative', 'style' => 'z-index: 11']) }}>
     <textarea
         data-wysiwyg
+        data-project-blocks="{{ $projectBlocks ? 'true' : 'false' }}"
         data-button-list="undo,redo|formatBlock|bold|{{ $buttons ? $buttons . '|' : null }}link|fullScreen,showBlocks,codeView|removeFormat"
         data-char-limit="{{ $charLimit }}"
         data-default-tag="{{ $defaultWysiwygTag }}"

@@ -4,12 +4,14 @@ h1,
 .h1 {
     font-size: range.build(60, 80);
     line-height: 1.05;
+    color: var(--color-font-primary);
 }
 
 h2,
 .h2 {
     font-size: 34px;
     line-height: 1.05;
+    color: var(--color-font-primary);
 
     @media (min-width: 768px) {
         font-size: 38px;
@@ -36,22 +38,26 @@ h3,
 .h3 {
     font-size: range.build(24, 40);
     line-height: 1.05;
+    color: var(--color-font-primary);
 }
 
 h4,
 .h4 {
     font-size: range.build(22, 36);
     line-height: 1.05;
+    color: var(--color-font-primary);
 }
 
 h5,
 .h5 {
     font-size: range.build(20, 28);
     line-height: 1.3;
+    color: var(--color-font-primary);
 }
 
 h6,
 .h6 {
     font-size: range.build(20, 22);
     line-height: 1.3;
+    color: var(--color-font-primary);
 }

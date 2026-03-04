@@ -88,15 +88,15 @@
 }
 
 .who-we-are-title {
-    color: var(--color-secondary-medium);
+    color: var(--color-primary-brand-900-darker-silent);
     text-transform: uppercase;
-    font-size: range.build(20, 22);
+    font-size: range.build(18, 20);
 }
 
 .who-we-are-description {
     &>* {
         &:not(:is(h2, h3, h4, h5, h6)) {
-            opacity: .5;
+            opacity: 1;
         }
     }
 }

@@ -31,24 +31,24 @@
             <article class="formatted-text news-article-description">
                 {!! $article->description !!}
             </article>
-
-            @if ($relatedArticles->isNotEmpty())
-                <div class="related-news-articles">
-                    <div class="related-news-articles-head">
-                        <h3 class="related-news-articles-title">{{ __('base.related_articles') }}</h3>
-                        <a
-                            href="{{ route('public.news') }}"
-                            class="related-news-articles-link"
-                        >{{ __('base.all') }}</a>
-                    </div>
-
-                    <div class="related-news-articles-list">
-                        @foreach ($relatedArticles as $article)
-                            <x-public.news.related-article-card :article="$article" />
-                        @endforeach
-                    </div>
-                </div>
-            @endif
         </div>
+
+        @if ($relatedArticles->isNotEmpty())
+            <div class="container related-news-articles">
+                <div class="related-news-articles-head">
+                    <h3 class="related-news-articles-title">{{ __('base.related_articles') }}</h3>
+                    <a
+                        href="{{ route('public.news') }}"
+                        class="btn btn-submit btn-view-all related-news-articles-link"
+                    >{{ __('base.all') }}</a>
+                </div>
+
+                <div class="news-list related-news-articles-list">
+                    @foreach ($relatedArticles as $article)
+                        <x-public.news.article-card :article="$article" />
+                    @endforeach
+                </div>
+            </div>
+        @endif
     </section>
 @endsection
