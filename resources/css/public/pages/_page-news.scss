@@ -17,7 +17,7 @@
 
 .news-page-head-icon {
     --icon-size: #{range.build(310, 406)};
-    --icon-color: var(--color-secondary);
+    --icon-color: var(--color-interaction-primary-hover);
 
     position: absolute;
     top: -60px;

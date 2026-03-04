@@ -9,7 +9,7 @@
     top: 0;
     left: 0;
     z-index: 50;
-    color: var(--color-white);
+    color: var(--color-primary-brand-900-darker-silent);
     transition: var(--transition);
     transition-property: background-color, box-shadow;
     padding-right: var(--f-scrollbar-compensate, 0);
@@ -54,12 +54,56 @@
     }
 }
 
+.home-page .header,
+.portfolio-project-page .header,
+.news-article-page .header {
+    color: var(--color-white);
+
+    .header-logo {
+        color: var(--color-white);
+
+        &:hover {
+            color: var(--color-gold-lighter);
+        }
+    }
+
+    .main-menu ul a {
+        --menu-link-color: var(--color-white);
+        --menu-link-hover-color: var(--color-white);
+        --menu-link-active-color: var(--color-white);
+    }
+
+    .header-contact-btn {
+        --btn-color: var(--color-white);
+        --btn-color-border: var(--color-white);
+        --btn-color-bg: transparent;
+
+        &:hover {
+            --btn-color: var(--color-font-highlight-darker);
+            --btn-color-bg: var(--color-white);
+            --btn-color-border: var(--color-white);
+        }
+    }
+
+    .main-menu-toggle-button {
+        --btn-color: var(--color-white);
+
+        span {
+            &::before,
+            &::after {
+                background-color: var(--color-white);
+            }
+        }
+    }
+}
+
 .header-logo {
     --logo-size: #{range.build(160, 240)};
 
     margin-right: auto;
     position: relative;
     translate: 0 -14%;
+    color: var(--color-primary-brand-900-darker-silent);
 
     @media (max-width: 1599px) {
         --logo-size: 180px;
@@ -74,49 +118,49 @@
     }
 
     &:hover {
-        color: var(--color-primary);
+        color: var(--color-primary-brand-800-dark);
     }
 }
 
 .inner-page {
     .header {
-        color: var(--color-dark);
+        color: var(--color-primary-brand-900-darker-silent);
 
         &-logo {
             &:hover {
-                color: var(--color-primary);
+                color: var(--color-primary-brand-800-dark);
             }
         }
 
         .header-contact-btn {
-            --btn-color: var(--color-dark);
-            --btn-color-border: var(--color-dark);
+            --btn-color: var(--color-interaction-primary-default);
+            --btn-color-border: var(--color-interaction-primary-default);
 
             // &::after {
-            //     background-color: var(--color-primary);
+            //     background-color: var(--color-primary-brand-800-dark);
             // }
 
             &:hover {
                 --btn-color: var(--color-white);
-                --btn-color-bg: var(--color-primary);
-                --btn-color-border: var(--color-primary);
+                --btn-color-bg: var(--color-interaction-primary-hover);
+                --btn-color-border: var(--color-interaction-primary-hover);
             }
         }
 
         .lang {
             &::before {
-                border-color: var(--color-dark);
+                border-color: var(--color-primary-brand-900-darker-silent);
             }
         }
 
         .main-menu-toggle-button {
-            --btn-color: var(--color-dark);
+            --btn-color: var(--color-primary-brand-900-darker-silent);
 
             span {
 
                 &::before,
                 &::after {
-                    background-color: var(--color-dark);
+                    background-color: var(--color-primary-brand-900-darker-silent);
                 }
             }
         }
@@ -125,14 +169,6 @@
 
 .post-page {
     .header {
-        &-logo {
-            color: var(--color-gold);
-
-            &:hover {
-                color: var(--color-white);
-            }
-        }
-
         &::before {
             backdrop-filter: none;
         }
@@ -143,29 +179,29 @@
     background-color: rgba(var(--color-white-rgb), .8);
     backdrop-filter: blur(8px);
     box-shadow: 0 0 0 1px rgba(var(--color-black-rgb), .05), 0 0 16px 0 rgba(var(--color-black-rgb), .1);
-    color: var(--color-dark);
+    color: var(--color-primary-brand-900-darker-silent);
 
     &::before {
         opacity: 0;
         visibility: hidden;
     }
 
-    &-logo {
-        color: var(--color-dark);
+    .header-logo {
+        color: var(--color-primary-brand-900-darker-silent);
 
         &:hover {
-            color: var(--color-primary);
+            color: var(--color-primary-brand-800-dark);
         }
     }
 
     .header-contact-btn {
-        --btn-color: var(--color-dark);
-        --btn-color-border: var(--color-dark);
+        --btn-color: var(--color-interaction-primary-default);
+        --btn-color-border: var(--color-interaction-primary-default);
 
         &:hover {
             --btn-color: var(--color-white);
-            --btn-color-bg: var(--color-primary);
-            --btn-color-border: var(--color-primary);
+            --btn-color-bg: var(--color-interaction-primary-hover);
+            --btn-color-border: var(--color-interaction-primary-hover);
         }
 
         // &::before,
@@ -176,20 +212,26 @@
 
     .lang {
         &::before {
-            border-color: var(--color-dark);
+            border-color: var(--color-primary-brand-900-darker-silent);
         }
     }
 
     .main-menu-toggle-button {
-        --btn-color: var(--color-dark);
+        --btn-color: var(--color-primary-brand-900-darker-silent);
 
         span {
 
             &::before,
             &::after {
-                background-color: var(--color-dark);
+                background-color: var(--color-primary-brand-900-darker-silent);
             }
         }
+    }
+
+    .main-menu ul a {
+        --menu-link-color: var(--color-interaction-primary-default);
+        --menu-link-hover-color: var(--color-interaction-primary-hover);
+        --menu-link-active-color: var(--color-interaction-primary-active);
     }
 }
 
@@ -216,7 +258,7 @@
         box-shadow: 0 0 16px 0 rgba(var(--color-dark-rgb), .25);
         z-index: 10;
         padding-bottom: 20px;
-        color: var(--color-dark);
+        color: var(--color-primary-brand-900-darker-silent);
         transition: var(--transition);
         transition-property: left;
     }
@@ -255,7 +297,7 @@
     translate: 0 -14%;
 
     &:hover {
-        color: var(--color-primary);
+        color: var(--color-primary-brand-700-strongest);
     }
 }
 
@@ -286,11 +328,45 @@
     }
 
     a {
-        display: block;
+        --menu-link-color: var(--color-interaction-primary-default);
+        --menu-link-hover-color: var(--color-interaction-primary-hover);
+        --menu-link-active-color: var(--color-interaction-primary-active);
+
+        display: flex;
+        align-items: center;
+        gap: 8px;
         padding: .25em range.build(10, 23);
+        color: var(--menu-link-color);
         transition: var(--transition);
-        transition-property: background-color;
+        transition-property: background-color, color;
         border-radius: 3em;
+
+        &::before {
+            content: '';
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background-color: currentColor;
+            flex: 0 0 4px;
+            opacity: 0;
+            transition: opacity var(--transition);
+        }
+
+        &:hover {
+            color: var(--menu-link-hover-color);
+
+            &::before {
+                opacity: 1;
+            }
+        }
+
+        &.is-active {
+            color: var(--menu-link-active-color);
+
+            &::before {
+                opacity: 1;
+            }
+        }
 
         /*safety copy 
         &:hover,
@@ -316,8 +392,9 @@
 
 .header-contact-btn {
     --btn-size: 36px;
-    --btn-color: var(--color-white);
-    --btn-color-border: var(--color-white);
+    --btn-color: var(--color-interaction-primary-default);
+    --btn-color-border: var(--color-interaction-primary-default);
+    --btn-color-bg: transparent;
     --btn-border-size: 2px;
     --btn-fz: inherit;
     --btn-px: 1em;
@@ -328,9 +405,9 @@
     z-index: 20;
 
     &:hover {
-        --btn-color: var(--color-dark);
-        --btn-color-bg: var(--color-white);
-        --btn-color-border: var(--color-white);
+        --btn-color: var(--color-white);
+        --btn-color-bg: var(--color-interaction-primary-hover);
+        --btn-color-border: var(--color-interaction-primary-hover);
     }
 
     @media (max-width: 1439px) {
@@ -375,7 +452,7 @@
 }
 
 .main-menu-toggle-button {
-    --btn-color: var(--color-white);
+    --btn-color: var(--color-primary-brand-900-darker-silent);
 
     text-transform: uppercase;
 
@@ -422,7 +499,7 @@
             content: '';
             width: 18px;
             height: 2px;
-            background-color: var(--color-white);
+            background-color: var(--color-primary-brand-900-darker-silent);
             position: absolute;
             top: 50%;
             left: 0;

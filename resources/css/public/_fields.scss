@@ -18,7 +18,7 @@ select {
 
     &:hover,
     &:focus {
-        border-color: var(--color-secondary);
+        border-color: var(--color-interaction-primary-hover);
     }
 }
 
@@ -28,7 +28,7 @@ textarea {
 }
 
 ::placeholder {
-    color: rgba(var(--color-dark), .5);
+    color: rgba(var(--color-font-secondary), .5);
 }
 
 .form-control {

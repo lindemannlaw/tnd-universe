@@ -97,7 +97,7 @@
 
         .icon {
             --icon-size: 80%;
-            --icon-color: var(--color-secondary-medium);
+            --icon-color: var(--color-interaction-primary-default);
 
             position: absolute;
             left: 50%;
@@ -130,8 +130,10 @@
     &-position {
         font-size: range.build(16, 18, px, 768);
         margin-top: range.build(16, 20, px, 768);
-        color: var(--color-secondary-medium);
-        font-weight: bold;
+        color: var(--color-font-highlight);
+        font-family: var(--font-secondary);
+        font-variation-settings: var(--font-secondary-settings);
+        font-weight: var(--font-weight-semibold);
     }
 
     &-info {
@@ -152,23 +154,61 @@
         p:first-child {
             font-size: 1.5em;
             line-height: 1;
-            font-weight: normal;
+            font-weight: var(--font-weight-light);
 
             &:empty {
                 display: none;
             }
         }
+
+        li:first-child p:first-child {
+            font-size: 1em;
+            line-height: 1.4;
+            color: var(--color-font-primary);
+            font-family: var(--font-secondary);
+            font-variation-settings: var(--font-secondary-settings);
+            font-weight: var(--font-weight-semibold);
+        }
+
+        li:nth-child(n + 2) p:first-child {
+            color: var(--color-font-highlight);
+            font-family: var(--font-secondary);
+            font-variation-settings: var(--font-secondary-settings);
+            font-weight: var(--font-weight-semibold);
+        }
+
+        p:not(:first-child) {
+            color: var(--color-font-secondary);
+        }
+
+        strong {
+            color: var(--color-font-highlight);
+            font-family: var(--font-secondary);
+            font-variation-settings: var(--font-secondary-settings);
+        }
     }
 
     &-download-link {
-        font-weight: bold;
-        font-size: range.build(18, 22, px, 768);
+        font-weight: var(--font-weight-light);
+        font-size: range.build(16, 20, px, 768);
         margin-top: range.build(28, 50, px, 768);
-        color: var(--color-secondary-medium);
+        color: var(--color-interaction-primary-default);
+        transition: var(--transition);
+        transition-property: color;
+
+        &:hover {
+            color: var(--color-interaction-primary-hover);
+
+            &::after {
+                rotate: 0deg;
+            }
+        }
 
         &::after {
             width: max(10px, .6em);
-            rotate: 135deg;
+            rotate: 0deg;
+            mask-image: var(--icon-download);
+            background-color: currentColor;
         }
     }
 

@@ -100,6 +100,13 @@
         text-decoration: none;
         font-size: 1.5em;
         line-height: 1em;
+        color: var(--color-white);
+        transition-property: color, opacity;
+
+        &:hover {
+            color: var(--color-interaction-primary-hover);
+            //opacity: .75;
+        }
         
 
         @media (min-width: 992px) {
@@ -114,7 +121,7 @@
         /* no line here in contact section
         height: range.build(2, 4);*/
 
-        background: linear-gradient(to right, rgba(var(--color-primary-light-rgb), .5) 5%, var(--color-white) 20%, rgba(var(--color-green-rgb), .75) 75%, var(--color-white) 100%);
+        background: linear-gradient(to right, rgba(var(--color-primary-brand-400-medium-rgb), .5) 5%, var(--color-white) 20%, rgba(var(--color-green-rgb), .75) 75%, var(--color-white) 100%);
         position: absolute;
         left: 0;
         bottom: 0;
@@ -149,6 +156,14 @@
     select {
         border-bottom-width: 1px;
     }
+
+    .btn-submit {
+        --btn-color: var(--color-interaction-primary-default);
+
+        &:hover {
+            --btn-color: var(--color-interaction-primary-hover);
+        }
+    }
 }
 
 .contact-section-form-head {
@@ -161,7 +176,7 @@
     //max-width: 8em;
     margin-right: auto;
     font-size: range.build(20, 36);
-    color: var(--color-secondary-medium);
+    color: var(--color-interaction-primary-default);
 
     @media (min-width: 768px) {
         font-size: range.build(20, 32, px, 768);
@@ -189,7 +204,7 @@
         content: '';
         width: 6px;
         aspect-ratio: 1;
-        background-color: var(--color-secondary);
+        background-color: var(--color-interaction-primary-hover);
         border-radius: 50%;
         position: absolute;
         right: 0;

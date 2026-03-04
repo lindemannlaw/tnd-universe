@@ -8,33 +8,27 @@ $colors: (
     white: #FFFFFF,
     50-sand-matte: #f7f4f2,
     black: #000000,
-    dark: #212931,
-    gray: #878683,
-    gray-light: #F5F5F5,
-    gray-medium: #D9D9D9,
+    dark: #2A2C33,
+    gray: #727580,
+    gray-light: #E7E5E4,
+    gray-medium: #D1D2D6,
     line: #EEE6CF,
-    primary: #1B594F,
-    primary-light: #6091CB,
-    secondary: #14855F,
-    secondary-medium: #1B594F,
-    secondary-large: #193632,
     border: #E3E3E3,
     gold-lighter: #D9B48D,
     gold: #CEAE87,
-    gold-heavy: #AF8546,
     red: #FF2F2F,
     green: #107c10,
-    emerald-950: #0B2622,
-    emerald-900: #134038,
-    emerald-800: #1B594F,
-    emerald-700: #148572,
-    emerald-600: #08A389,
-    emerald-500: #00BFBF,
-    emerald-400: #6CD9D9,
-    emerald-300: #80FFFF,
-    emerald-200: #B2FFFF,
-    emerald-100: #D9FFFF,
-    emerald-50: #F5FCFC,
+    primary-brand-50-lightest: #F5FCFC,
+    primary-brand-100-lighter: #D9FFFF,
+    primary-brand-200-light: #B2FFFF,
+    primary-brand-300-regular: #80FFFF,
+    primary-brand-400-medium: #6CD9D9,
+    primary-brand-500-main: #00BFBF,
+    primary-brand-600-stronger: #08A389,
+    primary-brand-700-strongest: #148572,
+    primary-brand-800-dark: #1B594F,
+    primary-brand-900-darker-silent: #134038,
+    primary-brand-950-darkest: #0B2622,
 );
 
 :root {
@@ -55,6 +49,17 @@ $colors: (
     'Grad' 0,
     'opsz' 50;
 
+    --color-interaction-primary-default: var(--color-primary-brand-800-dark);
+    --color-interaction-primary-hover: var(--color-primary-brand-700-strongest);
+    --color-interaction-primary-active: var(--color-primary-brand-800-dark);
+
+    --color-font-primary: var(--color-black);
+    --color-font-secondary: var(--color-gray);
+    --color-font-highlight: var(--color-interaction-primary-default);
+    --color-font-highlight-darker: var(--color-interaction-primary-hover);
+    --color-font-highlight: var(--color-primary-brand-800-dark);
+    --color-font-highlight-darker: var(--color-primary-brand-900-darker-silent);
+
     --base-line-height: 1.6;
     --font-weight-xlight: 200;
     --font-weight-light: 300;
@@ -63,10 +68,6 @@ $colors: (
     --font-weight-semibold: 600;
     --font-weight-bold: 700;
     --font-weight-black: 900;
-
-    --font-color-primary-hover: var(--color-emerald-800);
-    --font-color-primary: var(--color-emerald-900);
-    --font-color-primary-dark: var(--color-emerald-950);
 
     --width-min: #{base.$width-min + px};
     --width-max: #{base.$width-max + px};
@@ -97,15 +98,15 @@ $colors: (
     }
 
     --radius: #{range.build(10, 20)};
-    --radius-sm: #{range.build(6, 12)};
-    --radius-md: #{range.build(20, 40)};
+    --radius-sm: #{range.build(4, 8)};
+    --radius-md: #{range.build(12, 20)};
 
     --transition: all .15s linear;
 
-    --scroll-thumb-clr: rgba(var(--color-primary-rgb), .5);
-    --scroll-thumb-hover-clr: var(--color-primary);
+    --scroll-thumb-clr: rgba(var(--color-primary-brand-800-dark-rgb), .5);
+    --scroll-thumb-hover-clr: var(--color-primary-brand-800-dark);
 
-    --line-gradient: linear-gradient(to right, var(--color-line) 0%, var(--color-secondary) 75%, var(--color-line) 100%);
+    --line-gradient: linear-gradient(to right, var(--color-line) 0%, var(--color-primary-brand-700-strongest) 75%, var(--color-line) 100%);
 
     --field-size: 56px;
     --field-radius: 0;

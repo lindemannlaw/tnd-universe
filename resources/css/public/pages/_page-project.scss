@@ -6,7 +6,7 @@
     min-height: 100vh;
     min-height: 100svh;
     color: var(--color-white);
-    background-color: var(--color-primary);
+    background-color: var(--color-primary-brand-800-dark);
     padding: calc(var(--header-height) + 20px) 0 range.build(40, 84);
     position: relative;
     overflow: hidden;
@@ -79,7 +79,7 @@
         position: absolute;
         top: 0;
         left: 0;
-        background-color: var(--color-primary);
+        background-color: var(--color-primary-brand-800-dark);
         object-position: center;
     }
 }
@@ -147,6 +147,7 @@
 .project-title {
     font-size: range.build(28, 46);
     line-height: 1.3;
+    color: var(--color-white);
     grid-area: title;
 
     @media (min-width: 768px) {
@@ -183,7 +184,7 @@
     .h4,
     .h5,
     .h6 {
-        color: #8E8E93;
+        color: var(--color-font-primary);
     }
 }
 
@@ -199,10 +200,13 @@
     align-items: center;
     gap: range.build(20, 34);
     background-color: var(--color-white);
-    border-radius: var(--radius);
+    //border-radius: var(--radius-sm);
+    border-style: solid;
+    border-color: var(--color-primary-brand-900-darker-silent);
+    border-width: 1px 0;
     font-size: range.build(16, 22, px, 1300);
     padding: 1.27em 1.36em 1.27em range.build(20, 44, px, 1300);
-    box-shadow: 0 .36em 1.36em 0 rgba(var(--color-dark-rgb), .1);
+    //box-shadow: 0 .36em 1.36em 0 rgba(var(--color-dark-rgb), .1);
     color: inherit;
     transition: var(--transition);
     transition-property: color;
@@ -212,7 +216,7 @@
     line-height: 1.2;
 
     &:hover {
-        color: var(--color-secondary);
+        color: var(--color-interaction-primary-hover);
     }
 
     &::after {
@@ -220,7 +224,7 @@
         content: '';
         width: 1em;
         aspect-ratio: 1;
-        background: var(--color-secondary-medium);
+        background: var(--color-interaction-primary-default);
         mask-image: var(--icon-download);
         mask-repeat: no-repeat;
         mask-position: center;
@@ -321,6 +325,12 @@
 
         &-tags {
             justify-content: center;
+        }
+
+        &:hover {
+            .project-simple-card-title {
+                color: var(--color-interaction-primary-hover);
+            }
         }
     }
 }

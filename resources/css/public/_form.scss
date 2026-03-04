@@ -98,8 +98,8 @@
         text-underline-offset: .15em;
 
         &:hover {
-            color: var(--color-primary);
-            text-decoration-color: var(--color-primary);
+            color: var(--color-interaction-primary-default);
+            text-decoration-color: var(--color-interaction-primary-default);
         }
     }
 }

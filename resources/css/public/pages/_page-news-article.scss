@@ -5,7 +5,7 @@
     flex-direction: column;
     //min-height: range.build(400, 700);
     color: var(--color-white);
-    background-color: var(--color-emerald-900);
+    background-color: var(--color-primary-brand-900-darker-silent);
     padding: calc(var(--header-height) + 20px) 0 0;
     border-radius: 0 0 var(--radius-sm) var(--radius-sm);
     position: relative;
@@ -14,7 +14,7 @@
 
 .news-article-hero-icon {
     --icon-size: #{range.build(260, 724)};
-    --icon-color: var(--color-secondary);
+    --icon-color: var(--color-interaction-primary-hover);
 
     position: absolute;
     top: var(--header-height);
@@ -119,6 +119,16 @@
     font-size: range.build(16, 18);
     width: 100%;
 
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    strong,
+    b {
+        color: var(--color-font-primary);
+    }
+
     @media (min-width: 1200px) {
         width: 66.6667%;
     }
@@ -137,10 +147,26 @@
     &-title {
         grid-column: 2;
         text-align: center;
-        font-size: range.build(22, 26);
+        font-size: 26px;
         font-weight: var(--font-weight-semibold);
-        color: var(--color-emerald-800);
+        color: var(--color-font-primary);
         margin: 0;
+
+        @media (min-width: 992px) {
+            font-size: 28px;
+        }
+
+        @media (min-width: 1240px) {
+            font-size: 30px;
+        }
+
+        @media (min-width: 1440px) {
+            font-size: 32px;
+        }
+
+        @media (min-width: 1680px) {
+            font-size: 36px;
+        }
     }
 
     &-link {
@@ -149,18 +175,28 @@
         display: inline-flex;
         align-items: center;
         gap: .5em;
-        color: var(--color-secondary-medium);
+        color: var(--color-interaction-primary-default);
         font-size: range.build(14, 16);
         white-space: nowrap;
+        transition: var(--transition);
+        transition-property: color;
 
         &::after {
             margin-left: 0;
             translate: 0 0;
-            background-color: var(--color-secondary-medium);
+            background-color: currentColor;
+        }
+
+        &:hover {
+            color: var(--color-interaction-primary-hover);
+        }
+
+        &.is-active {
+            color: var(--color-interaction-primary-active);
         }
     }
 }
 
 .related-news-articles-list {
-    margin-top: range.build(20, 30);
+    margin-top: range.build(30, 50);
 }

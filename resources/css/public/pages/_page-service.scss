@@ -76,7 +76,7 @@
         position: relative;
         font-size: range.build(16, 24);
         line-height: 1.2;
-        color: var(--color-secondary-large);
+        color: var(--color-primary-brand-900-darker-silent);
         font-weight: light;
         padding: range.build(16, 24) 0;
 
@@ -88,7 +88,7 @@
             aspect-ratio: 1;
             background-color: transparent;
             border-radius: 50%;
-            border: 2px solid var(--color-secondary-medium);
+            border: 2px solid var(--color-primary-brand-800-dark);
             transition: var(--transition);
             transition-property: background-color;
 
@@ -97,7 +97,7 @@
                 content: '';
                 width: 14px;
                 aspect-ratio: 1;
-                background-color: var(--color-secondary-large);
+                background-color: var(--color-primary-brand-900-darker-silent);
                 mask-image: var(--icon-check);
                 mask-repeat: no-repeat;
                 mask-position: center;
@@ -112,7 +112,7 @@
         flex: 1 0 0;
         position: relative;
         padding-right: 12px;
-        color: var(--color-secondary-large);
+        color: var(--color-primary-brand-900-darker-silent);
         transition: var(--transition);
         transition-property: color;
 
@@ -151,7 +151,7 @@
     &-head:hover {
         .service-info-card {
             &-title {
-                color: var(--color-secondary-medium);
+                color: var(--color-primary-brand-800-dark);
             }
         }
     }
@@ -160,7 +160,7 @@
         .service-info-card {
             &-head {
                 &-icon {
-                    background-color: var(--color-secondary-medium);
+                    background-color: var(--color-primary-brand-800-dark);
 
                     &::before {
                         background-color: var(--color-gold);
@@ -211,7 +211,7 @@
     a {
         display: block;
         position: relative;
-        color: inherit;
+        color: var(--color-font-secondary);
         text-decoration: none;
         padding: 1.25em 0 1.25em calc(1.5em);
         border-bottom: 1px solid var(--color-gray-medium);
@@ -227,8 +227,7 @@
             content: '';
             width: range.build(12, 16);
             aspect-ratio: 1;
-            vertical-align: middle;
-            background-color: var(--color-primary);
+            background-color: currentColor;
             mask-image: var(--icon-corner-arrow);
             mask-repeat: no-repeat;
             mask-position: center;
@@ -242,10 +241,10 @@
         }
 
         &:hover {
-            color: var(--color-primary);
+            color: var(--color-interaction-primary-hover);
 
             &::before {
-                background-color: var(--color-primary);
+                background-color: currentColor;
                 rotate: 45deg;
             }
         }

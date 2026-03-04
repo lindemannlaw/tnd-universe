@@ -55,7 +55,11 @@
 @php
     $bodyClass = 'home-page';
 
-    if (Route::is(['public.news.*', 'public.portfolio.*'])) {
+    if (Route::is('public.portfolio.project')) {
+        $bodyClass = 'portfolio-project-page';
+    } elseif (Route::is('public.news.article')) {
+        $bodyClass = 'news-article-page';
+    } elseif (Route::is(['public.news.*', 'public.portfolio.*'])) {
         $bodyClass = 'post-page';
     } elseif (!Route::is('public.home')) {
         $bodyClass = 'inner-page';

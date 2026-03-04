@@ -6,7 +6,7 @@
     min-height: 100vh;
     min-height: 100svh;
     position: relative;
-    padding: calc(var(--header-height) + 50px) 0 50px;
+    padding: calc(var(--header-height) + 50px) 0 80px;
     color: var(--color-white);
 
     &::before {
@@ -36,9 +36,9 @@
     h1 {
         font-size: range.build(44, 68, px, 375, 992);
         color: var(--color-white);
-        font-weight: 500;
+        font-weight: var(--font-weight-semibold);
         text-transform: uppercase;
-        letter-spacing: -0.02em;
+        letter-spacing: -0.01em;
 
         @media (min-width: 992px) {
             width: 14em;
@@ -66,7 +66,7 @@
         color: var(--color-white);
         font-family: var(--font-primary);
         font-weight: var(--font-weight-xlight);
-        font-size: range.build(18, 32);
+        font-size: range.build(18, 28);
         font-variation-settings: 'opsz' 6,
     'MONO' 1;
     }
@@ -107,7 +107,7 @@
 
 .home-portfolio-link {
     justify-self: flex-end;
-    color: var(--color-gray);
+    color: var(--color-interaction-primary-default);
     text-decoration: none;
     display: flex;
     align-items: center;
@@ -122,7 +122,8 @@
     }
 
     &:hover {
-        color: var(--color-primary);
+        color: var(--color-interaction-primary-hover);
+        opacity: 1;
     }
 
     &::before,
@@ -131,12 +132,35 @@
         content: '';
         width: 2em;
         height: 2px;
-        background-color: var(--color-gray);
+        background-color: currentColor;
+        transition: var(--transition);
+        transition-property: background-color;
+    }
+
+    &::after {
+        background-color: currentColor;
     }
 
     &::before {
         @media (min-width: 768px) {
-            display: none;
+            width: 8px;
+            height: 8px;
+            border-top: 2px solid currentColor;
+            border-right: 2px solid currentColor;
+            background: none;
+            position: absolute;
+            right: 0;
+            top: 50%;
+            translate: 0 -50%;
+            rotate: 45deg;
+            opacity: 0;
+            transition-property: opacity, border-color;
+        }
+    }
+
+    @media (min-width: 768px) {
+        &:hover::before {
+            opacity: 1;
         }
     }
 }

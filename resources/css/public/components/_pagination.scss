@@ -43,7 +43,7 @@
 
         &:hover,
         &.is-active {
-            border-color: var(--color-secondary-medium);
+            border-color: var(--color-interaction-primary-default);
         }
     }
 
@@ -77,7 +77,7 @@
 
         &:hover {
             &::before {
-                background-color: var(--color-secondary);
+                background-color: var(--color-interaction-primary-hover);
             }
         }
     }

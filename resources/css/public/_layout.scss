@@ -10,7 +10,7 @@ body {
     font-variation-settings: var(--font-primary-settings);
     font-size: 16px;
     font-weight: 250;
-    color: var(--color-dark);
+    color: var(--color-font-secondary);
     background-color: var(--color-white);
     line-height: var(--base-line-height);
     overflow-x: hidden;
@@ -46,7 +46,7 @@ input,
 textarea,
 select {
     font-family: var(--font-primary);
-    color: var(--color-dark);
+    color: var(--color-font-primary);
 }
 
 main {
@@ -122,7 +122,7 @@ section:has(.target-anchor-section) {
     h6,
     .h6 {
         line-height: 1.2;
-    }
+        }
 
     h2,
     .h2 {
@@ -171,14 +171,14 @@ section:has(.target-anchor-section) {
     }
 
     a {
-        color: inherit;
-        text-decoration-color: var(--color-secondary);
+        color: var(--color-interaction-primary-default);
+        text-decoration-color: currentColor;
         text-underline-offset: .2em;
         transition: var(--transition);
         transition-property: color, text-decoration-color;
 
         &:hover {
-            color: var(--color-secondary);
+            color: var(--color-interaction-primary-hover);
         }
     }
 
@@ -277,10 +277,10 @@ section:has(.target-anchor-section) {
         }
 
         a {
-            text-decoration-color: var(--color-gray);
+            text-decoration-color: currentColor;
 
             &:hover {
-                text-decoration-color: var(--color-secondary);
+                text-decoration-color: currentColor;
             }
         }
     }
@@ -308,7 +308,7 @@ section:has(.target-anchor-section) {
             content: '';
             width: range.build(18, 24);
             aspect-ratio: 1;
-            background-color: var(--color-secondary-medium);
+            background-color: var(--color-primary-brand-800-dark);
             mask-image: var(--icon-bloquote);
             mask-repeat: no-repeat;
             mask-position: center;
@@ -333,6 +333,7 @@ section:has(.target-anchor-section) {
     --line-clamp: 1;
 
     display: -webkit-box;
+    line-clamp: var(--line-clamp);
     -webkit-line-clamp: var(--line-clamp);
     -webkit-box-orient: vertical;
     overflow: hidden;
