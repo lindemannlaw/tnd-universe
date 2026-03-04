@@ -80,69 +80,9 @@ $galleryImageSizes = [
                     </div>
                 @endif
 
-                @php
-                    $descriptionHtml = (string) ($project->description ?? '');
-                    $descriptionBlocks = [];
-                    $useProjectBlocks = false;
-
-                    if ($descriptionHtml !== '') {
-                        if (preg_match('/<div\s+[^>]*class="[^"]*project-block[^"]*"[^>]*data-align="(left|right)"[^>]*>/i', $descriptionHtml)) {
-                            $dom = new DOMDocument();
-                            libxml_use_internal_errors(true);
-                            $dom->loadHTML('<?xml encoding="UTF-8"><div id="root">' . $descriptionHtml . '</div>', LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
-                            libxml_clear_errors();
-                            $xpath = new DOMXPath($dom);
-                            $blocks = $xpath->query('//div[contains(concat(" ", normalize-space(@class), " "), " project-block ") and @data-align]');
-
-                            foreach ($blocks as $block) {
-                                $align = strtolower($block->getAttribute('data-align'));
-                                if (!in_array($align, ['left', 'right'], true)) {
-                                    $align = 'left';
-                                }
-                                $innerHtml = '';
-                                foreach ($block->childNodes as $child) {
-                                    $innerHtml .= $dom->saveHTML($child);
-                                }
-                                $descriptionBlocks[] = ['align' => $align, 'content' => trim($innerHtml)];
-                            }
-                            $useProjectBlocks = !empty($descriptionBlocks);
-                        }
-
-                        if (!$useProjectBlocks) {
-                            $segments = preg_split(
-                                '/(<h2\b[^>]*>.*?<\/h2>)/is',
-                                $descriptionHtml,
-                                -1,
-                                PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY
-                            );
-                            $currentBlock = '';
-
-                            foreach ($segments as $segment) {
-                                if (preg_match('/^<h2\b/i', trim($segment))) {
-                                    if (trim($currentBlock) !== '') {
-                                        $descriptionBlocks[] = ['align' => null, 'content' => $currentBlock];
-                                    }
-                                    $currentBlock = $segment;
-                                    continue;
-                                }
-                                $currentBlock .= $segment;
-                            }
-                            if (trim($currentBlock) !== '') {
-                                $descriptionBlocks[] = ['align' => null, 'content' => $currentBlock];
-                            }
-                        }
-                    }
-                @endphp
-
-                @if (!empty($descriptionBlocks))
-                    @foreach ($descriptionBlocks as $block)
-                        <div class="project-description-block {{ ($block['align'] ?? null) ? 'is-align-' . $block['align'] : ($loop->odd ? 'is-align-left' : 'is-align-right') }}">
-                            {!! $block['content'] ?? $block !!}
-                        </div>
-                    @endforeach
-                @else
+                <div class="project-description-content">
                     {!! $project->description !!}
-                @endif
+                </div>
             </article>
 
             @if ($project->hasMedia($project->mediaFiles))

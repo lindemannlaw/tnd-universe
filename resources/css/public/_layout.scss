@@ -116,6 +116,8 @@ section:has(.target-anchor-section) {
         margin-top: 0.5em;
     }
 
+    h1,
+    .h1,
     h2,
     .h2,
     h3,
@@ -127,7 +129,8 @@ section:has(.target-anchor-section) {
     h6,
     .h6 {
         line-height: 1.2;
-        }
+        margin-bottom: 0.75em;
+    }
 
     h2,
     .h2 {
