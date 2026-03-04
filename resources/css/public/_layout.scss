@@ -111,6 +111,11 @@ section:has(.target-anchor-section) {
         }
     }
 
+    > ul:not(:first-child),
+    > ol:not(:first-child) {
+        margin-top: 0.5em;
+    }
+
     h2,
     .h2,
     h3,
@@ -185,22 +190,31 @@ section:has(.target-anchor-section) {
     ul {
         display: flex;
         flex-direction: column;
+        gap: .2em;
+        list-style: none;
+        padding-left: 0;
+        margin: 0 0 .5em;
 
         li {
             position: relative;
-            padding-left: .625em;
+            padding-left: .55em;
+            line-height: 1.55;
+            margin-top: 0;
+            margin-bottom: 0;
+
+            &::marker {
+                content: none;
+            }
 
             &::before {
                 display: block;
-                content: '';
-                width: 0.25em;
-                aspect-ratio: 1;
-                border-radius: 50%;
+                content: '·';
+                font-size: 1em;
+                line-height: 1.55;
                 position: absolute;
-                top: calc((1em * var(--base-line-height)) / 1.85);
+                top: 0;
                 left: 0;
-                translate: 0 -50%;
-                background-color: var(--color-gold);
+                color: currentColor;
             }
         }
     }
