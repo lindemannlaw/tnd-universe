@@ -1,5 +1,13 @@
 @use '../functions/range';
 
+.contact-section {
+    margin-top: var(--section-gap-mobile);
+
+    @media (min-width: 768px) {
+        margin-top: 48px;
+    }
+}
+
 .contact-section-content {
     display: flex;
     flex-direction: column;

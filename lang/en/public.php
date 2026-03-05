@@ -23,4 +23,5 @@ return [
     'new_contact' => 'New contact',
     'new_contact_request' => 'New contact request – :site',
     'we_offer' => 'We offer',
+    'expertise_overview' => 'Expertise overview',
 ];

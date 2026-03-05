@@ -1,7 +1,12 @@
 @use '../functions/range';
 
+/* Abstand zwischen Sektionen – einheitlich auf allen Seiten */
+:root {
+    --section-gap: 96px;
+    --section-gap-mobile: #{range.build(40, 60)};
+}
+
 .footer {
-    margin-top: range.build(40, 64);
     border-top: 1px solid var(--color-border);
 }
 

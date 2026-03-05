@@ -23,4 +23,5 @@ return [
     'new_contact' => 'Neuer Kontakt',
     'new_contact_request' => 'Neue Kontaktanfrage – :site',
     'we_offer' => 'Unsere Leistungen',
+    'expertise_overview' => 'Expertise-Übersicht',
 ];
