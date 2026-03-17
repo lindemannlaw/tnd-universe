@@ -334,20 +334,36 @@ class ProjectController extends Controller
                     $allowedColors = ['emerald-950', 'emerald-900', 'emerald-800', 'primary', 'gold-bright'];
                     $headlineColor = data_get($block, 'headline_color', 'primary');
 
+                    $imgFile = data_get($request->file('description_blocks'), "{$locale}.{$blockIndex}.image_file");
+                    $imgOld  = data_get($block, 'image');
+                    $imgUrl  = is_string($imgOld) ? $imgOld : null;
+                    if ($imgFile) {
+                        $path   = $imgFile->store('projects/description-blocks', 'public');
+                        $imgUrl = Storage::url($path);
+                    }
+
+                    $imgAlignment = data_get($block, 'image_alignment', 'top');
+                    if (!in_array($imgAlignment, ['top', 'left', 'right'])) {
+                        $imgAlignment = 'top';
+                    }
+
                     $preparedLocaleBlocks[] = [
-                        'type'           => 'text_column',
-                        'headline'       => data_get($block, 'headline') ?: null,
-                        'headline_color' => in_array($headlineColor, $allowedColors) ? $headlineColor : 'primary',
+                        'type'            => 'text_column',
+                        'headline'        => data_get($block, 'headline') ?: null,
+                        'headline_color'  => in_array($headlineColor, $allowedColors) ? $headlineColor : 'primary',
                         'headline_font'   => data_get($block, 'headline_font', 'pangea') === 'nicevar' ? 'nicevar' : 'pangea',
+                        'headline_line'   => (bool)data_get($block, 'headline_line', false),
+                        'content'         => (string)data_get($block, 'content', ''),
+                        'content_line'    => (bool)data_get($block, 'content_line', false),
+                        'link_text'       => data_get($block, 'link_text') ?: null,
+                        'link_url'        => data_get($block, 'link_url') ?: null,
+                        'col_start'       => $colStart,
+                        'col_span'        => $colSpan,
                         'padding_top'     => max(0, min(300, (int)data_get($block, 'padding_top', 0))),
                         'padding_bottom'  => max(0, min(300, (int)data_get($block, 'padding_bottom', 0))),
-                        'headline_line'  => (bool)data_get($block, 'headline_line', false),
-                        'content'       => (string)data_get($block, 'content', ''),
-                        'content_line'  => (bool)data_get($block, 'content_line', false),
-                        'link_text'     => data_get($block, 'link_text') ?: null,
-                        'link_url'      => data_get($block, 'link_url') ?: null,
-                        'col_start'     => $colStart,
-                        'col_span'      => $colSpan,
+                        'image'           => $imgUrl,
+                        'image_alignment' => $imgAlignment,
+                        'image_col_span'  => max(1, min(11, (int)data_get($block, 'image_col_span', 6))),
                     ];
 
                     continue;

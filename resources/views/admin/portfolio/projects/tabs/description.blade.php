@@ -160,37 +160,72 @@
                                                     :placeholder="'Link URL (optional, z.B. /about)'"
                                                 />
                                             </div>
-                                            <div class="col-6 col-lg-3">
-                                                <x-admin.field.number
-                                                    :name="'description_blocks['. $lang .'][' . $blockIndex . '][col_span]'"
-                                                    :value="data_get($block, 'col_span', 12)"
-                                                    :placeholder="'Columns (1-12)'"
-                                                    :fieldAttrs="'min=1 max=12'"
-                                                />
+                                            <div class="col-12 border-top pt-3 mt-1">
+                                                <p class="text-muted small mb-2">Bild (optional)</p>
+                                                <div class="row g-3">
+                                                    <div class="col-12">
+                                                        <x-admin.field.image
+                                                            :name="'description_blocks['. $lang .'][' . $blockIndex . '][image_file]'"
+                                                            :src="data_get($block, 'image')"
+                                                            :required="false"
+                                                            :ratio="'16x9'"
+                                                            :placeholder="'Bild hochladen'"
+                                                        />
+                                                    </div>
+                                                    <div class="col-6 col-lg-4">
+                                                        <label class="form-label small">Bild Alignment</label>
+                                                        <select class="form-select" name="description_blocks[{{ $lang }}][{{ $blockIndex }}][image_alignment]">
+                                                            <option value="top" {{ data_get($block, 'image_alignment', 'top') === 'top' ? 'selected' : '' }}>Oben</option>
+                                                            <option value="left" {{ data_get($block, 'image_alignment') === 'left' ? 'selected' : '' }}>Links</option>
+                                                            <option value="right" {{ data_get($block, 'image_alignment') === 'right' ? 'selected' : '' }}>Rechts</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-6 col-lg-4">
+                                                        <x-admin.field.number
+                                                            :name="'description_blocks['. $lang .'][' . $blockIndex . '][image_col_span]'"
+                                                            :value="data_get($block, 'image_col_span', 6)"
+                                                            :placeholder="'Bild Spalten (1-11)'"
+                                                            :fieldAttrs="'min=1 max=11'"
+                                                        />
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div class="col-6 col-lg-3">
-                                                <x-admin.field.number
-                                                    :name="'description_blocks['. $lang .'][' . $blockIndex . '][col_start]'"
-                                                    :value="data_get($block, 'col_start', 1)"
-                                                    :placeholder="'Start column (1-12)'"
-                                                    :fieldAttrs="'min=1 max=12'"
-                                                />
-                                            </div>
-                                            <div class="col-6 col-lg-3">
-                                                <x-admin.field.number
-                                                    :name="'description_blocks['. $lang .'][' . $blockIndex . '][padding_top]'"
-                                                    :value="data_get($block, 'padding_top', 0)"
-                                                    :placeholder="'Padding oben (px)'"
-                                                    :fieldAttrs="'min=0 max=300 step=4'"
-                                                />
-                                            </div>
-                                            <div class="col-6 col-lg-3">
-                                                <x-admin.field.number
-                                                    :name="'description_blocks['. $lang .'][' . $blockIndex . '][padding_bottom]'"
-                                                    :value="data_get($block, 'padding_bottom', 0)"
-                                                    :placeholder="'Padding unten (px)'"
-                                                    :fieldAttrs="'min=0 max=300 step=4'"
-                                                />
+                                            <div class="col-12 border-top pt-3 mt-1">
+                                                <p class="text-muted small mb-2">Layout</p>
+                                                <div class="row g-3">
+                                                    <div class="col-6 col-lg-3">
+                                                        <x-admin.field.number
+                                                            :name="'description_blocks['. $lang .'][' . $blockIndex . '][col_span]'"
+                                                            :value="data_get($block, 'col_span', 12)"
+                                                            :placeholder="'Columns (1-12)'"
+                                                            :fieldAttrs="'min=1 max=12'"
+                                                        />
+                                                    </div>
+                                                    <div class="col-6 col-lg-3">
+                                                        <x-admin.field.number
+                                                            :name="'description_blocks['. $lang .'][' . $blockIndex . '][col_start]'"
+                                                            :value="data_get($block, 'col_start', 1)"
+                                                            :placeholder="'Start column (1-12)'"
+                                                            :fieldAttrs="'min=1 max=12'"
+                                                        />
+                                                    </div>
+                                                    <div class="col-6 col-lg-3">
+                                                        <x-admin.field.number
+                                                            :name="'description_blocks['. $lang .'][' . $blockIndex . '][padding_top]'"
+                                                            :value="data_get($block, 'padding_top', 0)"
+                                                            :placeholder="'Padding oben (px)'"
+                                                            :fieldAttrs="'min=0 max=300 step=4'"
+                                                        />
+                                                    </div>
+                                                    <div class="col-6 col-lg-3">
+                                                        <x-admin.field.number
+                                                            :name="'description_blocks['. $lang .'][' . $blockIndex . '][padding_bottom]'"
+                                                            :value="data_get($block, 'padding_bottom', 0)"
+                                                            :placeholder="'Padding unten (px)'"
+                                                            :fieldAttrs="'min=0 max=300 step=4'"
+                                                        />
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -444,37 +479,71 @@
                                             :placeholder="'Link URL (optional)'"
                                         />
                                     </div>
-                                    <div class="col-6 col-lg-3">
-                                        <x-admin.field.number
-                                            :name="'description_blocks['. $lang .'][__block__][col_span]'"
-                                            :value="12"
-                                            :placeholder="'Columns (1-12)'"
-                                            :fieldAttrs="'min=1 max=12'"
-                                        />
+                                    <div class="col-12 border-top pt-3 mt-1">
+                                        <p class="text-muted small mb-2">Bild (optional)</p>
+                                        <div class="row g-3">
+                                            <div class="col-12">
+                                                <x-admin.field.image
+                                                    :name="'description_blocks['. $lang .'][__block__][image_file]'"
+                                                    :required="false"
+                                                    :ratio="'16x9'"
+                                                    :placeholder="'Bild hochladen'"
+                                                />
+                                            </div>
+                                            <div class="col-6 col-lg-4">
+                                                <label class="form-label small">Bild Alignment</label>
+                                                <select class="form-select" name="description_blocks[{{ $lang }}][__block__][image_alignment]">
+                                                    <option value="top" selected>Oben</option>
+                                                    <option value="left">Links</option>
+                                                    <option value="right">Rechts</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-6 col-lg-4">
+                                                <x-admin.field.number
+                                                    :name="'description_blocks['. $lang .'][__block__][image_col_span]'"
+                                                    :value="6"
+                                                    :placeholder="'Bild Spalten (1-11)'"
+                                                    :fieldAttrs="'min=1 max=11'"
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="col-6 col-lg-3">
-                                        <x-admin.field.number
-                                            :name="'description_blocks['. $lang .'][__block__][col_start]'"
-                                            :value="1"
-                                            :placeholder="'Start column (1-12)'"
-                                            :fieldAttrs="'min=1 max=12'"
-                                        />
-                                    </div>
-                                    <div class="col-6 col-lg-3">
-                                        <x-admin.field.number
-                                            :name="'description_blocks['. $lang .'][__block__][padding_top]'"
-                                            :value="0"
-                                            :placeholder="'Padding oben (px)'"
-                                            :fieldAttrs="'min=0 max=300 step=4'"
-                                        />
-                                    </div>
-                                    <div class="col-6 col-lg-3">
-                                        <x-admin.field.number
-                                            :name="'description_blocks['. $lang .'][__block__][padding_bottom]'"
-                                            :value="0"
-                                            :placeholder="'Padding unten (px)'"
-                                            :fieldAttrs="'min=0 max=300 step=4'"
-                                        />
+                                    <div class="col-12 border-top pt-3 mt-1">
+                                        <p class="text-muted small mb-2">Layout</p>
+                                        <div class="row g-3">
+                                            <div class="col-6 col-lg-3">
+                                                <x-admin.field.number
+                                                    :name="'description_blocks['. $lang .'][__block__][col_span]'"
+                                                    :value="12"
+                                                    :placeholder="'Columns (1-12)'"
+                                                    :fieldAttrs="'min=1 max=12'"
+                                                />
+                                            </div>
+                                            <div class="col-6 col-lg-3">
+                                                <x-admin.field.number
+                                                    :name="'description_blocks['. $lang .'][__block__][col_start]'"
+                                                    :value="1"
+                                                    :placeholder="'Start column (1-12)'"
+                                                    :fieldAttrs="'min=1 max=12'"
+                                                />
+                                            </div>
+                                            <div class="col-6 col-lg-3">
+                                                <x-admin.field.number
+                                                    :name="'description_blocks['. $lang .'][__block__][padding_top]'"
+                                                    :value="0"
+                                                    :placeholder="'Padding oben (px)'"
+                                                    :fieldAttrs="'min=0 max=300 step=4'"
+                                                />
+                                            </div>
+                                            <div class="col-6 col-lg-3">
+                                                <x-admin.field.number
+                                                    :name="'description_blocks['. $lang .'][__block__][padding_bottom]'"
+                                                    :value="0"
+                                                    :placeholder="'Padding unten (px)'"
+                                                    :fieldAttrs="'min=0 max=300 step=4'"
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
