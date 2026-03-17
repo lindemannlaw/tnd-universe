@@ -438,9 +438,67 @@ class ProjectController extends Controller
             $description[$locale] = implode(PHP_EOL . PHP_EOL, $legacyDescriptionParts);
         }
 
-        // Mirror image URLs between languages: if language A has an image and language B does not,
-        // copy the URL so the user only needs to upload once.
-        $locales = supported_languages_keys();
+        // ── Server-side structural sync ───────────────────────────────────────
+        // EN (first language) is the source of truth for block structure and
+        // layout. All other languages are aligned to match EN's blocks/types
+        // while preserving their own text-only fields.
+        $locales      = supported_languages_keys();
+        $primaryLocale = $locales[0];                              // 'en'
+        $otherLocales  = array_slice($locales, 1);                 // ['de', …]
+
+        // Text-only fields per block/item type — preserved from target language
+        $textFields = [
+            'text'            => ['content'],
+            'text_column_row' => ['headline', 'content', 'link_text', 'link_url'],
+            'floating_gallery' => ['headline', 'subhead'],
+        ];
+
+        foreach ($otherLocales as $otherLocale) {
+            $primaryBlocks = $descriptionBlocks[$primaryLocale] ?? [];
+            $otherBlocks   = $descriptionBlocks[$otherLocale]   ?? [];
+            $synced        = [];
+
+            foreach ($primaryBlocks as $blockIndex => $primaryBlock) {
+                $primaryType = $primaryBlock['type'] ?? 'text';
+                $otherBlock  = $otherBlocks[$blockIndex] ?? null;
+                $otherType   = $otherBlock['type'] ?? null;
+
+                if ($primaryType === 'text') {
+                    $synced[] = [
+                        'type'    => 'text',
+                        'content' => ($otherType === 'text')
+                            ? ($otherBlock['content'] ?? '')
+                            : ($primaryBlock['content'] ?? ''),
+                    ];
+                    continue;
+                }
+
+                // For structured blocks (text_column_row, floating_gallery)
+                // copy all layout from primary; overlay text fields from other
+                $otherItems   = ($otherType === $primaryType) ? ($otherBlock['items'] ?? []) : [];
+                $syncedItems  = [];
+
+                foreach ($primaryBlock['items'] ?? [] as $itemIndex => $primaryItem) {
+                    $otherItem  = $otherItems[$itemIndex] ?? [];
+                    $mergedItem = $primaryItem; // start with primary (all layout)
+
+                    foreach ($textFields[$primaryType] ?? [] as $field) {
+                        if (array_key_exists($field, $otherItem)) {
+                            $mergedItem[$field] = $otherItem[$field];
+                        }
+                    }
+
+                    $syncedItems[] = $mergedItem;
+                }
+
+                $synced[] = array_merge($primaryBlock, ['items' => $syncedItems]);
+            }
+
+            $descriptionBlocks[$otherLocale] = array_values($synced);
+        }
+
+        // Mirror image URLs: if a language has an image and a sibling does not,
+        // copy it (images are layout, uploaded once in any language).
         foreach ($locales as $localeA) {
             foreach ($locales as $localeB) {
                 if ($localeA === $localeB) continue;
