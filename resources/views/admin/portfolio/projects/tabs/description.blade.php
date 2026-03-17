@@ -83,151 +83,147 @@
                                     </div>
 
                                     <div data-block-type-panel="text_column" class="d-flex flex-column gap-3 {{ data_get($block, 'type') === 'text_column' ? null : 'd-none' }}">
+
+                                        {{-- 1. CONTAINER --}}
+                                        <p class="text-muted small mb-0 fw-semibold">Container</p>
                                         <div class="row g-3">
-                                            <div class="col-12 col-lg-8">
-                                                <x-admin.field.text
-                                                    :name="'description_blocks['. $lang .'][' . $blockIndex . '][headline]'"
-                                                    :value="data_get($block, 'headline')"
-                                                    :required="false"
-                                                    :placeholder="'Headline (optional)'"
+                                            <div class="col-6 col-lg-3">
+                                                <x-admin.field.number
+                                                    :name="'description_blocks['. $lang .'][' . $blockIndex . '][col_span]'"
+                                                    :value="data_get($block, 'col_span', 12)"
+                                                    :placeholder="'Anzahl Spalten (1-12)'"
+                                                    :fieldAttrs="'min=1 max=12'"
                                                 />
                                             </div>
-                                            <div class="col-6 col-lg-2">
-                                                <select class="form-select" name="description_blocks[{{ $lang }}][{{ $blockIndex }}][headline_color]">
-                                                    @foreach(['primary' => 'Primary (Dark)', 'emerald-950' => 'Emerald 950', 'emerald-900' => 'Emerald 900', 'emerald-800' => 'Emerald 800', 'gold-bright' => 'Gold Bright'] as $val => $label)
-                                                        <option value="{{ $val }}" {{ data_get($block, 'headline_color', 'primary') === $val ? 'selected' : '' }}>{{ $label }}</option>
-                                                    @endforeach
-                                                </select>
+                                            <div class="col-6 col-lg-3">
+                                                <x-admin.field.number
+                                                    :name="'description_blocks['. $lang .'][' . $blockIndex . '][col_start]'"
+                                                    :value="data_get($block, 'col_start', 1)"
+                                                    :placeholder="'Start Spalte (1-12)'"
+                                                    :fieldAttrs="'min=1 max=12'"
+                                                />
                                             </div>
-                                            <div class="col-6 col-lg-2">
-                                                <select class="form-select" name="description_blocks[{{ $lang }}][{{ $blockIndex }}][headline_font]">
-                                                    <option value="pangea" {{ data_get($block, 'headline_font', 'pangea') === 'pangea' ? 'selected' : '' }}>Pangea</option>
-                                                    <option value="nicevar" {{ data_get($block, 'headline_font') === 'nicevar' ? 'selected' : '' }}>NiceVar Ultra Light</option>
-                                                </select>
+                                            <div class="col-6 col-lg-3">
+                                                <x-admin.field.number
+                                                    :name="'description_blocks['. $lang .'][' . $blockIndex . '][padding_top]'"
+                                                    :value="data_get($block, 'padding_top', 0)"
+                                                    :placeholder="'Padding oben (px)'"
+                                                    :fieldAttrs="'min=0 max=300 step=4'"
+                                                />
                                             </div>
-                                            <div class="col-12">
-                                                <div class="form-check form-switch">
-                                                    <input
-                                                        class="form-check-input"
-                                                        type="checkbox"
-                                                        value="1"
-                                                        name="description_blocks[{{ $lang }}][{{ $blockIndex }}][headline_line]"
-                                                        id="hl_line_{{ $lang }}_{{ $blockIndex }}"
-                                                        {{ data_get($block, 'headline_line') ? 'checked' : '' }}
-                                                    >
-                                                    <label class="form-check-label" for="hl_line_{{ $lang }}_{{ $blockIndex }}">
-                                                        Linie vor Headline anzeigen
-                                                    </label>
+                                            <div class="col-6 col-lg-3">
+                                                <x-admin.field.number
+                                                    :name="'description_blocks['. $lang .'][' . $blockIndex . '][padding_bottom]'"
+                                                    :value="data_get($block, 'padding_bottom', 0)"
+                                                    :placeholder="'Padding unten (px)'"
+                                                    :fieldAttrs="'min=0 max=300 step=4'"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {{-- 2. BILD --}}
+                                        <div class="border-top pt-3">
+                                            <p class="text-muted small mb-2 fw-semibold">Bild (optional)</p>
+                                            <div class="row g-3">
+                                                <div class="col-12">
+                                                    <x-admin.field.image
+                                                        :name="'description_blocks['. $lang .'][' . $blockIndex . '][image_file]'"
+                                                        :src="data_get($block, 'image')"
+                                                        :required="false"
+                                                        :ratio="'16x9'"
+                                                        :placeholder="'Bild hochladen'"
+                                                    />
                                                 </div>
-                                            </div>
-                                            <div class="col-12">
-                                                <x-admin.field.wysiwyg
-                                                    :name="'description_blocks['. $lang .'][' . $blockIndex . '][content]'"
-                                                    :placeholder="'Text (optional)'"
-                                                    :value="data_get($block, 'content')"
-                                                    :height="200"
-                                                    :buttons="'bold|italic|link'"
-                                                />
-                                            </div>
-                                            <div class="col-12">
-                                                <div class="form-check form-switch">
-                                                    <input
-                                                        class="form-check-input"
-                                                        type="checkbox"
-                                                        value="1"
-                                                        name="description_blocks[{{ $lang }}][{{ $blockIndex }}][content_line]"
-                                                        id="content_line_{{ $lang }}_{{ $blockIndex }}"
-                                                        {{ data_get($block, 'content_line') ? 'checked' : '' }}
-                                                    >
-                                                    <label class="form-check-label" for="content_line_{{ $lang }}_{{ $blockIndex }}">
-                                                        Linie vor Text anzeigen
-                                                    </label>
+                                                <div class="col-6 col-lg-3">
+                                                    <label class="form-label small">Alignment</label>
+                                                    <select class="form-select" name="description_blocks[{{ $lang }}][{{ $blockIndex }}][image_alignment]">
+                                                        <option value="top" {{ data_get($block, 'image_alignment', 'top') === 'top' ? 'selected' : '' }}>Oben</option>
+                                                        <option value="left" {{ data_get($block, 'image_alignment') === 'left' ? 'selected' : '' }}>Links</option>
+                                                        <option value="right" {{ data_get($block, 'image_alignment') === 'right' ? 'selected' : '' }}>Rechts</option>
+                                                    </select>
                                                 </div>
-                                            </div>
-                                            <div class="col-12 col-lg-6">
-                                                <x-admin.field.text
-                                                    :name="'description_blocks['. $lang .'][' . $blockIndex . '][link_text]'"
-                                                    :value="data_get($block, 'link_text')"
-                                                    :required="false"
-                                                    :placeholder="'Link Text (optional, z.B. SEE DETAILS)'"
-                                                />
-                                            </div>
-                                            <div class="col-12 col-lg-6">
-                                                <x-admin.field.text
-                                                    :name="'description_blocks['. $lang .'][' . $blockIndex . '][link_url]'"
-                                                    :value="data_get($block, 'link_url')"
-                                                    :required="false"
-                                                    :placeholder="'Link URL (optional, z.B. /about)'"
-                                                />
-                                            </div>
-                                            <div class="col-12 border-top pt-3 mt-1">
-                                                <p class="text-muted small mb-2">Bild (optional)</p>
-                                                <div class="row g-3">
-                                                    <div class="col-12">
-                                                        <x-admin.field.image
-                                                            :name="'description_blocks['. $lang .'][' . $blockIndex . '][image_file]'"
-                                                            :src="data_get($block, 'image')"
-                                                            :required="false"
-                                                            :ratio="'16x9'"
-                                                            :placeholder="'Bild hochladen'"
-                                                        />
-                                                    </div>
-                                                    <div class="col-6 col-lg-4">
-                                                        <label class="form-label small">Bild Alignment</label>
-                                                        <select class="form-select" name="description_blocks[{{ $lang }}][{{ $blockIndex }}][image_alignment]">
-                                                            <option value="top" {{ data_get($block, 'image_alignment', 'top') === 'top' ? 'selected' : '' }}>Oben</option>
-                                                            <option value="left" {{ data_get($block, 'image_alignment') === 'left' ? 'selected' : '' }}>Links</option>
-                                                            <option value="right" {{ data_get($block, 'image_alignment') === 'right' ? 'selected' : '' }}>Rechts</option>
-                                                        </select>
-                                                    </div>
-                                                    <div class="col-6 col-lg-4">
-                                                        <x-admin.field.number
-                                                            :name="'description_blocks['. $lang .'][' . $blockIndex . '][image_col_span]'"
-                                                            :value="data_get($block, 'image_col_span', 6)"
-                                                            :placeholder="'Bild Spalten (1-11)'"
-                                                            :fieldAttrs="'min=1 max=11'"
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="col-12 border-top pt-3 mt-1">
-                                                <p class="text-muted small mb-2">Layout</p>
-                                                <div class="row g-3">
-                                                    <div class="col-6 col-lg-3">
-                                                        <x-admin.field.number
-                                                            :name="'description_blocks['. $lang .'][' . $blockIndex . '][col_span]'"
-                                                            :value="data_get($block, 'col_span', 12)"
-                                                            :placeholder="'Columns (1-12)'"
-                                                            :fieldAttrs="'min=1 max=12'"
-                                                        />
-                                                    </div>
-                                                    <div class="col-6 col-lg-3">
-                                                        <x-admin.field.number
-                                                            :name="'description_blocks['. $lang .'][' . $blockIndex . '][col_start]'"
-                                                            :value="data_get($block, 'col_start', 1)"
-                                                            :placeholder="'Start column (1-12)'"
-                                                            :fieldAttrs="'min=1 max=12'"
-                                                        />
-                                                    </div>
-                                                    <div class="col-6 col-lg-3">
-                                                        <x-admin.field.number
-                                                            :name="'description_blocks['. $lang .'][' . $blockIndex . '][padding_top]'"
-                                                            :value="data_get($block, 'padding_top', 0)"
-                                                            :placeholder="'Padding oben (px)'"
-                                                            :fieldAttrs="'min=0 max=300 step=4'"
-                                                        />
-                                                    </div>
-                                                    <div class="col-6 col-lg-3">
-                                                        <x-admin.field.number
-                                                            :name="'description_blocks['. $lang .'][' . $blockIndex . '][padding_bottom]'"
-                                                            :value="data_get($block, 'padding_bottom', 0)"
-                                                            :placeholder="'Padding unten (px)'"
-                                                            :fieldAttrs="'min=0 max=300 step=4'"
-                                                        />
-                                                    </div>
+                                                <div class="col-6 col-lg-3">
+                                                    <x-admin.field.number
+                                                        :name="'description_blocks['. $lang .'][' . $blockIndex . '][image_col_span]'"
+                                                        :value="data_get($block, 'image_col_span', 12)"
+                                                        :placeholder="'Bild Spalten (1-12)'"
+                                                        :fieldAttrs="'min=1 max=12'"
+                                                    />
                                                 </div>
                                             </div>
                                         </div>
+
+                                        {{-- 3. TEXT / INHALT --}}
+                                        <div class="border-top pt-3">
+                                            <p class="text-muted small mb-2 fw-semibold">Text</p>
+                                            <div class="row g-3">
+                                                <div class="col-12 col-lg-6">
+                                                    <x-admin.field.text
+                                                        :name="'description_blocks['. $lang .'][' . $blockIndex . '][headline]'"
+                                                        :value="data_get($block, 'headline')"
+                                                        :required="false"
+                                                        :placeholder="'Headline (optional)'"
+                                                    />
+                                                </div>
+                                                <div class="col-6 col-lg-3">
+                                                    <select class="form-select" name="description_blocks[{{ $lang }}][{{ $blockIndex }}][headline_color]">
+                                                        @foreach(['primary' => 'Primary (Dark)', 'emerald-950' => 'Emerald 950', 'emerald-900' => 'Emerald 900', 'emerald-800' => 'Emerald 800', 'gold-bright' => 'Gold Bright'] as $val => $label)
+                                                            <option value="{{ $val }}" {{ data_get($block, 'headline_color', 'primary') === $val ? 'selected' : '' }}>{{ $label }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                                <div class="col-6 col-lg-3">
+                                                    <select class="form-select" name="description_blocks[{{ $lang }}][{{ $blockIndex }}][headline_font]">
+                                                        <option value="pangea" {{ data_get($block, 'headline_font', 'pangea') === 'pangea' ? 'selected' : '' }}>Pangea</option>
+                                                        <option value="nicevar" {{ data_get($block, 'headline_font') === 'nicevar' ? 'selected' : '' }}>NiceVar Ultra Light</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-12">
+                                                    <div class="form-check form-switch">
+                                                        <input class="form-check-input" type="checkbox" value="1"
+                                                            name="description_blocks[{{ $lang }}][{{ $blockIndex }}][headline_line]"
+                                                            id="hl_line_{{ $lang }}_{{ $blockIndex }}"
+                                                            {{ data_get($block, 'headline_line') ? 'checked' : '' }}>
+                                                        <label class="form-check-label" for="hl_line_{{ $lang }}_{{ $blockIndex }}">Linie vor Headline</label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-12">
+                                                    <x-admin.field.wysiwyg
+                                                        :name="'description_blocks['. $lang .'][' . $blockIndex . '][content]'"
+                                                        :placeholder="'Text (optional)'"
+                                                        :value="data_get($block, 'content')"
+                                                        :height="200"
+                                                        :buttons="'bold|italic|link'"
+                                                    />
+                                                </div>
+                                                <div class="col-12">
+                                                    <div class="form-check form-switch">
+                                                        <input class="form-check-input" type="checkbox" value="1"
+                                                            name="description_blocks[{{ $lang }}][{{ $blockIndex }}][content_line]"
+                                                            id="content_line_{{ $lang }}_{{ $blockIndex }}"
+                                                            {{ data_get($block, 'content_line') ? 'checked' : '' }}>
+                                                        <label class="form-check-label" for="content_line_{{ $lang }}_{{ $blockIndex }}">Linie vor Text</label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-12 col-lg-6">
+                                                    <x-admin.field.text
+                                                        :name="'description_blocks['. $lang .'][' . $blockIndex . '][link_text]'"
+                                                        :value="data_get($block, 'link_text')"
+                                                        :required="false"
+                                                        :placeholder="'Link Text (optional)'"
+                                                    />
+                                                </div>
+                                                <div class="col-12 col-lg-6">
+                                                    <x-admin.field.text
+                                                        :name="'description_blocks['. $lang .'][' . $blockIndex . '][link_url]'"
+                                                        :value="data_get($block, 'link_url')"
+                                                        :required="false"
+                                                        :placeholder="'Link URL (optional)'"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+
                                     </div>
 
                                     <div data-block-type-panel="floating_gallery" class="d-flex flex-column gap-3 {{ data_get($block, 'type') === 'floating_gallery' ? null : 'd-none' }}">
@@ -420,132 +416,140 @@
                             </div>
 
                             <div data-block-type-panel="text_column" class="d-flex flex-column gap-3 d-none">
+
+                                {{-- 1. CONTAINER --}}
+                                <p class="text-muted small mb-0 fw-semibold">Container</p>
                                 <div class="row g-3">
-                                    <div class="col-12 col-lg-6">
-                                        <x-admin.field.text
-                                            :name="'description_blocks['. $lang .'][__block__][headline]'"
-                                            :required="false"
-                                            :placeholder="'Headline (optional)'"
+                                    <div class="col-6 col-lg-3">
+                                        <x-admin.field.number
+                                            :name="'description_blocks['. $lang .'][__block__][col_span]'"
+                                            :value="12"
+                                            :placeholder="'Anzahl Spalten (1-12)'"
+                                            :fieldAttrs="'min=1 max=12'"
                                         />
                                     </div>
-                                    <div class="col-6 col-lg-2">
-                                        <select class="form-select" name="description_blocks[{{ $lang }}][__block__][headline_color]">
-                                            <option value="primary" selected>Primary (Dark)</option>
-                                            <option value="emerald-950">Emerald 950</option>
-                                            <option value="emerald-900">Emerald 900</option>
-                                            <option value="emerald-800">Emerald 800</option>
-                                            <option value="gold-bright">Gold Bright</option>
-                                        </select>
+                                    <div class="col-6 col-lg-3">
+                                        <x-admin.field.number
+                                            :name="'description_blocks['. $lang .'][__block__][col_start]'"
+                                            :value="1"
+                                            :placeholder="'Start Spalte (1-12)'"
+                                            :fieldAttrs="'min=1 max=12'"
+                                        />
                                     </div>
-                                    <div class="col-6 col-lg-4">
-                                        <select class="form-select" name="description_blocks[{{ $lang }}][__block__][headline_font]">
-                                            <option value="pangea" selected>Pangea</option>
-                                            <option value="nicevar">NiceVar Ultra Light</option>
-                                        </select>
+                                    <div class="col-6 col-lg-3">
+                                        <x-admin.field.number
+                                            :name="'description_blocks['. $lang .'][__block__][padding_top]'"
+                                            :value="0"
+                                            :placeholder="'Padding oben (px)'"
+                                            :fieldAttrs="'min=0 max=300 step=4'"
+                                        />
                                     </div>
-                                    <div class="col-12">
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" value="1"
-                                                name="description_blocks[{{ $lang }}][__block__][headline_line]">
-                                            <label class="form-check-label">Linie vor Headline anzeigen</label>
+                                    <div class="col-6 col-lg-3">
+                                        <x-admin.field.number
+                                            :name="'description_blocks['. $lang .'][__block__][padding_bottom]'"
+                                            :value="0"
+                                            :placeholder="'Padding unten (px)'"
+                                            :fieldAttrs="'min=0 max=300 step=4'"
+                                        />
+                                    </div>
+                                </div>
+
+                                {{-- 2. BILD --}}
+                                <div class="border-top pt-3">
+                                    <p class="text-muted small mb-2 fw-semibold">Bild (optional)</p>
+                                    <div class="row g-3">
+                                        <div class="col-12">
+                                            <x-admin.field.image
+                                                :name="'description_blocks['. $lang .'][__block__][image_file]'"
+                                                :required="false"
+                                                :ratio="'16x9'"
+                                                :placeholder="'Bild hochladen'"
+                                            />
                                         </div>
-                                    </div>
-                                    <div class="col-12">
-                                        <x-admin.field.wysiwyg
-                                            :name="'description_blocks['. $lang .'][__block__][content]'"
-                                            :placeholder="'Text (optional)'"
-                                            :height="200"
-                                            :buttons="'bold|italic|link'"
-                                        />
-                                    </div>
-                                    <div class="col-12">
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" value="1"
-                                                name="description_blocks[{{ $lang }}][__block__][content_line]">
-                                            <label class="form-check-label">Linie vor Text anzeigen</label>
+                                        <div class="col-6 col-lg-3">
+                                            <label class="form-label small">Alignment</label>
+                                            <select class="form-select" name="description_blocks[{{ $lang }}][__block__][image_alignment]">
+                                                <option value="top" selected>Oben</option>
+                                                <option value="left">Links</option>
+                                                <option value="right">Rechts</option>
+                                            </select>
                                         </div>
-                                    </div>
-                                    <div class="col-12 col-lg-6">
-                                        <x-admin.field.text
-                                            :name="'description_blocks['. $lang .'][__block__][link_text]'"
-                                            :required="false"
-                                            :placeholder="'Link Text (optional)'"
-                                        />
-                                    </div>
-                                    <div class="col-12 col-lg-6">
-                                        <x-admin.field.text
-                                            :name="'description_blocks['. $lang .'][__block__][link_url]'"
-                                            :required="false"
-                                            :placeholder="'Link URL (optional)'"
-                                        />
-                                    </div>
-                                    <div class="col-12 border-top pt-3 mt-1">
-                                        <p class="text-muted small mb-2">Bild (optional)</p>
-                                        <div class="row g-3">
-                                            <div class="col-12">
-                                                <x-admin.field.image
-                                                    :name="'description_blocks['. $lang .'][__block__][image_file]'"
-                                                    :required="false"
-                                                    :ratio="'16x9'"
-                                                    :placeholder="'Bild hochladen'"
-                                                />
-                                            </div>
-                                            <div class="col-6 col-lg-4">
-                                                <label class="form-label small">Bild Alignment</label>
-                                                <select class="form-select" name="description_blocks[{{ $lang }}][__block__][image_alignment]">
-                                                    <option value="top" selected>Oben</option>
-                                                    <option value="left">Links</option>
-                                                    <option value="right">Rechts</option>
-                                                </select>
-                                            </div>
-                                            <div class="col-6 col-lg-4">
-                                                <x-admin.field.number
-                                                    :name="'description_blocks['. $lang .'][__block__][image_col_span]'"
-                                                    :value="6"
-                                                    :placeholder="'Bild Spalten (1-11)'"
-                                                    :fieldAttrs="'min=1 max=11'"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-12 border-top pt-3 mt-1">
-                                        <p class="text-muted small mb-2">Layout</p>
-                                        <div class="row g-3">
-                                            <div class="col-6 col-lg-3">
-                                                <x-admin.field.number
-                                                    :name="'description_blocks['. $lang .'][__block__][col_span]'"
-                                                    :value="12"
-                                                    :placeholder="'Columns (1-12)'"
-                                                    :fieldAttrs="'min=1 max=12'"
-                                                />
-                                            </div>
-                                            <div class="col-6 col-lg-3">
-                                                <x-admin.field.number
-                                                    :name="'description_blocks['. $lang .'][__block__][col_start]'"
-                                                    :value="1"
-                                                    :placeholder="'Start column (1-12)'"
-                                                    :fieldAttrs="'min=1 max=12'"
-                                                />
-                                            </div>
-                                            <div class="col-6 col-lg-3">
-                                                <x-admin.field.number
-                                                    :name="'description_blocks['. $lang .'][__block__][padding_top]'"
-                                                    :value="0"
-                                                    :placeholder="'Padding oben (px)'"
-                                                    :fieldAttrs="'min=0 max=300 step=4'"
-                                                />
-                                            </div>
-                                            <div class="col-6 col-lg-3">
-                                                <x-admin.field.number
-                                                    :name="'description_blocks['. $lang .'][__block__][padding_bottom]'"
-                                                    :value="0"
-                                                    :placeholder="'Padding unten (px)'"
-                                                    :fieldAttrs="'min=0 max=300 step=4'"
-                                                />
-                                            </div>
+                                        <div class="col-6 col-lg-3">
+                                            <x-admin.field.number
+                                                :name="'description_blocks['. $lang .'][__block__][image_col_span]'"
+                                                :value="12"
+                                                :placeholder="'Bild Spalten (1-12)'"
+                                                :fieldAttrs="'min=1 max=12'"
+                                            />
                                         </div>
                                     </div>
                                 </div>
+
+                                {{-- 3. TEXT / INHALT --}}
+                                <div class="border-top pt-3">
+                                    <p class="text-muted small mb-2 fw-semibold">Text</p>
+                                    <div class="row g-3">
+                                        <div class="col-12 col-lg-6">
+                                            <x-admin.field.text
+                                                :name="'description_blocks['. $lang .'][__block__][headline]'"
+                                                :required="false"
+                                                :placeholder="'Headline (optional)'"
+                                            />
+                                        </div>
+                                        <div class="col-6 col-lg-3">
+                                            <select class="form-select" name="description_blocks[{{ $lang }}][__block__][headline_color]">
+                                                <option value="primary" selected>Primary (Dark)</option>
+                                                <option value="emerald-950">Emerald 950</option>
+                                                <option value="emerald-900">Emerald 900</option>
+                                                <option value="emerald-800">Emerald 800</option>
+                                                <option value="gold-bright">Gold Bright</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-6 col-lg-3">
+                                            <select class="form-select" name="description_blocks[{{ $lang }}][__block__][headline_font]">
+                                                <option value="pangea" selected>Pangea</option>
+                                                <option value="nicevar">NiceVar Ultra Light</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" value="1"
+                                                    name="description_blocks[{{ $lang }}][__block__][headline_line]">
+                                                <label class="form-check-label">Linie vor Headline</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <x-admin.field.wysiwyg
+                                                :name="'description_blocks['. $lang .'][__block__][content]'"
+                                                :placeholder="'Text (optional)'"
+                                                :height="200"
+                                                :buttons="'bold|italic|link'"
+                                            />
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" value="1"
+                                                    name="description_blocks[{{ $lang }}][__block__][content_line]">
+                                                <label class="form-check-label">Linie vor Text</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-lg-6">
+                                            <x-admin.field.text
+                                                :name="'description_blocks['. $lang .'][__block__][link_text]'"
+                                                :required="false"
+                                                :placeholder="'Link Text (optional)'"
+                                            />
+                                        </div>
+                                        <div class="col-12 col-lg-6">
+                                            <x-admin.field.text
+                                                :name="'description_blocks['. $lang .'][__block__][link_url]'"
+                                                :required="false"
+                                                :placeholder="'Link URL (optional)'"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
                     </div>

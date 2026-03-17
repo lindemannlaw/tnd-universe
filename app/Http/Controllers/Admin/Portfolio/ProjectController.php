@@ -363,7 +363,7 @@ class ProjectController extends Controller
                         'padding_bottom'  => max(0, min(300, (int)data_get($block, 'padding_bottom', 0))),
                         'image'           => $imgUrl,
                         'image_alignment' => $imgAlignment,
-                        'image_col_span'  => max(1, min(11, (int)data_get($block, 'image_col_span', 6))),
+                        'image_col_span'  => max(1, min(12, (int)data_get($block, 'image_col_span', 12))),
                     ];
 
                     continue;
