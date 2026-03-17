@@ -165,33 +165,34 @@ $galleryImageSizes = [
                             $hColor = $headlineColors[data_get($block, 'headline_color', 'primary')] ?? 'var(--color-font-primary)';
                             $hFont  = data_get($block, 'headline_font', 'pangea') === 'nicevar' ? 'font-nicevar' : '';
                         @endphp
-                        <div class="project-text-column-item"
-                             style="--col-start: {{ $colStart }}; --col-span: {{ $colSpan }};{{ $ptop > 0 ? ' padding-top:' . $ptop . 'px;' : '' }}{{ $pbottom > 0 ? ' padding-bottom:' . $pbottom . 'px;' : '' }}">
-                            <div class="project-text-column-inner{{ $hasImage ? ' has-image image-' . $imgAlignment : '' }}"
-                                 style="{{ $hasImage ? '--img-col-span: ' . $imgColSpan . '; ' : '' }}--text-col-span: {{ $txtColSpan }};">
-                                @if($hasImage)
-                                    <img class="project-text-column-image" src="{{ $imgUrl }}" alt="{{ data_get($block, 'headline', '') }}" loading="lazy">
-                                @endif
-                                <div class="project-text-column-text">
-                                    @if(filled(data_get($block, 'headline')))
-                                        <h3
-                                            class="{{ trim((data_get($block, 'headline_line') ? 'has-line ' : '') . $hFont) }}"
-                                            style="color: {{ $hColor }}"
-                                        >{{ data_get($block, 'headline') }}</h3>
+                        <div class="project-text-columns" style="{{ $ptop > 0 ? 'padding-top:' . $ptop . 'px;' : '' }}{{ $pbottom > 0 ? 'padding-bottom:' . $pbottom . 'px;' : '' }}">
+                            <div class="project-text-column-item" style="--col-start: {{ $colStart }}; --col-span: {{ $colSpan }};">
+                                <div class="project-text-column-inner{{ $hasImage ? ' has-image image-' . $imgAlignment : '' }}"
+                                     style="{{ $hasImage ? '--img-col-span: ' . $imgColSpan . '; ' : '' }}--text-col-span: {{ $txtColSpan }};">
+                                    @if($hasImage)
+                                        <img class="project-text-column-image" src="{{ $imgUrl }}" alt="{{ data_get($block, 'headline', '') }}" loading="lazy">
                                     @endif
-                                    @if(filled(data_get($block, 'content')))
-                                        <div class="project-text-column-content {{ data_get($block, 'content_line') ? 'has-line' : '' }}">
-                                            {!! data_get($block, 'content') !!}
-                                        </div>
-                                    @endif
-                                    @if(filled(data_get($block, 'link_text')) && filled(data_get($block, 'link_url')))
-                                        <a href="{{ data_get($block, 'link_url') }}" class="project-text-column-link">
-                                            {{ data_get($block, 'link_text') }}
-                                            <svg width="32" height="10" viewBox="0 0 32 10" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                                <path d="M0 5H30M30 5L26 1M30 5L26 9" stroke="currentColor" stroke-width="1.2"/>
-                                            </svg>
-                                        </a>
-                                    @endif
+                                    <div class="project-text-column-text">
+                                        @if(filled(data_get($block, 'headline')))
+                                            <h3
+                                                class="{{ trim((data_get($block, 'headline_line') ? 'has-line ' : '') . $hFont) }}"
+                                                style="color: {{ $hColor }}"
+                                            >{{ data_get($block, 'headline') }}</h3>
+                                        @endif
+                                        @if(filled(data_get($block, 'content')))
+                                            <div class="project-text-column-content {{ data_get($block, 'content_line') ? 'has-line' : '' }}">
+                                                {!! data_get($block, 'content') !!}
+                                            </div>
+                                        @endif
+                                        @if(filled(data_get($block, 'link_text')) && filled(data_get($block, 'link_url')))
+                                            <a href="{{ data_get($block, 'link_url') }}" class="project-text-column-link">
+                                                {{ data_get($block, 'link_text') }}
+                                                <svg width="32" height="10" viewBox="0 0 32 10" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                                    <path d="M0 5H30M30 5L26 1M30 5L26 9" stroke="currentColor" stroke-width="1.2"/>
+                                                </svg>
+                                            </a>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
                         </div>
