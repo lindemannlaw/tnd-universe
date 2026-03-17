@@ -1,6 +1,6 @@
 @props([
     'name' => '',
-    'value' => 1000,
+    'value' => null,
     'required' => true,
     'autocomplete' => 'off',
     'placeholder' => null,
@@ -17,7 +17,7 @@
         {{ $fieldAttrs ?? null }}
         type="number"
         name="{{ $name }}"
-        value="{{ $value }}"
+        value="{{ $value ?? '' }}"
         min="{{ $min }}"
         max="{{ $max }}"
         step="{{ $step }}"
