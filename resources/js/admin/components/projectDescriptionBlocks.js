@@ -19,7 +19,11 @@ export function projectDescriptionBlocks() {
 // ─── Sibling helpers ─────────────────────────────────────────────────────────
 
 function getSiblingBuilder(builder) {
-    const all = document.querySelectorAll('[data-project-description-builder]');
+    // Search within the nearest .tab-content ancestor so we only look at
+    // language siblings of THIS description builder, not any other builders
+    // that might exist elsewhere in the page.
+    const tabContent = builder.closest('.tab-content') || document;
+    const all = tabContent.querySelectorAll('[data-project-description-builder]');
     for (const b of all) {
         if (b !== builder) return b;
     }
@@ -240,10 +244,14 @@ function handleClick(event, builder, blocksWrapper) {
         ensureWysiwygForBlock(newBlock);
 
         if (sibling) {
-            const siblingWrapper = sibling.querySelector('[data-blocks-wrapper]');
-            siblingWrapper.appendChild(createBlock(sibling, 'text'));
-            reindexBuilder(sibling);
-            fields();
+            try {
+                const siblingWrapper = sibling.querySelector('[data-blocks-wrapper]');
+                if (siblingWrapper) {
+                    siblingWrapper.appendChild(createBlock(sibling, 'text'));
+                    reindexBuilder(sibling);
+                    fields();
+                }
+            } catch (e) { console.error('[descBlocks] addBlock sibling sync failed', e); }
         }
         return;
     }
@@ -261,17 +269,20 @@ function handleClick(event, builder, blocksWrapper) {
         ensureWysiwygForBlock(newBlock);
 
         if (sibling) {
-            const siblingWrapper = sibling.querySelector('[data-blocks-wrapper]');
-            const siblingRef     = getBlockAtIndex(sibling, blockIdx);
-            const siblingBlock   = createBlock(sibling, 'text');
-
-            if (siblingRef) {
-                siblingRef.insertAdjacentElement('afterend', siblingBlock);
-            } else {
-                siblingWrapper.appendChild(siblingBlock);
-            }
-            reindexBuilder(sibling);
-            fields();
+            try {
+                const siblingWrapper = sibling.querySelector('[data-blocks-wrapper]');
+                if (siblingWrapper) {
+                    const siblingRef   = getBlockAtIndex(sibling, blockIdx);
+                    const siblingBlock = createBlock(sibling, 'text');
+                    if (siblingRef) {
+                        siblingRef.insertAdjacentElement('afterend', siblingBlock);
+                    } else {
+                        siblingWrapper.appendChild(siblingBlock);
+                    }
+                    reindexBuilder(sibling);
+                    fields();
+                }
+            } catch (e) { console.error('[descBlocks] addAfter sibling sync failed', e); }
         }
         return;
     }
@@ -289,12 +300,16 @@ function handleClick(event, builder, blocksWrapper) {
         reindexBuilder(builder);
 
         if (sibling) {
-            const siblingWrapper = sibling.querySelector('[data-blocks-wrapper]');
-            const siblingBlocks  = siblingWrapper.querySelectorAll(':scope > [data-block]');
-            if (siblingBlocks.length > 1 && siblingBlocks[blockIdx]) {
-                siblingBlocks[blockIdx].remove();
-                reindexBuilder(sibling);
-            }
+            try {
+                const siblingWrapper = sibling.querySelector('[data-blocks-wrapper]');
+                if (siblingWrapper) {
+                    const siblingBlocks = siblingWrapper.querySelectorAll(':scope > [data-block]');
+                    if (siblingBlocks.length > 1 && siblingBlocks[blockIdx]) {
+                        siblingBlocks[blockIdx].remove();
+                        reindexBuilder(sibling);
+                    }
+                }
+            } catch (e) { console.error('[descBlocks] removeBlock sibling sync failed', e); }
         }
         return;
     }
