@@ -50,7 +50,7 @@ class ProjectController extends Controller
 
             foreach ($request->input('new_files') ?? [] as $index => $fileData) {
                 $file = $request->file("new_files.{$index}.file");
-                $fileName = $fileData['name'];
+                $fileName = trim((string) data_get($fileData, 'name', ''));
 
                 if (!$file || !$fileName) continue;
 
@@ -127,11 +127,16 @@ class ProjectController extends Controller
             }
 
             foreach ($request->input('current_files') ?? [] as $id => $fileData) {
-                $fileName = $fileData['name'];
+                $fileName = trim((string) data_get($fileData, 'name', ''));
 
                 if (!$id || !$fileName) continue;
 
                 $file = Media::find($id);
+
+                // Skip stale file IDs instead of failing whole project update.
+                if (!$file || (int) $file->model_id !== (int) $project->id) {
+                    continue;
+                }
 
                 $file->setCustomProperty('name', $fileName);
                 $file->save();
@@ -139,7 +144,7 @@ class ProjectController extends Controller
 
             foreach ($request->input('new_files') ?? [] as $index => $fileData) {
                 $file = $request->file("new_files.{$index}.file");
-                $fileName = $fileData['name'];
+                $fileName = trim((string) data_get($fileData, 'name', ''));
 
                 if (!$file || !$fileName) continue;
 

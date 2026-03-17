@@ -295,6 +295,18 @@
             height: auto;
             object-fit: contain;
             display: block;
+            transition: var(--transition);
+            transition-property: transform;
+        }
+    }
+
+    .project-floating-gallery-image-link {
+        display: block;
+        overflow: hidden;
+        text-decoration: none;
+
+        &:hover img {
+            transform: scale(1.05);
         }
     }
 
@@ -317,7 +329,7 @@
     }
 
     .project-floating-gallery-caption {
-        font-family: var(--font-primary);
+        font-family: var(--font-secondary);
         font-variation-settings: var(--font-secondary-settings);
         display: flex;
         flex-direction: column;
@@ -332,6 +344,8 @@
         }
 
         span {
+            font-family: var(--font-menu-weight);
+            font-variation-settings: var(--font-primary-settings);
             font-size: range.build(14, 18, px, 375, 1240);
             color: var(--color-font-secondary);
         }
@@ -347,7 +361,7 @@
     .h4,
     .h5,
     .h6 {
-        color: var(--color-font-secondary);
+        color: var(--color-font-primary);
     }
 
     @media (max-width: 767px) {
@@ -442,6 +456,7 @@
         }
 
         span:not(.h2) {
+            font-family: var(--font-primary);
             text-transform: uppercase;
         }
     }

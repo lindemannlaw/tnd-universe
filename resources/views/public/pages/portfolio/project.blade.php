@@ -89,21 +89,87 @@ $galleryImageSizes = [
                             'content' => $project->description,
                         ]];
                     }
+
+                    $projectMediaGroup = 'project-media-' . $project->id;
+                    $floatingImageUrls = [];
+                    $textBlockContents = [];
+                    $lightboxImageUrls = [];
+                    $lightboxVideoUrls = [];
+
+                    foreach ($descriptionBlocks as $block) {
+                        if (data_get($block, 'type') === 'floating_gallery') {
+                            foreach ((data_get($block, 'items') ?: []) as $item) {
+                                $itemImage = data_get($item, 'image');
+
+                                if (filled($itemImage)) {
+                                    $floatingImageUrls[] = $itemImage;
+                                }
+                            }
+                        }
+
+                        if (data_get($block, 'type') === 'text' && filled(data_get($block, 'content'))) {
+                            $textBlockContents[] = (string)data_get($block, 'content');
+                        }
+                    }
+
+                    if ($project->hasMedia($project->mediaHero)) {
+                        $heroImage = $project->getFirstMedia($project->mediaHero);
+                        $lightboxImageUrls[] = $heroImage?->getUrl('xl-webp') ?: $heroImage?->getUrl();
+                    }
+
+                    foreach ($project->getMedia($project->mediaGallery) as $galleryImage) {
+                        $lightboxImageUrls[] = $galleryImage->getUrl('xl-webp') ?: $galleryImage->getUrl();
+                    }
+
+                    $lightboxImageUrls = array_merge($lightboxImageUrls, $floatingImageUrls);
+
+                    foreach ($textBlockContents as $html) {
+                        preg_match_all('/<img[^>]+src=["\']([^"\']+)["\']/i', $html, $imageMatches);
+                        preg_match_all('/<iframe[^>]+src=["\']([^"\']+)["\']/i', $html, $iframeMatches);
+                        preg_match_all('/<video[^>]+src=["\']([^"\']+)["\']/i', $html, $videoMatches);
+                        preg_match_all('/<video[^>]*>.*?<source[^>]+src=["\']([^"\']+)["\']/is', $html, $videoSourceMatches);
+
+                        $lightboxImageUrls = array_merge($lightboxImageUrls, $imageMatches[1] ?? []);
+                        $lightboxVideoUrls = array_merge(
+                            $lightboxVideoUrls,
+                            $iframeMatches[1] ?? [],
+                            $videoMatches[1] ?? [],
+                            $videoSourceMatches[1] ?? []
+                        );
+                    }
+
+                    $lightboxImageUrls = array_values(array_unique(array_filter($lightboxImageUrls)));
+                    $lightboxVideoUrls = array_values(array_unique(array_filter($lightboxVideoUrls)));
+                    $hiddenLightboxImageUrls = array_values(array_diff($lightboxImageUrls, $floatingImageUrls));
                 @endphp
 
                 @foreach($descriptionBlocks as $block)
                     @if(data_get($block, 'type') === 'floating_gallery')
                         <div class="project-floating-gallery">
                             @foreach((data_get($block, 'items') ?: []) as $item)
+                                @php
+                                    $headline = trim((string)data_get($item, 'headline', ''));
+                                    $subhead = trim((string)data_get($item, 'subhead', ''));
+                                    $resolvedHeadline = $headline ?: $project->title;
+                                    $resolvedSubhead = filled($subhead) ? e($subhead) : '&nbsp;';
+                                    $captionMarkup = '<div class="fancybox-caption-text"><div class="fancybox-caption-headline">' . e($resolvedHeadline) . '</div><div class="fancybox-caption-subhead">' . $resolvedSubhead . '</div></div>';
+                                @endphp
                                 <figure
                                     class="project-floating-gallery-item"
                                     style="--col-start: {{ max(1, min(12, (int)data_get($item, 'col_start', 1))) }}; --col-span: {{ max(1, min(12, (int)data_get($item, 'col_span', 12))) }};"
                                 >
-                                    <img
-                                        src="{{ data_get($item, 'image') }}"
-                                        alt="{{ data_get($item, 'headline', $project->title) }}"
-                                        loading="lazy"
+                                    <a
+                                        href="{{ data_get($item, 'image') }}"
+                                        data-fancybox="{{ $projectMediaGroup }}"
+                                        data-caption='{!! $captionMarkup !!}'
+                                        class="project-floating-gallery-image-link"
                                     >
+                                        <img
+                                            src="{{ data_get($item, 'image') }}"
+                                            alt="{{ data_get($item, 'headline', $project->title) }}"
+                                            loading="lazy"
+                                        >
+                                    </a>
 
                                     @if(filled(data_get($item, 'headline')) || filled(data_get($item, 'subhead')))
                                         <figcaption class="project-floating-gallery-caption">
@@ -124,6 +190,30 @@ $galleryImageSizes = [
                         </div>
                     @endif
                 @endforeach
+
+                @if(!empty($hiddenLightboxImageUrls) || !empty($lightboxVideoUrls))
+                    @php
+                        $fallbackCaptionMarkup = '<div class="fancybox-caption-text"><div class="fancybox-caption-headline">' . e($project->title) . '</div><div class="fancybox-caption-subhead">&nbsp;</div></div>';
+                    @endphp
+                    <div class="d-none">
+                        @foreach($hiddenLightboxImageUrls as $imageUrl)
+                            <a
+                                href="{{ $imageUrl }}"
+                                data-fancybox="{{ $projectMediaGroup }}"
+                                data-caption='{!! $fallbackCaptionMarkup !!}'
+                            ></a>
+                        @endforeach
+
+                        @foreach($lightboxVideoUrls as $videoUrl)
+                            <a
+                                href="{{ $videoUrl }}"
+                                data-fancybox="{{ $projectMediaGroup }}"
+                                data-type="iframe"
+                                data-caption='{!! $fallbackCaptionMarkup !!}'
+                            ></a>
+                        @endforeach
+                    </div>
+                @endif
             </article>
 
             @if ($project->hasMedia($project->mediaFiles))
