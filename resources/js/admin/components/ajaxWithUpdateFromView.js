@@ -56,21 +56,22 @@ export function ajaxWithUpdateFromView() {
 }
 
 function reloadModal(modalEl, html) {
-    // Preserve Bootstrap modal instance & visibility while replacing content
-    const isShown   = modalEl.classList.contains('show');
-    const activeTab = modalEl.querySelector('.nav-link.active')?.dataset.bsTarget;
+    const isShown = modalEl.classList.contains('show');
+
+    // Capture all currently active pill/tab targets (outer + inner tabs)
+    const activeTabs = [...modalEl.querySelectorAll('[data-bs-toggle="pill"].active, [data-bs-toggle="tab"].active')]
+        .map(el => el.dataset.bsTarget)
+        .filter(Boolean);
 
     modalEl.innerHTML = html;
 
     updateSyncLibs();
 
-    // Restore the previously active tab if possible
-    if (activeTab) {
-        const tab = modalEl.querySelector(`[data-bs-target="${activeTab}"]`);
-        if (tab) {
-            bootstrap.Tab.getOrCreateInstance(tab).show();
-        }
-    }
+    // Restore every previously active tab
+    activeTabs.forEach(target => {
+        const tab = modalEl.querySelector(`[data-bs-target="${target}"]`);
+        if (tab) bootstrap.Tab.getOrCreateInstance(tab).show();
+    });
 
     // Re-attach Bootstrap modal if needed
     if (isShown && !bootstrap.Modal.getInstance(modalEl)) {
