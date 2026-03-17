@@ -36,7 +36,7 @@ export function ajaxWithUpdateFromView() {
                     fetch(refreshUrl, {
                         headers: {
                             'X-Requested-With': 'XMLHttpRequest',
-                            'Accept': 'application/json',
+                            'X-Modal-Refresh': '1',
                         },
                     })
                         .then(r => r.json())

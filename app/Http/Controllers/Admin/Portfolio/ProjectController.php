@@ -102,8 +102,8 @@ class ProjectController extends Controller
         if ($request->ajax()) {
             $html = view('admin.portfolio.projects.edit', compact('project'))->render();
 
-            // When expecting JSON (modal refresh after save), wrap in JSON envelope
-            if ($request->expectsJson()) {
+            // When called for a post-save modal refresh, return a JSON envelope
+            if ($request->header('X-Modal-Refresh')) {
                 return response()->json(['html' => $html]);
             }
 
