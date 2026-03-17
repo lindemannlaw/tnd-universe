@@ -351,11 +351,17 @@ function handleClick(event, builder, blocksWrapper) {
         fields();
 
         if (sibling) {
-            const siblingBlock = getBlockAtIndex(sibling, blockIdx);
-            const siblingItems = siblingBlock?.querySelectorAll('[data-gallery-items-wrapper] > [data-gallery-item]');
-            const siblingRef   = siblingItems?.[itemIdx];
-            if (siblingRef) {
-                siblingRef.insertAdjacentElement('afterend', createGalleryItem(sibling));
+            const siblingBlock   = getBlockAtIndex(sibling, blockIdx);
+            const siblingWrapper = siblingBlock?.querySelector('[data-gallery-items-wrapper]');
+            if (siblingWrapper) {
+                const siblingItems = siblingWrapper.querySelectorAll(':scope > [data-gallery-item]');
+                const siblingRef   = siblingItems[itemIdx];
+                const newItem      = createGalleryItem(sibling);
+                if (siblingRef) {
+                    siblingRef.insertAdjacentElement('afterend', newItem);
+                } else {
+                    siblingWrapper.appendChild(newItem);
+                }
                 reindexBuilder(sibling);
                 fields();
             }
@@ -427,11 +433,17 @@ function handleClick(event, builder, blocksWrapper) {
         wysiwyg();
 
         if (sibling) {
-            const siblingBlock = getBlockAtIndex(sibling, blockIdx);
-            const siblingItems = siblingBlock?.querySelectorAll('[data-tc-items-wrapper] > [data-tc-item]');
-            const siblingRef   = siblingItems?.[itemIdx];
-            if (siblingRef) {
-                siblingRef.insertAdjacentElement('afterend', createTcItem(sibling));
+            const siblingBlock   = getBlockAtIndex(sibling, blockIdx);
+            const siblingWrapper = siblingBlock?.querySelector('[data-tc-items-wrapper]');
+            if (siblingWrapper) {
+                const siblingItems = siblingWrapper.querySelectorAll(':scope > [data-tc-item]');
+                const siblingRef   = siblingItems[itemIdx];
+                const newItem      = createTcItem(sibling);
+                if (siblingRef) {
+                    siblingRef.insertAdjacentElement('afterend', newItem);
+                } else {
+                    siblingWrapper.appendChild(newItem);
+                }
                 reindexBuilder(sibling);
                 fields();
             }

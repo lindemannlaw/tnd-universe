@@ -213,6 +213,9 @@ $galleryImageSizes = [
                         @endphp
                         <div class="project-floating-gallery" style="{{ $fptop > 0 ? 'padding-top:' . $fptop . 'px;' : '' }}{{ $fpbottom > 0 ? 'padding-bottom:' . $fpbottom . 'px;' : '' }}">
                             @foreach((data_get($block, 'items') ?: []) as $item)
+                                @if(!filled(data_get($item, 'image')))
+                                    @continue
+                                @endif
                                 @php
                                     $headline = trim((string)data_get($item, 'headline', ''));
                                     $subhead = trim((string)data_get($item, 'subhead', ''));
