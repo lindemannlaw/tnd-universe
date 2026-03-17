@@ -72,6 +72,7 @@ class UpdateRequest extends FormRequest
             $rules['description_blocks.' . $locale . '.*.image_file'] = ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,gif', 'max:10240'];
             $rules['description_blocks.' . $locale . '.*.image_alignment'] = ['nullable', 'string', 'in:top,left,right'];
             $rules['description_blocks.' . $locale . '.*.image_col_span'] = ['nullable', 'integer', 'min:1', 'max:12'];
+            $rules['description_blocks.' . $locale . '.*.text_col_span'] = ['nullable', 'integer', 'min:1', 'max:12'];
             $rules['description_blocks.' . $locale . '.*.headline_line'] = ['nullable'];
             $rules['description_blocks.' . $locale . '.*.content_line'] = ['nullable'];
             $rules['description_blocks.' . $locale . '.*.link_text'] = ['nullable', 'string', 'max:255'];

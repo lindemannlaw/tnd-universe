@@ -364,6 +364,7 @@ class ProjectController extends Controller
                         'image'           => $imgUrl,
                         'image_alignment' => $imgAlignment,
                         'image_col_span'  => max(1, min(12, (int)data_get($block, 'image_col_span', 12))),
+                        'text_col_span'   => max(1, min(12, (int)data_get($block, 'text_col_span', 12))),
                     ];
 
                     continue;

@@ -150,6 +150,14 @@
                                                         :fieldAttrs="'min=1 max=12'"
                                                     />
                                                 </div>
+                                                <div class="col-6 col-lg-3">
+                                                    <x-admin.field.number
+                                                        :name="'description_blocks['. $lang .'][' . $blockIndex . '][text_col_span]'"
+                                                        :value="data_get($block, 'text_col_span', 12)"
+                                                        :placeholder="'Text Spalten (1-12)'"
+                                                        :fieldAttrs="'min=1 max=12'"
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
 
@@ -479,6 +487,14 @@
                                                 :name="'description_blocks['. $lang .'][__block__][image_col_span]'"
                                                 :value="12"
                                                 :placeholder="'Bild Spalten (1-12)'"
+                                                :fieldAttrs="'min=1 max=12'"
+                                            />
+                                        </div>
+                                        <div class="col-6 col-lg-3">
+                                            <x-admin.field.number
+                                                :name="'description_blocks['. $lang .'][__block__][text_col_span]'"
+                                                :value="12"
+                                                :placeholder="'Text Spalten (1-12)'"
                                                 :fieldAttrs="'min=1 max=12'"
                                             />
                                         </div>

@@ -371,7 +371,8 @@
             }
 
             .project-text-column-text {
-                flex: 1 1 0;
+                flex: 0 0 calc(var(--text-col-span, 12) / 12 * 100%);
+                max-width: calc(var(--text-col-span, 12) / 12 * 100%);
                 min-width: 0;
             }
         }
