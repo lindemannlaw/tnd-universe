@@ -2,6 +2,9 @@ import Sortable from 'sortablejs';
 import { fields } from '../fields/fields.js';
 import { wysiwyg } from './wysiwyg.js';
 
+// Field name suffixes that are text-only (per-language, not synced to other languages)
+const TEXT_ONLY_NAMES = new Set(['content', 'headline', 'link_text', 'link_url', 'subhead']);
+
 export function projectDescriptionBlocks() {
     const builders = document.querySelectorAll('[data-project-description-builder]');
 
@@ -13,183 +16,145 @@ export function projectDescriptionBlocks() {
     });
 }
 
+// ─── Sibling helpers ─────────────────────────────────────────────────────────
+
+function getSiblingBuilder(builder) {
+    const all = document.querySelectorAll('[data-project-description-builder]');
+    for (const b of all) {
+        if (b !== builder) return b;
+    }
+    return null;
+}
+
+function isLayoutField(name) {
+    if (!name) return false;
+    const match = name.match(/\[([^\]]+)\]$/);
+    return match ? !TEXT_ONLY_NAMES.has(match[1]) : false;
+}
+
+function getBlockIndex(block) {
+    const wrapper = block.closest('[data-blocks-wrapper]');
+    if (!wrapper) return -1;
+    return [...wrapper.querySelectorAll(':scope > [data-block]')].indexOf(block);
+}
+
+function getBlockAtIndex(builder, index) {
+    const blocks = builder.querySelectorAll('[data-blocks-wrapper] > [data-block]');
+    return blocks[index] ?? null;
+}
+
+function getItemIndex(item, itemSelector) {
+    const wrapper = item.closest('[data-tc-items-wrapper], [data-gallery-items-wrapper]');
+    if (!wrapper) return -1;
+    return [...wrapper.querySelectorAll(`:scope > ${itemSelector}`)].indexOf(item);
+}
+
+function findFieldByName(container, name) {
+    for (const f of container.querySelectorAll('[name]')) {
+        if (f.getAttribute('name') === name) return f;
+    }
+    return null;
+}
+
+function syncLayoutFieldToSibling(field, builder) {
+    const name = field.getAttribute('name');
+    if (!name || !isLayoutField(name) || field.type === 'file') return;
+
+    const sibling = getSiblingBuilder(builder);
+    if (!sibling) return;
+
+    const locale       = builder.dataset.locale;
+    const siblingLocale = sibling.dataset.locale;
+    const siblingName  = name.replace(`[${locale}]`, `[${siblingLocale}]`);
+    const siblingField = findFieldByName(sibling, siblingName);
+    if (!siblingField) return;
+
+    if (field.type === 'checkbox' || field.type === 'radio') {
+        siblingField.checked = field.checked;
+    } else {
+        siblingField.value = field.value;
+    }
+}
+
+function mirrorBlockMove(builder, oldIndex, newIndex) {
+    const blocksWrapper = builder.querySelector('[data-blocks-wrapper]');
+    if (!blocksWrapper) return;
+
+    const blocks = [...blocksWrapper.querySelectorAll(':scope > [data-block]')];
+    if (oldIndex < 0 || oldIndex >= blocks.length) return;
+
+    const movedBlock = blocks[oldIndex];
+    movedBlock.remove();
+
+    const updated = [...blocksWrapper.querySelectorAll(':scope > [data-block]')];
+    if (newIndex >= updated.length) {
+        blocksWrapper.appendChild(movedBlock);
+    } else {
+        blocksWrapper.insertBefore(movedBlock, updated[newIndex]);
+    }
+}
+
+function mirrorItemMove(wrapper, itemSelector, oldIndex, newIndex) {
+    if (!wrapper) return;
+
+    const items = [...wrapper.querySelectorAll(`:scope > ${itemSelector}`)];
+    if (oldIndex < 0 || oldIndex >= items.length) return;
+
+    const movedItem = items[oldIndex];
+    movedItem.remove();
+
+    const updated = [...wrapper.querySelectorAll(`:scope > ${itemSelector}`)];
+    if (newIndex >= updated.length) {
+        wrapper.appendChild(movedItem);
+    } else {
+        wrapper.insertBefore(movedItem, updated[newIndex]);
+    }
+}
+
+// ─── Core init ───────────────────────────────────────────────────────────────
+
 function initBuilder(builder) {
     const blocksWrapper = builder.querySelector('[data-blocks-wrapper]');
-
     if (!blocksWrapper) return;
 
     Sortable.create(blocksWrapper, {
         draggable: '[data-block]',
         handle: '[data-block-move]',
-        onEnd: () => reindexBuilder(builder),
+        onEnd: (evt) => {
+            reindexBuilder(builder);
+            const sibling = getSiblingBuilder(builder);
+            if (sibling) {
+                mirrorBlockMove(sibling, evt.oldIndex, evt.newIndex);
+                reindexBuilder(sibling);
+            }
+        },
     });
 
     builder.addEventListener('click', (event) => {
-        const addBlockButton = event.target.closest('[data-block-add]');
-        const addAfterButton = event.target.closest('[data-block-add-after]');
-        const removeBlockButton = event.target.closest('[data-block-remove]');
-
-        const addGalleryItemButton = event.target.closest('[data-gallery-item-add]');
-        const addGalleryItemAfterButton = event.target.closest('[data-gallery-item-add-after]');
-        const removeGalleryItemButton = event.target.closest('[data-gallery-item-remove]');
-
-        const addTcItemButton = event.target.closest('[data-tc-item-add]');
-        const addTcItemAfterButton = event.target.closest('[data-tc-item-add-after]');
-        const removeTcItemButton = event.target.closest('[data-tc-item-remove]');
-
-        const toggleBlockButton = event.target.closest('[data-block-toggle]');
-
-        if (toggleBlockButton) {
-            const block = toggleBlockButton.closest('[data-block]');
-            const isExpanded = toggleBlockButton.getAttribute('aria-expanded') === 'true';
-
-            setBlockCollapsed(block, isExpanded);
-            if (isExpanded === false) {
-                ensureWysiwygForBlock(block);
-            }
-            return;
-        }
-
-        if (addBlockButton) {
-            const newBlock = createBlock(builder, 'text');
-            blocksWrapper.appendChild(newBlock);
-            reindexBuilder(builder);
-            fields();
-            ensureWysiwygForBlock(newBlock);
-            return;
-        }
-
-        if (addAfterButton) {
-            const currentBlock = addAfterButton.closest('[data-block]');
-            if (!currentBlock) return;
-
-            const newBlock = createBlock(builder, 'text');
-            currentBlock.insertAdjacentElement('afterend', newBlock);
-            reindexBuilder(builder);
-            fields();
-            ensureWysiwygForBlock(newBlock);
-            return;
-        }
-
-        if (removeBlockButton) {
-            const currentBlock = removeBlockButton.closest('[data-block]');
-            if (!currentBlock) return;
-
-            const allBlocks = blocksWrapper.querySelectorAll('[data-block]');
-            if (allBlocks.length <= 1) return;
-
-            currentBlock.remove();
-            reindexBuilder(builder);
-            return;
-        }
-
-        if (addGalleryItemButton) {
-            const currentBlock = addGalleryItemButton.closest('[data-block]');
-            if (!currentBlock) return;
-
-            const itemsWrapper = currentBlock.querySelector('[data-gallery-items-wrapper]');
-            if (!itemsWrapper) return;
-
-            itemsWrapper.appendChild(createGalleryItem(builder));
-            reindexBuilder(builder);
-            fields();
-            return;
-        }
-
-        if (addGalleryItemAfterButton) {
-            const currentItem = addGalleryItemAfterButton.closest('[data-gallery-item]');
-            if (!currentItem) return;
-
-            currentItem.insertAdjacentElement('afterend', createGalleryItem(builder));
-            reindexBuilder(builder);
-            fields();
-            return;
-        }
-
-        if (removeGalleryItemButton) {
-            const currentItem = removeGalleryItemButton.closest('[data-gallery-item]');
-            const itemsWrapper = removeGalleryItemButton.closest('[data-gallery-items-wrapper]');
-            if (!currentItem || !itemsWrapper) return;
-
-            const allItems = itemsWrapper.querySelectorAll('[data-gallery-item]');
-            if (allItems.length <= 1) return;
-
-            currentItem.remove();
-            reindexBuilder(builder);
-            return;
-        }
-
-        if (addTcItemButton) {
-            const currentBlock = addTcItemButton.closest('[data-block]');
-            if (!currentBlock) return;
-
-            const itemsWrapper = currentBlock.querySelector('[data-tc-items-wrapper]');
-            if (!itemsWrapper) return;
-
-            itemsWrapper.appendChild(createTcItem(builder));
-            reindexBuilder(builder);
-            fields();
-            wysiwyg();
-            return;
-        }
-
-        if (addTcItemAfterButton) {
-            const currentItem = addTcItemAfterButton.closest('[data-tc-item]');
-            if (!currentItem) return;
-
-            currentItem.insertAdjacentElement('afterend', createTcItem(builder));
-            reindexBuilder(builder);
-            fields();
-            wysiwyg();
-            return;
-        }
-
-        if (removeTcItemButton) {
-            const currentItem = removeTcItemButton.closest('[data-tc-item]');
-            const itemsWrapper = removeTcItemButton.closest('[data-tc-items-wrapper]');
-            if (!currentItem || !itemsWrapper) return;
-
-            const allItems = itemsWrapper.querySelectorAll('[data-tc-item]');
-            if (allItems.length <= 1) return;
-
-            currentItem.remove();
-            reindexBuilder(builder);
-            return;
-        }
+        handleClick(event, builder, blocksWrapper);
     });
 
     builder.addEventListener('change', (event) => {
+        // Block type select
         const typeSelect = event.target.closest('[data-block-type-select]');
-        if (!typeSelect) return;
-
-        const block = typeSelect.closest('[data-block]');
-        if (!block) return;
-
-        setBlockType(block, typeSelect.value);
-
-        if (typeSelect.value === 'text') {
-            ensureWysiwygForBlock(block);
+        if (typeSelect) {
+            handleBlockTypeChange(typeSelect, builder);
+            return;
         }
 
-        if (typeSelect.value === 'floating_gallery') {
-            const itemsWrapper = block.querySelector('[data-gallery-items-wrapper]');
-
-            if (itemsWrapper && itemsWrapper.querySelectorAll('[data-gallery-item]').length === 0) {
-                itemsWrapper.appendChild(createGalleryItem(builder));
-                fields();
-            }
+        // All other layout fields (skip file inputs)
+        const field = event.target.closest('[name]');
+        if (field && field.type !== 'file') {
+            syncLayoutFieldToSibling(field, builder);
         }
+    });
 
-        if (typeSelect.value === 'text_column_row') {
-            const itemsWrapper = block.querySelector('[data-tc-items-wrapper]');
-
-            if (itemsWrapper && itemsWrapper.querySelectorAll('[data-tc-item]').length === 0) {
-                itemsWrapper.appendChild(createTcItem(builder));
-                fields();
-            }
+    // Real-time sync for number inputs
+    builder.addEventListener('input', (event) => {
+        const field = event.target.closest('[name]');
+        if (field && field.type === 'number') {
+            syncLayoutFieldToSibling(field, builder);
         }
-
-        reindexBuilder(builder);
     });
 
     builder.querySelectorAll('[data-block]').forEach((block) => {
@@ -205,45 +170,343 @@ function initBuilder(builder) {
     reindexBuilder(builder);
 }
 
+function handleBlockTypeChange(typeSelect, builder) {
+    const block = typeSelect.closest('[data-block]');
+    if (!block) return;
+
+    setBlockType(block, typeSelect.value);
+
+    if (typeSelect.value === 'text') {
+        ensureWysiwygForBlock(block);
+    }
+
+    if (typeSelect.value === 'floating_gallery') {
+        ensureGalleryItem(block, builder);
+    }
+
+    if (typeSelect.value === 'text_column_row') {
+        ensureTcItem(block, builder);
+    }
+
+    reindexBuilder(builder);
+
+    // Mirror type change to sibling
+    const sibling = getSiblingBuilder(builder);
+    if (sibling) {
+        const blockIdx   = getBlockIndex(block);
+        const siblingBlock = getBlockAtIndex(sibling, blockIdx);
+        if (siblingBlock) {
+            const siblingSelect = siblingBlock.querySelector('[data-block-type-select]');
+            if (siblingSelect) siblingSelect.value = typeSelect.value;
+
+            setBlockType(siblingBlock, typeSelect.value);
+
+            if (typeSelect.value === 'floating_gallery') ensureGalleryItem(siblingBlock, sibling);
+            if (typeSelect.value === 'text_column_row')  ensureTcItem(siblingBlock, sibling);
+
+            reindexBuilder(sibling);
+        }
+    }
+}
+
+function handleClick(event, builder, blocksWrapper) {
+    const sibling = getSiblingBuilder(builder);
+
+    const toggleBlockButton      = event.target.closest('[data-block-toggle]');
+    const addBlockButton         = event.target.closest('[data-block-add]');
+    const addAfterButton         = event.target.closest('[data-block-add-after]');
+    const removeBlockButton      = event.target.closest('[data-block-remove]');
+    const addGalleryItemButton   = event.target.closest('[data-gallery-item-add]');
+    const addGalleryItemAfter    = event.target.closest('[data-gallery-item-add-after]');
+    const removeGalleryItem      = event.target.closest('[data-gallery-item-remove]');
+    const addTcItemButton        = event.target.closest('[data-tc-item-add]');
+    const addTcItemAfter         = event.target.closest('[data-tc-item-add-after]');
+    const removeTcItem           = event.target.closest('[data-tc-item-remove]');
+
+    if (toggleBlockButton) {
+        const block      = toggleBlockButton.closest('[data-block]');
+        const isExpanded = toggleBlockButton.getAttribute('aria-expanded') === 'true';
+        setBlockCollapsed(block, isExpanded);
+        if (!isExpanded) ensureWysiwygForBlock(block);
+        return;
+    }
+
+    // ── Add block at end ───────────────────────────────────────────────────
+    if (addBlockButton) {
+        const newBlock = createBlock(builder, 'text');
+        blocksWrapper.appendChild(newBlock);
+        reindexBuilder(builder);
+        fields();
+        ensureWysiwygForBlock(newBlock);
+
+        if (sibling) {
+            const siblingWrapper = sibling.querySelector('[data-blocks-wrapper]');
+            siblingWrapper.appendChild(createBlock(sibling, 'text'));
+            reindexBuilder(sibling);
+            fields();
+        }
+        return;
+    }
+
+    // ── Add block after current ────────────────────────────────────────────
+    if (addAfterButton) {
+        const currentBlock = addAfterButton.closest('[data-block]');
+        if (!currentBlock) return;
+        const blockIdx = getBlockIndex(currentBlock);
+
+        const newBlock = createBlock(builder, 'text');
+        currentBlock.insertAdjacentElement('afterend', newBlock);
+        reindexBuilder(builder);
+        fields();
+        ensureWysiwygForBlock(newBlock);
+
+        if (sibling) {
+            const siblingWrapper = sibling.querySelector('[data-blocks-wrapper]');
+            const siblingRef     = getBlockAtIndex(sibling, blockIdx);
+            const siblingBlock   = createBlock(sibling, 'text');
+
+            if (siblingRef) {
+                siblingRef.insertAdjacentElement('afterend', siblingBlock);
+            } else {
+                siblingWrapper.appendChild(siblingBlock);
+            }
+            reindexBuilder(sibling);
+            fields();
+        }
+        return;
+    }
+
+    // ── Remove block ───────────────────────────────────────────────────────
+    if (removeBlockButton) {
+        const currentBlock = removeBlockButton.closest('[data-block]');
+        if (!currentBlock) return;
+
+        const allBlocks = blocksWrapper.querySelectorAll('[data-block]');
+        if (allBlocks.length <= 1) return;
+
+        const blockIdx = getBlockIndex(currentBlock);
+        currentBlock.remove();
+        reindexBuilder(builder);
+
+        if (sibling) {
+            const siblingWrapper = sibling.querySelector('[data-blocks-wrapper]');
+            const siblingBlocks  = siblingWrapper.querySelectorAll(':scope > [data-block]');
+            if (siblingBlocks.length > 1 && siblingBlocks[blockIdx]) {
+                siblingBlocks[blockIdx].remove();
+                reindexBuilder(sibling);
+            }
+        }
+        return;
+    }
+
+    // ── Gallery item: add at end ───────────────────────────────────────────
+    if (addGalleryItemButton) {
+        const currentBlock = addGalleryItemButton.closest('[data-block]');
+        if (!currentBlock) return;
+        const blockIdx    = getBlockIndex(currentBlock);
+        const itemsWrapper = currentBlock.querySelector('[data-gallery-items-wrapper]');
+        if (!itemsWrapper) return;
+
+        itemsWrapper.appendChild(createGalleryItem(builder));
+        reindexBuilder(builder);
+        fields();
+
+        if (sibling) {
+            const siblingBlock   = getBlockAtIndex(sibling, blockIdx);
+            const siblingWrapper = siblingBlock?.querySelector('[data-gallery-items-wrapper]');
+            if (siblingWrapper) {
+                siblingWrapper.appendChild(createGalleryItem(sibling));
+                reindexBuilder(sibling);
+                fields();
+            }
+        }
+        return;
+    }
+
+    // ── Gallery item: add after ────────────────────────────────────────────
+    if (addGalleryItemAfter) {
+        const currentItem  = addGalleryItemAfter.closest('[data-gallery-item]');
+        if (!currentItem) return;
+        const currentBlock = currentItem.closest('[data-block]');
+        const blockIdx     = getBlockIndex(currentBlock);
+        const itemIdx      = getItemIndex(currentItem, '[data-gallery-item]');
+
+        currentItem.insertAdjacentElement('afterend', createGalleryItem(builder));
+        reindexBuilder(builder);
+        fields();
+
+        if (sibling) {
+            const siblingBlock = getBlockAtIndex(sibling, blockIdx);
+            const siblingItems = siblingBlock?.querySelectorAll('[data-gallery-items-wrapper] > [data-gallery-item]');
+            const siblingRef   = siblingItems?.[itemIdx];
+            if (siblingRef) {
+                siblingRef.insertAdjacentElement('afterend', createGalleryItem(sibling));
+                reindexBuilder(sibling);
+                fields();
+            }
+        }
+        return;
+    }
+
+    // ── Gallery item: remove ───────────────────────────────────────────────
+    if (removeGalleryItem) {
+        const currentItem  = removeGalleryItem.closest('[data-gallery-item]');
+        const itemsWrapper = removeGalleryItem.closest('[data-gallery-items-wrapper]');
+        if (!currentItem || !itemsWrapper) return;
+        if (itemsWrapper.querySelectorAll('[data-gallery-item]').length <= 1) return;
+
+        const currentBlock = currentItem.closest('[data-block]');
+        const blockIdx     = getBlockIndex(currentBlock);
+        const itemIdx      = getItemIndex(currentItem, '[data-gallery-item]');
+
+        currentItem.remove();
+        reindexBuilder(builder);
+
+        if (sibling) {
+            const siblingBlock = getBlockAtIndex(sibling, blockIdx);
+            const siblingItems = siblingBlock?.querySelectorAll('[data-gallery-items-wrapper] > [data-gallery-item]');
+            if (siblingItems?.length > 1 && siblingItems[itemIdx]) {
+                siblingItems[itemIdx].remove();
+                reindexBuilder(sibling);
+            }
+        }
+        return;
+    }
+
+    // ── TC item: add at end ────────────────────────────────────────────────
+    if (addTcItemButton) {
+        const currentBlock = addTcItemButton.closest('[data-block]');
+        if (!currentBlock) return;
+        const blockIdx    = getBlockIndex(currentBlock);
+        const itemsWrapper = currentBlock.querySelector('[data-tc-items-wrapper]');
+        if (!itemsWrapper) return;
+
+        itemsWrapper.appendChild(createTcItem(builder));
+        reindexBuilder(builder);
+        fields();
+        wysiwyg();
+
+        if (sibling) {
+            const siblingBlock   = getBlockAtIndex(sibling, blockIdx);
+            const siblingWrapper = siblingBlock?.querySelector('[data-tc-items-wrapper]');
+            if (siblingWrapper) {
+                siblingWrapper.appendChild(createTcItem(sibling));
+                reindexBuilder(sibling);
+                fields();
+            }
+        }
+        return;
+    }
+
+    // ── TC item: add after ─────────────────────────────────────────────────
+    if (addTcItemAfter) {
+        const currentItem  = addTcItemAfter.closest('[data-tc-item]');
+        if (!currentItem) return;
+        const currentBlock = currentItem.closest('[data-block]');
+        const blockIdx     = getBlockIndex(currentBlock);
+        const itemIdx      = getItemIndex(currentItem, '[data-tc-item]');
+
+        currentItem.insertAdjacentElement('afterend', createTcItem(builder));
+        reindexBuilder(builder);
+        fields();
+        wysiwyg();
+
+        if (sibling) {
+            const siblingBlock = getBlockAtIndex(sibling, blockIdx);
+            const siblingItems = siblingBlock?.querySelectorAll('[data-tc-items-wrapper] > [data-tc-item]');
+            const siblingRef   = siblingItems?.[itemIdx];
+            if (siblingRef) {
+                siblingRef.insertAdjacentElement('afterend', createTcItem(sibling));
+                reindexBuilder(sibling);
+                fields();
+            }
+        }
+        return;
+    }
+
+    // ── TC item: remove ────────────────────────────────────────────────────
+    if (removeTcItem) {
+        const currentItem  = removeTcItem.closest('[data-tc-item]');
+        const itemsWrapper = removeTcItem.closest('[data-tc-items-wrapper]');
+        if (!currentItem || !itemsWrapper) return;
+        if (itemsWrapper.querySelectorAll('[data-tc-item]').length <= 1) return;
+
+        const currentBlock = currentItem.closest('[data-block]');
+        const blockIdx     = getBlockIndex(currentBlock);
+        const itemIdx      = getItemIndex(currentItem, '[data-tc-item]');
+
+        currentItem.remove();
+        reindexBuilder(builder);
+
+        if (sibling) {
+            const siblingBlock = getBlockAtIndex(sibling, blockIdx);
+            const siblingItems = siblingBlock?.querySelectorAll('[data-tc-items-wrapper] > [data-tc-item]');
+            if (siblingItems?.length > 1 && siblingItems[itemIdx]) {
+                siblingItems[itemIdx].remove();
+                reindexBuilder(sibling);
+            }
+        }
+        return;
+    }
+}
+
+// ─── Sortable init ───────────────────────────────────────────────────────────
+
 function initGalleryItemsSortable(block, builder) {
     const itemsWrapper = block.querySelector('[data-gallery-items-wrapper]');
+    if (!itemsWrapper || itemsWrapper.dataset.sortableInited) return;
 
-    if (itemsWrapper && !itemsWrapper.dataset.sortableInited) {
-        Sortable.create(itemsWrapper, {
-            draggable: '[data-gallery-item]',
-            handle: '[data-gallery-item-move]',
-            onEnd: () => reindexBuilder(builder),
-        });
+    Sortable.create(itemsWrapper, {
+        draggable: '[data-gallery-item]',
+        handle: '[data-gallery-item-move]',
+        onEnd: (evt) => {
+            reindexBuilder(builder);
+            const sibling = getSiblingBuilder(builder);
+            if (sibling) {
+                const blockIdx     = getBlockIndex(block);
+                const siblingBlock = getBlockAtIndex(sibling, blockIdx);
+                const siblingWrapper = siblingBlock?.querySelector('[data-gallery-items-wrapper]');
+                mirrorItemMove(siblingWrapper, '[data-gallery-item]', evt.oldIndex, evt.newIndex);
+                reindexBuilder(sibling);
+            }
+        },
+    });
 
-        itemsWrapper.dataset.sortableInited = 'true';
-    }
+    itemsWrapper.dataset.sortableInited = 'true';
 }
 
 function initTcItemsSortable(block, builder) {
     const itemsWrapper = block.querySelector('[data-tc-items-wrapper]');
+    if (!itemsWrapper || itemsWrapper.dataset.sortableInited) return;
 
-    if (itemsWrapper && !itemsWrapper.dataset.sortableInited) {
-        Sortable.create(itemsWrapper, {
-            draggable: '[data-tc-item]',
-            handle: '[data-tc-item-move]',
-            onEnd: () => reindexBuilder(builder),
-        });
+    Sortable.create(itemsWrapper, {
+        draggable: '[data-tc-item]',
+        handle: '[data-tc-item-move]',
+        onEnd: (evt) => {
+            reindexBuilder(builder);
+            const sibling = getSiblingBuilder(builder);
+            if (sibling) {
+                const blockIdx     = getBlockIndex(block);
+                const siblingBlock = getBlockAtIndex(sibling, blockIdx);
+                const siblingWrapper = siblingBlock?.querySelector('[data-tc-items-wrapper]');
+                mirrorItemMove(siblingWrapper, '[data-tc-item]', evt.oldIndex, evt.newIndex);
+                reindexBuilder(sibling);
+            }
+        },
+    });
 
-        itemsWrapper.dataset.sortableInited = 'true';
-    }
+    itemsWrapper.dataset.sortableInited = 'true';
 }
+
+// ─── Factory helpers ─────────────────────────────────────────────────────────
 
 function createBlock(builder, type = 'text') {
     const blockTemplate = getTemplateFromPane(builder, '[data-block-template="text"]');
-
     if (!blockTemplate) return document.createElement('div');
 
-    const block = blockTemplate.content.firstElementChild.cloneNode(true);
+    const block      = blockTemplate.content.firstElementChild.cloneNode(true);
     const typeSelect = block.querySelector('[data-block-type-select]');
-
-    if (typeSelect) {
-        typeSelect.value = type;
-    }
+    if (typeSelect) typeSelect.value = type;
 
     setBlockType(block, type);
     setBlockCollapsed(block, true);
@@ -256,53 +519,59 @@ function createBlock(builder, type = 'text') {
 
 function createGalleryItem(builder) {
     const itemTemplate = getTemplateFromPane(builder, '[data-gallery-item-template]');
-
     if (!itemTemplate) return document.createElement('div');
-
     return itemTemplate.content.firstElementChild.cloneNode(true);
 }
 
 function createTcItem(builder) {
     const itemTemplate = getTemplateFromPane(builder, '[data-tc-item-template]');
-
     if (!itemTemplate) return document.createElement('div');
-
     return itemTemplate.content.firstElementChild.cloneNode(true);
+}
+
+function ensureGalleryItem(block, builder) {
+    const itemsWrapper = block.querySelector('[data-gallery-items-wrapper]');
+    if (itemsWrapper && itemsWrapper.querySelectorAll('[data-gallery-item]').length === 0) {
+        itemsWrapper.appendChild(createGalleryItem(builder));
+        fields();
+    }
+}
+
+function ensureTcItem(block, builder) {
+    const itemsWrapper = block.querySelector('[data-tc-items-wrapper]');
+    if (itemsWrapper && itemsWrapper.querySelectorAll('[data-tc-item]').length === 0) {
+        itemsWrapper.appendChild(createTcItem(builder));
+        fields();
+    }
 }
 
 function getTemplateFromPane(builder, selector) {
     const pane = builder.closest('.tab-pane');
-
-    if (!pane) {
-        return document.querySelector(selector);
-    }
-
-    return pane.querySelector(selector);
+    return pane ? pane.querySelector(selector) : document.querySelector(selector);
 }
 
+// ─── Block state helpers ──────────────────────────────────────────────────────
+
 function setBlockType(block, type) {
-    const typeInput = block.querySelector('[data-block-type-input]');
-    const textPanel = block.querySelector('[data-block-type-panel="text"]');
+    const typeInput  = block.querySelector('[data-block-type-input]');
+    const textPanel  = block.querySelector('[data-block-type-panel="text"]');
     const galleryPanel = block.querySelector('[data-block-type-panel="floating_gallery"]');
     const tcRowPanel = block.querySelector('[data-block-type-panel="text_column_row"]');
 
-    if (typeInput) {
-        typeInput.value = type;
-    }
+    if (typeInput) typeInput.value = type;
 
     textPanel?.classList.toggle('d-none', type !== 'text');
     galleryPanel?.classList.toggle('d-none', type !== 'floating_gallery');
     tcRowPanel?.classList.toggle('d-none', type !== 'text_column_row');
 
-    togglePanelRequired(textPanel, type === 'text');
+    togglePanelRequired(textPanel,    type === 'text');
     togglePanelRequired(galleryPanel, type === 'floating_gallery');
-    togglePanelRequired(tcRowPanel, type === 'text_column_row');
+    togglePanelRequired(tcRowPanel,   type === 'text_column_row');
 }
 
 function ensureWysiwygForBlock(block) {
     const body = block.querySelector('[data-block-body]');
     if (body?.classList.contains('d-none')) return;
-
     wysiwyg();
 }
 
@@ -310,37 +579,34 @@ function setBlockCollapsed(block, collapsed) {
     if (!block) return;
 
     const toggleButton = block.querySelector('[data-block-toggle]');
-    const icon = block.querySelector('[data-block-toggle-icon]');
-    const body = block.querySelector('[data-block-body]');
+    const icon         = block.querySelector('[data-block-toggle-icon]');
+    const body         = block.querySelector('[data-block-body]');
 
     if (!toggleButton || !body) return;
 
     toggleButton.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
     body.classList.toggle('d-none', collapsed);
 
-    if (icon) {
-        icon.textContent = collapsed ? '>' : 'v';
-    }
+    if (icon) icon.textContent = collapsed ? '>' : 'v';
 }
 
 function togglePanelRequired(panel, shouldBeRequired) {
     if (!panel) return;
 
-    const fields = panel.querySelectorAll('input, textarea, select');
-
-    fields.forEach((field) => {
+    panel.querySelectorAll('input, textarea, select').forEach((field) => {
         if (field.dataset.requiredOriginal === undefined) {
             field.dataset.requiredOriginal = field.hasAttribute('required') ? '1' : '0';
         }
 
         if (shouldBeRequired && field.dataset.requiredOriginal === '1') {
             field.setAttribute('required', 'required');
-            return;
+        } else {
+            field.removeAttribute('required');
         }
-
-        field.removeAttribute('required');
     });
 }
+
+// ─── Reindex ─────────────────────────────────────────────────────────────────
 
 function reindexBuilder(builder) {
     const locale = builder.dataset.locale;
@@ -349,51 +615,33 @@ function reindexBuilder(builder) {
     blocks.forEach((block, blockIndex) => {
         updateBlockLabel(block, blockIndex);
 
-        const blockFields = block.querySelectorAll('[name]');
-
-        blockFields.forEach((field) => {
+        block.querySelectorAll('[name]').forEach((field) => {
             const originalName = field.getAttribute('name');
             if (!originalName) return;
-
-            const blockName = originalName.replace(
-                new RegExp(`description_blocks\\[${locale}\\]\\[(?:\\d+|__block__)\\]`, 'g'),
-                `description_blocks[${locale}][${blockIndex}]`
+            field.setAttribute(
+                'name',
+                originalName.replace(
+                    new RegExp(`description_blocks\\[${locale}\\]\\[(?:\\d+|__block__)\\]`, 'g'),
+                    `description_blocks[${locale}][${blockIndex}]`
+                )
             );
-
-            field.setAttribute('name', blockName);
         });
 
-        // Reindex gallery items
-        const galleryItems = block.querySelectorAll('[data-gallery-items-wrapper] > [data-gallery-item]');
-
-        galleryItems.forEach((item, itemIndex) => {
-            const itemFields = item.querySelectorAll('[name]');
-
-            itemFields.forEach((field) => {
-                const itemName = field.getAttribute('name');
-                if (!itemName) return;
-
-                field.setAttribute(
-                    'name',
-                    itemName.replace(/\[items\]\[(?:\d+|__item__)\]/g, `[items][${itemIndex}]`)
-                );
+        // Gallery items
+        block.querySelectorAll('[data-gallery-items-wrapper] > [data-gallery-item]').forEach((item, itemIndex) => {
+            item.querySelectorAll('[name]').forEach((field) => {
+                const name = field.getAttribute('name');
+                if (!name) return;
+                field.setAttribute('name', name.replace(/\[items\]\[(?:\d+|__item__)\]/g, `[items][${itemIndex}]`));
             });
         });
 
-        // Reindex text_column_row items
-        const tcItems = block.querySelectorAll('[data-tc-items-wrapper] > [data-tc-item]');
-
-        tcItems.forEach((item, itemIndex) => {
-            const itemFields = item.querySelectorAll('[name]');
-
-            itemFields.forEach((field) => {
-                const itemName = field.getAttribute('name');
-                if (!itemName) return;
-
-                field.setAttribute(
-                    'name',
-                    itemName.replace(/\[items\]\[(?:\d+|__item__)\]/g, `[items][${itemIndex}]`)
-                );
+        // TC items
+        block.querySelectorAll('[data-tc-items-wrapper] > [data-tc-item]').forEach((item, itemIndex) => {
+            item.querySelectorAll('[name]').forEach((field) => {
+                const name = field.getAttribute('name');
+                if (!name) return;
+                field.setAttribute('name', name.replace(/\[items\]\[(?:\d+|__item__)\]/g, `[items][${itemIndex}]`));
             });
         });
     });

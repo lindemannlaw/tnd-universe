@@ -438,6 +438,26 @@ class ProjectController extends Controller
             $description[$locale] = implode(PHP_EOL . PHP_EOL, $legacyDescriptionParts);
         }
 
+        // Mirror image URLs between languages: if language A has an image and language B does not,
+        // copy the URL so the user only needs to upload once.
+        $locales = supported_languages_keys();
+        foreach ($locales as $localeA) {
+            foreach ($locales as $localeB) {
+                if ($localeA === $localeB) continue;
+                foreach ($descriptionBlocks[$localeA] ?? [] as $blockIndex => $blockA) {
+                    $type = $blockA['type'] ?? null;
+                    if (!in_array($type, ['text_column_row', 'floating_gallery'], true)) continue;
+                    foreach ($blockA['items'] ?? [] as $itemIndex => $itemA) {
+                        $urlA = $itemA['image'] ?? null;
+                        $urlB = $descriptionBlocks[$localeB][$blockIndex]['items'][$itemIndex]['image'] ?? null;
+                        if ($urlA && !$urlB) {
+                            $descriptionBlocks[$localeB][$blockIndex]['items'][$itemIndex]['image'] = $urlA;
+                        }
+                    }
+                }
+            }
+        }
+
         $data['description_blocks'] = $descriptionBlocks;
         $data['description'] = $description;
 

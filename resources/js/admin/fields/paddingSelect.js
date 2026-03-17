@@ -16,6 +16,7 @@ export function paddingSelect() {
         } else {
             customInput.classList.add('d-none');
             hiddenInput.value = select.value;
+            hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
         }
     });
 
@@ -26,6 +27,9 @@ export function paddingSelect() {
 
         const wrapper     = customInput.closest('[data-padding-select-wrapper]');
         const hiddenInput = wrapper?.querySelector('[data-padding-value]');
-        if (hiddenInput) hiddenInput.value = customInput.value || 0;
+        if (hiddenInput) {
+            hiddenInput.value = customInput.value || 0;
+            hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+        }
     });
 }
