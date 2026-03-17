@@ -332,12 +332,17 @@
     .project-text-columns {
         display: grid;
         grid-template-columns: repeat(12, minmax(0, 1fr));
-        gap: range.build(12, 24, px, 375, 1240);
+        column-gap: range.build(24, 48, px, 375, 1240);
+        row-gap: range.build(24, 48, px, 375, 1240);
         align-items: start;
     }
 
     .project-text-column-item {
         grid-column: var(--col-start, 1) / span var(--col-span, 12);
+        // Subgrid so child image/text columns snap to the global 12-col grid
+        display: grid;
+        grid-template-columns: subgrid;
+        align-content: start;
     }
 
     @media (max-width: 767px) {
@@ -347,50 +352,50 @@
     }
 
     .project-text-column-inner {
+        grid-column: 1 / -1;
         display: flex;
         flex-direction: column;
         gap: range.build(16, 28, px, 375, 1240);
 
         &.has-image.image-top {
             .project-text-column-image {
-                width: calc(var(--img-col-span, 12) / 12 * 100%);
+                // Width relative to item: img_col_span / col_span * 100%
+                width: calc(var(--img-col-span, 12) / var(--col-span, 12) * 100%);
                 align-self: flex-start;
             }
         }
 
         &.has-image.image-left,
         &.has-image.image-right {
-            flex-direction: row;
+            // Use subgrid so img/text spans are in global 12-col coordinates
+            display: grid;
+            grid-template-columns: subgrid;
             align-items: center;
-            gap: range.build(24, 48, px, 375, 1240);
 
             .project-text-column-image {
-                flex-grow: var(--img-col-span, 6);
-                flex-shrink: 1;
-                flex-basis: 0;
-                min-width: 0;
+                grid-column: span var(--img-col-span, 6);
             }
 
             .project-text-column-text {
-                flex-grow: var(--text-col-span, 6);
-                flex-shrink: 1;
-                flex-basis: 0;
-                min-width: 0;
+                grid-column: span var(--text-col-span, 6);
             }
         }
 
         &.has-image.image-right {
-            flex-direction: row-reverse;
+            .project-text-column-image { order: 2; }
+            .project-text-column-text  { order: 1; }
         }
 
         @media (max-width: 767px) {
             &.has-image.image-left,
             &.has-image.image-right {
+                display: flex;
                 flex-direction: column;
 
-                .project-text-column-image {
-                    flex: 0 0 auto;
-                    max-width: 100%;
+                .project-text-column-image,
+                .project-text-column-text {
+                    order: unset;
+                    grid-column: unset;
                     width: 100%;
                 }
             }
