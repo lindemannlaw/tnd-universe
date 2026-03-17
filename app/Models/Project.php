@@ -127,7 +127,11 @@ class Project extends Model implements HasMedia
 
     public function registerMediaConversions(Media $media = null): void
     {
-        if ($media && $media->extension === 'svg') {
+        if (!$media) {
+            return;
+        }
+
+        if ($media->extension === 'svg') {
             return;
         }
 
