@@ -69,6 +69,7 @@ class UpdateRequest extends FormRequest
             $rules['description_blocks.' . $locale . '.*.headline_font'] = ['nullable', 'string', 'in:pangea,nicevar'];
             $rules['description_blocks.' . $locale . '.*.padding_top'] = ['nullable', 'integer', 'min:0', 'max:300'];
             $rules['description_blocks.' . $locale . '.*.padding_bottom'] = ['nullable', 'integer', 'min:0', 'max:300'];
+            $rules['description_blocks.' . $locale . '.*.image'] = ['nullable', 'string', 'max:2048'];
             $rules['description_blocks.' . $locale . '.*.image_file'] = ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,gif', 'max:10240'];
             $rules['description_blocks.' . $locale . '.*.image_alignment'] = ['nullable', 'string', 'in:top,left,right'];
             $rules['description_blocks.' . $locale . '.*.image_col_span'] = ['nullable', 'integer', 'min:1', 'max:12'];

@@ -365,13 +365,16 @@
             gap: range.build(24, 48, px, 375, 1240);
 
             .project-text-column-image {
-                flex: 0 0 calc(var(--img-col-span, 6) / 12 * 100%);
-                max-width: calc(var(--img-col-span, 6) / 12 * 100%);
+                flex-grow: var(--img-col-span, 6);
+                flex-shrink: 1;
+                flex-basis: 0;
+                min-width: 0;
             }
 
             .project-text-column-text {
-                flex: 0 0 calc(var(--text-col-span, 12) / 12 * 100%);
-                max-width: calc(var(--text-col-span, 12) / 12 * 100%);
+                flex-grow: var(--text-col-span, 6);
+                flex-shrink: 1;
+                flex-basis: 0;
                 min-width: 0;
             }
         }
