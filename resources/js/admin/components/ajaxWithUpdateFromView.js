@@ -55,6 +55,14 @@ export function ajaxWithUpdateFromView() {
                             // #endregion
                             if (modalEl && data?.html) {
                                 reloadModal(modalEl, data.html);
+
+                                // #region agent log
+                                const domColEntries = {};
+                                modalEl.querySelectorAll('[name*="col_span"],[name*="col_start"]').forEach(f => {
+                                    domColEntries[f.getAttribute('name')] = f.value;
+                                });
+                                console.log('[debug-fb4a59 POST-RELOAD DOM] col values after reloadModal+syncLibs:', JSON.stringify(domColEntries));
+                                // #endregion
                             }
                         })
                         .catch(e => console.error('[ajaxWithUpdateFromView] modal refresh failed', e));

@@ -100,6 +100,22 @@ class ProjectController extends Controller
 
     public function edit(Request $request, Project $project): View|JsonResponse|string {
         if ($request->ajax()) {
+            // #region agent log
+            if ($request->header('X-Modal-Refresh')) {
+                $editColSpans = [];
+                foreach (($project->getTranslation('description_blocks', 'en') ?? []) as $bi => $block) {
+                    foreach (data_get($block, 'items', []) as $ii => $item) {
+                        $editColSpans["en[$bi][$ii].col_span"] = data_get($item, 'col_span', 'MISSING');
+                    }
+                }
+                Log::info('[debug-fb4a59] edit() modal-refresh – project data served to client', [
+                    'hypothesisId' => 'H2',
+                    'project_id' => $project->id,
+                    'col_spans' => $editColSpans,
+                ]);
+            }
+            // #endregion
+
             $html = view('admin.portfolio.projects.edit', compact('project'))->render();
 
             // When called for a post-save modal refresh, return a JSON envelope
@@ -145,7 +161,9 @@ class ProjectController extends Controller
             DB::beginTransaction();
 
             // #region agent log (split updateOrFail to check isDirty)
+            $originalRaw = $project->getRawOriginal('description_blocks');
             $project->fill($data);
+            $newRaw = $project->getAttributes()['description_blocks'] ?? null;
             $dirtyKeys = array_keys($project->getDirty());
             $dbBlocksBeforeSave = [];
             foreach (($project->getTranslation('description_blocks', 'en') ?? []) as $bi => $block) {
@@ -154,10 +172,14 @@ class ProjectController extends Controller
                 }
             }
             Log::info('[debug-fb4a59] pre-save isDirty', [
+                'hypothesisId' => 'H4',
                 'description_blocks_dirty' => $project->isDirty('description_blocks'),
                 'description_dirty'        => $project->isDirty('description'),
                 'all_dirty_keys'           => $dirtyKeys,
                 'col_spans_in_attributes'  => $dbBlocksBeforeSave,
+                'original_raw_snippet'     => mb_substr((string)$originalRaw, 0, 300),
+                'new_raw_snippet'          => mb_substr((string)$newRaw, 0, 300),
+                'raw_identical'            => $originalRaw === $newRaw,
             ]);
             if (!$project->save()) {
                 throw new \Illuminate\Database\Eloquent\ModelNotFoundException();
@@ -250,6 +272,22 @@ class ProjectController extends Controller
             $galleryToDelete->each->delete();
 
             DB::commit();
+
+            // #region agent log
+            $committedProject = $project->fresh();
+            $committedColSpans = [];
+            foreach (($committedProject->getTranslation('description_blocks', 'en') ?? []) as $bi => $block) {
+                foreach (data_get($block, 'items', []) as $ii => $item) {
+                    $committedColSpans["en[$bi][$ii].col_span"] = data_get($item, 'col_span', 'MISSING');
+                }
+            }
+            Log::info('[debug-fb4a59] AFTER DB::commit() – committed col values', [
+                'hypothesisId' => 'H1',
+                'project_id' => $committedProject->id,
+                'col_spans' => $committedColSpans,
+            ]);
+            // #endregion
+
         } catch (\Exception $exception) {
             DB::rollBack();
             Log::error(__('errors.project_update_failed'), ['exception' => $exception]);
