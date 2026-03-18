@@ -15,7 +15,7 @@
 .services-wrapper {
     display: flex;
     flex-direction: column;
-    gap: 0;
+    gap: range.build(40, 64);
 }
 
 .services-overview {
@@ -44,7 +44,7 @@
         align-items: center;
         justify-content: space-between;
         gap: 1em;
-        padding: range.build(14, 20) 0;
+        padding: range.build(18, 20) 0;
         color: var(--color-interaction-primary-default);
         font-size: range.build(14, 16);
         text-decoration: none;
