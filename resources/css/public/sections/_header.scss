@@ -245,22 +245,28 @@
     margin-right: calc(range.build(10, 23) * -1);
 
     @media (max-width: 1259px) {
-        width: 260px;
+        width: 100vw;
         height: 100vh;
         height: 100dvh;
         display: flex;
         flex-direction: column;
         position: fixed;
         top: 0;
-        left: -280px;
+        left: -110vw;
         margin-right: 0;
         background-color: var(--color-white);
-        box-shadow: 0 0 16px 0 rgba(var(--color-dark-rgb), .25);
         z-index: 10;
         padding-bottom: 20px;
         color: var(--color-primary-brand-900-darker-silent);
         transition: var(--transition);
         transition-property: left;
+
+        // Always use dark link colors in mobile menu (regardless of page theme)
+        ul a {
+            --menu-link-color: var(--color-interaction-primary-default) !important;
+            --menu-link-hover-color: var(--color-interaction-primary-hover) !important;
+            --menu-link-active-color: var(--color-interaction-primary-active) !important;
+        }
     }
 }
 
@@ -520,6 +526,18 @@
 .is-opened-main-menu .main-menu-toggle-button {
     &::before {
         background-color: rgba(var(--color-black-rgb), .15);
+    }
+
+    // Always use emerald-900 for the X icon on mobile
+    @media (max-width: 1259px) {
+        --btn-color: var(--color-primary-brand-900-darker-silent) !important;
+
+        span {
+            &::before,
+            &::after {
+                background-color: var(--color-primary-brand-900-darker-silent) !important;
+            }
+        }
     }
 
     span {
