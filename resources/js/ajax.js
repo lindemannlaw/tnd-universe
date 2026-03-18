@@ -62,7 +62,7 @@ export function ajax(event, {form, submitter, url = null, method = null, params 
         for (const [k, v] of params.entries()) {
             if (k.includes('description_blocks') && !(v instanceof File)) dbgEntries[k] = v;
         }
-        fetch('http://127.0.0.1:7782/ingest/06db3286-f81e-4e20-9adf-adf82c709bcf',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'fb4a59'},body:JSON.stringify({sessionId:'fb4a59',hypothesisId:'B+D',location:'ajax.js:before-axios',message:'FormData description_blocks fields being sent',data:{url,method,fields:dbgEntries},timestamp:Date.now()})}).catch(()=>{});
+        console.log('[debug-fb4a59] FormData being sent to', url, dbgEntries);
     }
     // #endregion
 
