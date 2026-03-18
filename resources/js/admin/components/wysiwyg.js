@@ -99,6 +99,7 @@ function init(element) {
 	const editor = suneditor.create(element, options);
 
 	element.wysiwygInited = true;
+	element._sunEditor = editor;
 
 	editor.onImageUploadBefore = function (files, info, core, uploadHandler) {
 		const formData = new FormData();

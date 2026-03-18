@@ -212,4 +212,11 @@ Route::group([
         Route::get('/', [\App\Http\Controllers\Admin\DeleteModalController::class, 'show'])->name('admin.confirm-delete-modal');
 
     });
+
+    /* TRANSLATION */
+    Route::post('/translate', [\App\Http\Controllers\Admin\TranslationController::class, 'translate'])->name('admin.translate');
+
+    /* SEO GENERATION */
+    Route::post('/generate-seo', [\App\Http\Controllers\Admin\SeoController::class, 'generate'])->name('admin.generate-seo');
+
 });

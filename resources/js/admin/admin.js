@@ -14,6 +14,7 @@ import { alerts } from "./components/alerts.js";
 import { datepicker} from "./components/datepicker.js";
 import { select } from "./components/select.js";
 import { projectDescriptionBlocks } from "./components/projectDescriptionBlocks.js";
+import { translateBlocks } from "./components/translateBlocks.js";
 
 import { saveAndShowActiveTab } from "./saveAndShowActiveTab.js";
 
@@ -33,6 +34,7 @@ alerts();
 datepicker();
 select();
 projectDescriptionBlocks();
+translateBlocks();
 
 saveAndShowActiveTab();
 

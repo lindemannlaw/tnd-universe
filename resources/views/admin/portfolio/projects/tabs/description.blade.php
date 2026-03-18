@@ -332,6 +332,19 @@
                     </div>
 
                     <x-admin.button data-block-add class="ms-auto" :btn="'btn-outline-primary'" :title="'Add block'" :iconName="'plus-circle'" />
+
+                    @if($lang === 'en')
+                        <hr class="my-1">
+                        <x-admin.button
+                            data-translate-blocks
+                            data-target-locale="de"
+                            data-translate-url="{{ route('admin.translate') }}"
+                            class="ms-auto btn-sm"
+                            :btn="'btn-outline-info'"
+                            :iconName="'globe'"
+                            :title="'Auf Deutsch übersetzen'"
+                        />
+                    @endif
                 </div>
 
                 {{-- Block template --}}

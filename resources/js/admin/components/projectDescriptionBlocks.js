@@ -7,13 +7,27 @@ const TEXT_ONLY_NAMES = new Set(['content', 'headline', 'link_text', 'link_url',
 
 export function projectDescriptionBlocks() {
     const builders = document.querySelectorAll('[data-project-description-builder]');
+    let anyNewInit = false;
 
     builders.forEach((builder) => {
         if (builder.dataset.inited) return;
 
         initBuilder(builder);
         builder.dataset.inited = 'true';
+        anyNewInit = true;
     });
+
+    // After fresh init: sync structure + layout values from EN to other locales.
+    // This ensures the sibling DOM matches EN even if the DB was out of sync.
+    if (anyNewInit) {
+        const allBuilders = [...builders];
+        const primaryBuilder = allBuilders.find(b => b.dataset.locale === 'en') ?? allBuilders[0];
+        if (primaryBuilder) {
+            allBuilders.forEach(b => {
+                if (b !== primaryBuilder) syncBuildersOnInit(primaryBuilder, b);
+            });
+        }
+    }
 }
 
 // ─── Sibling helpers ─────────────────────────────────────────────────────────
@@ -113,6 +127,81 @@ function mirrorItemMove(wrapper, itemSelector, oldIndex, newIndex) {
     } else {
         wrapper.insertBefore(movedItem, updated[newIndex]);
     }
+}
+
+// ─── Structural sync on init ─────────────────────────────────────────────────
+// Ensures the sibling (DE) DOM matches the primary (EN) block/item structure
+// and has correct layout field values, so real-time sync never fails silently.
+
+function syncBuildersOnInit(primaryBuilder, siblingBuilder) {
+    const primaryBlocksWrapper = primaryBuilder.querySelector('[data-blocks-wrapper]');
+    const siblingBlocksWrapper = siblingBuilder.querySelector('[data-blocks-wrapper]');
+    if (!primaryBlocksWrapper || !siblingBlocksWrapper) return;
+
+    const primaryBlocks = [...primaryBlocksWrapper.querySelectorAll(':scope > [data-block]')];
+
+    primaryBlocks.forEach((primaryBlock, blockIndex) => {
+        let siblingBlock = getBlockAtIndex(siblingBuilder, blockIndex);
+
+        // Create block in sibling if missing
+        if (!siblingBlock) {
+            siblingBlocksWrapper.appendChild(createBlock(siblingBuilder, 'text'));
+            reindexBuilder(siblingBuilder);
+            fields();
+            siblingBlock = getBlockAtIndex(siblingBuilder, blockIndex);
+            if (!siblingBlock) return;
+        }
+
+        // Align block type
+        const primaryType = primaryBlock.querySelector('[data-block-type-input]')?.value ?? 'text';
+        const siblingType = siblingBlock.querySelector('[data-block-type-input]')?.value ?? 'text';
+        if (siblingType !== primaryType) {
+            setBlockType(siblingBlock, primaryType);
+            const sel = siblingBlock.querySelector('[data-block-type-select]');
+            if (sel) sel.value = primaryType;
+        }
+
+        // Add missing items for structured block types
+        if (primaryType === 'text_column_row') {
+            const primaryCount = primaryBlock.querySelectorAll('[data-tc-items-wrapper] > [data-tc-item]').length;
+            const siblingWrapper = siblingBlock.querySelector('[data-tc-items-wrapper]');
+            if (siblingWrapper) {
+                const siblingCount = siblingWrapper.querySelectorAll(':scope > [data-tc-item]').length;
+                for (let i = siblingCount; i < primaryCount; i++) {
+                    siblingWrapper.appendChild(createTcItem(siblingBuilder));
+                }
+                if (primaryCount > siblingCount) { reindexBuilder(siblingBuilder); fields(); }
+            }
+        } else if (primaryType === 'floating_gallery') {
+            const primaryCount = primaryBlock.querySelectorAll('[data-gallery-items-wrapper] > [data-gallery-item]').length;
+            const siblingWrapper = siblingBlock.querySelector('[data-gallery-items-wrapper]');
+            if (siblingWrapper) {
+                const siblingCount = siblingWrapper.querySelectorAll(':scope > [data-gallery-item]').length;
+                for (let i = siblingCount; i < primaryCount; i++) {
+                    siblingWrapper.appendChild(createGalleryItem(siblingBuilder));
+                }
+                if (primaryCount > siblingCount) { reindexBuilder(siblingBuilder); fields(); }
+            }
+        }
+    });
+
+    reindexBuilder(siblingBuilder);
+
+    // Copy all layout field values from primary → sibling
+    const primaryLocale = primaryBuilder.dataset.locale;
+    const siblingLocale = siblingBuilder.dataset.locale;
+    primaryBuilder.querySelectorAll('[name]').forEach((primaryField) => {
+        const name = primaryField.getAttribute('name');
+        if (!name || !isLayoutField(name) || primaryField.type === 'file') return;
+        const siblingName = name.replace(`[${primaryLocale}]`, `[${siblingLocale}]`);
+        const siblingField = findFieldByName(siblingBuilder, siblingName);
+        if (!siblingField) return;
+        if (primaryField.type === 'checkbox' || primaryField.type === 'radio') {
+            siblingField.checked = primaryField.checked;
+        } else {
+            siblingField.value = primaryField.value;
+        }
+    });
 }
 
 // ─── Core init ───────────────────────────────────────────────────────────────
