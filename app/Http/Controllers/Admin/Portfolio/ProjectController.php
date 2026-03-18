@@ -40,8 +40,12 @@ class ProjectController extends Controller
 
             $project = Project::create($data);
 
-            $project->description = $project->processImagesInDescription($project->getAttributes()['description']);
-            $project->save();
+            $rawDesc = $project->getAttributes()['description'] ?? null;
+            if ($rawDesc) {
+                $processed = $project->processImagesInDescription($rawDesc);
+                $project->setTranslations('description', $processed);
+                $project->save();
+            }
 
             if ($request->hasFile('hero_image')) {
                 $project->addMediaFromRequest('hero_image')
@@ -100,25 +104,8 @@ class ProjectController extends Controller
 
     public function edit(Request $request, Project $project): View|JsonResponse|string {
         if ($request->ajax()) {
-            // #region agent log
-            if ($request->header('X-Modal-Refresh')) {
-                $editColSpans = [];
-                foreach (($project->getTranslation('description_blocks', 'en') ?? []) as $bi => $block) {
-                    foreach (data_get($block, 'items', []) as $ii => $item) {
-                        $editColSpans["en[$bi][$ii].col_span"] = data_get($item, 'col_span', 'MISSING');
-                    }
-                }
-                Log::info('[debug-fb4a59] edit() modal-refresh – project data served to client', [
-                    'hypothesisId' => 'H2',
-                    'project_id' => $project->id,
-                    'col_spans' => $editColSpans,
-                ]);
-            }
-            // #endregion
-
             $html = view('admin.portfolio.projects.edit', compact('project'))->render();
 
-            // When called for a post-save modal refresh, return a JSON envelope
             if ($request->header('X-Modal-Refresh')) {
                 return response()->json(['html' => $html]);
             }
@@ -131,84 +118,26 @@ class ProjectController extends Controller
 
     public function update(UpdateRequest $request, Project $project): View|JsonResponse|RedirectResponse|string {
         $data = $request->validated();
-
-        // #region agent log
-        $rawBlocks = $request->input('description_blocks', []);
-        $rawColSpans = [];
-        foreach (data_get($rawBlocks, 'en', []) as $bi => $block) {
-            foreach (data_get($block, 'items', []) as $ii => $item) {
-                $rawColSpans["en[$bi][$ii].col_span"] = data_get($item, 'col_span', 'MISSING');
-                $rawColSpans["en[$bi][$ii].col_start"] = data_get($item, 'col_start', 'MISSING');
-            }
-        }
-        Log::info('[debug-fb4a59] PATCH received - col values', ['project_id' => $project->id, 'col_spans' => $rawColSpans]);
-        // #endregion
-
         $data = $this->prepareDescriptionBlocksData($request, $data);
-
-        // #region agent log
-        $prepColSpans = [];
-        foreach (data_get($data, 'description_blocks.en', []) as $bi => $block) {
-            foreach (data_get($block, 'items', []) as $ii => $item) {
-                $prepColSpans["en[$bi][$ii].col_span"] = data_get($item, 'col_span', 'MISSING');
-                $prepColSpans["en[$bi][$ii].col_start"] = data_get($item, 'col_start', 'MISSING');
-            }
-        }
-        Log::info('[debug-fb4a59] After prepareDescriptionBlocksData - col values', ['col_spans' => $prepColSpans]);
-        // #endregion
 
         try {
             DB::beginTransaction();
 
-            // #region agent log (split updateOrFail to check isDirty)
-            $originalRaw = $project->getRawOriginal('description_blocks');
             $project->fill($data);
-            $newRaw = $project->getAttributes()['description_blocks'] ?? null;
-            $dirtyKeys = array_keys($project->getDirty());
-            $dbBlocksBeforeSave = [];
-            foreach (($project->getTranslation('description_blocks', 'en') ?? []) as $bi => $block) {
-                foreach (data_get($block, 'items', []) as $ii => $item) {
-                    $dbBlocksBeforeSave["en[$bi][$ii].col_span"] = data_get($item, 'col_span', 'MISSING');
-                }
+
+            $rawDesc = $project->getAttributes()['description'] ?? null;
+            if ($rawDesc) {
+                $processed = $project->processImagesInDescription($rawDesc);
+                $project->setTranslations('description', $processed);
             }
-            Log::info('[debug-fb4a59] pre-save isDirty', [
-                'hypothesisId' => 'H4',
+
+            Log::info('[debug-fb4a59] pre-save', [
+                'project_id' => $project->id,
                 'description_blocks_dirty' => $project->isDirty('description_blocks'),
-                'description_dirty'        => $project->isDirty('description'),
-                'all_dirty_keys'           => $dirtyKeys,
-                'col_spans_in_attributes'  => $dbBlocksBeforeSave,
-                'original_raw_snippet'     => mb_substr((string)$originalRaw, 0, 300),
-                'new_raw_snippet'          => mb_substr((string)$newRaw, 0, 300),
-                'raw_identical'            => $originalRaw === $newRaw,
+                'all_dirty_keys' => array_keys($project->getDirty()),
             ]);
-            if (!$project->save()) {
-                throw new \Illuminate\Database\Eloquent\ModelNotFoundException();
-            }
-            // #endregion
 
-                // #region agent log
-                $dbColSpans = [];
-                foreach (($project->getTranslation('description_blocks', 'en') ?? []) as $bi => $block) {
-                    foreach (data_get($block, 'items', []) as $ii => $item) {
-                        $dbColSpans["en[$bi][$ii].col_span"] = data_get($item, 'col_span', 'MISSING');
-                    }
-                }
-                Log::info('[debug-fb4a59] After save - DB col values', ['col_spans' => $dbColSpans]);
-                // #endregion
-
-            $project->description = $project->processImagesInDescription($project->getAttributes()['description']);
-            $project->save();
-
-                // #region agent log
-                $freshProject = $project->fresh();
-                $freshColSpans = [];
-                foreach (($freshProject->getTranslation('description_blocks', 'en') ?? []) as $bi => $block) {
-                    foreach (data_get($block, 'items', []) as $ii => $item) {
-                        $freshColSpans["en[$bi][$ii].col_span"] = data_get($item, 'col_span', 'MISSING');
-                    }
-                }
-                Log::info('[debug-fb4a59] After final save (fresh from DB) - col values', ['col_spans' => $freshColSpans]);
-                // #endregion
+            $project->saveOrFail();
 
             if ($request->hasFile('hero_image')) {
                 $project->clearMediaCollection($project->mediaHero);
@@ -223,7 +152,6 @@ class ProjectController extends Controller
 
                 $file = Media::find($id);
 
-                // Skip stale file IDs instead of failing whole project update.
                 if (!$file || (int) $file->model_id !== (int) $project->id) {
                     continue;
                 }
@@ -273,20 +201,11 @@ class ProjectController extends Controller
 
             DB::commit();
 
-            // #region agent log
-            $committedProject = $project->fresh();
-            $committedColSpans = [];
-            foreach (($committedProject->getTranslation('description_blocks', 'en') ?? []) as $bi => $block) {
-                foreach (data_get($block, 'items', []) as $ii => $item) {
-                    $committedColSpans["en[$bi][$ii].col_span"] = data_get($item, 'col_span', 'MISSING');
-                }
-            }
-            Log::info('[debug-fb4a59] AFTER DB::commit() – committed col values', [
-                'hypothesisId' => 'H1',
-                'project_id' => $committedProject->id,
-                'col_spans' => $committedColSpans,
+            $rawFromDb = DB::table('projects')->where('id', $project->id)->value('description_blocks');
+            Log::info('[debug-fb4a59] RAW DB after commit', [
+                'project_id' => $project->id,
+                'raw_snippet' => mb_substr((string) $rawFromDb, 0, 500),
             ]);
-            // #endregion
 
         } catch (\Exception $exception) {
             DB::rollBack();

@@ -56,17 +56,6 @@ class Project extends Model implements HasMedia
     protected function casts(): array
     {
         return [
-            'title' => 'json',
-            'short_description' => 'json',
-            'description' => 'json',
-            'description_blocks' => 'json',
-            'seo_title' => 'json',
-            'seo_description' => 'json',
-            'seo_keywords' => 'json',
-            'property_details' => 'json',
-            'location' => 'json',
-            'tags' => 'json',
-            'info' => 'json',
             'active' => 'boolean',
         ];
     }
