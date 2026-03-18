@@ -76,7 +76,7 @@ function findFieldByName(container, name) {
 
 function syncLayoutFieldToSibling(field, builder) {
     const name = field.getAttribute('name');
-    if (!name || !isLayoutField(name) || field.type === 'file') return;
+    if (!name || !isLayoutField(name) || field.type === 'file' || field.disabled) return;
 
     const sibling = getSiblingBuilder(builder);
     if (!sibling) return;
@@ -197,7 +197,7 @@ function syncBuildersOnInit(primaryBuilder, siblingBuilder) {
     let syncedCount = 0;
     primaryBuilder.querySelectorAll('[name]').forEach((primaryField) => {
         const name = primaryField.getAttribute('name');
-        if (!name || !isLayoutField(name) || primaryField.type === 'file') return;
+        if (!name || !isLayoutField(name) || primaryField.type === 'file' || primaryField.disabled) return;
         const siblingName = name.replace(`[${primaryLocale}]`, `[${siblingLocale}]`);
         const siblingField = findFieldByName(siblingBuilder, siblingName);
         if (!siblingField) {
@@ -719,7 +719,7 @@ function setBlockCollapsed(block, collapsed) {
     if (icon) icon.textContent = collapsed ? '>' : 'v';
 }
 
-function togglePanelRequired(panel, shouldBeRequired) {
+function togglePanelRequired(panel, shouldBeActive) {
     if (!panel) return;
 
     panel.querySelectorAll('input, textarea, select').forEach((field) => {
@@ -727,10 +727,17 @@ function togglePanelRequired(panel, shouldBeRequired) {
             field.dataset.requiredOriginal = field.hasAttribute('required') ? '1' : '0';
         }
 
-        if (shouldBeRequired && field.dataset.requiredOriginal === '1') {
-            field.setAttribute('required', 'required');
+        if (shouldBeActive) {
+            // Re-enable: inputs participate in FormData again
+            field.removeAttribute('disabled');
+            if (field.dataset.requiredOriginal === '1') {
+                field.setAttribute('required', 'required');
+            }
         } else {
+            // Disable: prevents duplicate-name inputs from overriding
+            // the active panel's values when FormData is collected
             field.removeAttribute('required');
+            field.setAttribute('disabled', '');
         }
     });
 }
