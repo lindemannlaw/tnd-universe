@@ -144,16 +144,34 @@ class ProjectController extends Controller
         try {
             DB::beginTransaction();
 
-            $project->updateOrFail($data);
+            // #region agent log (split updateOrFail to check isDirty)
+            $project->fill($data);
+            $dirtyKeys = array_keys($project->getDirty());
+            $dbBlocksBeforeSave = [];
+            foreach (($project->getTranslation('description_blocks', 'en') ?? []) as $bi => $block) {
+                foreach (data_get($block, 'items', []) as $ii => $item) {
+                    $dbBlocksBeforeSave["en[$bi][$ii].col_span"] = data_get($item, 'col_span', 'MISSING');
+                }
+            }
+            Log::info('[debug-fb4a59] pre-save isDirty', [
+                'description_blocks_dirty' => $project->isDirty('description_blocks'),
+                'description_dirty'        => $project->isDirty('description'),
+                'all_dirty_keys'           => $dirtyKeys,
+                'col_spans_in_attributes'  => $dbBlocksBeforeSave,
+            ]);
+            if (!$project->save()) {
+                throw new \Illuminate\Database\Eloquent\ModelNotFoundException();
+            }
+            // #endregion
 
                 // #region agent log
                 $dbColSpans = [];
-                foreach ($project->getTranslation('description_blocks', 'en') as $bi => $block) {
+                foreach (($project->getTranslation('description_blocks', 'en') ?? []) as $bi => $block) {
                     foreach (data_get($block, 'items', []) as $ii => $item) {
                         $dbColSpans["en[$bi][$ii].col_span"] = data_get($item, 'col_span', 'MISSING');
                     }
                 }
-                Log::info('[debug-fb4a59] After updateOrFail - DB col values', ['col_spans' => $dbColSpans]);
+                Log::info('[debug-fb4a59] After save - DB col values', ['col_spans' => $dbColSpans]);
                 // #endregion
 
             $project->description = $project->processImagesInDescription($project->getAttributes()['description']);
@@ -162,7 +180,7 @@ class ProjectController extends Controller
                 // #region agent log
                 $freshProject = $project->fresh();
                 $freshColSpans = [];
-                foreach ($freshProject->getTranslation('description_blocks', 'en') as $bi => $block) {
+                foreach (($freshProject->getTranslation('description_blocks', 'en') ?? []) as $bi => $block) {
                     foreach (data_get($block, 'items', []) as $ii => $item) {
                         $freshColSpans["en[$bi][$ii].col_span"] = data_get($item, 'col_span', 'MISSING');
                     }
