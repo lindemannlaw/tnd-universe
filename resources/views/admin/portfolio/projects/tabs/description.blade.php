@@ -275,7 +275,7 @@
                                                                     :placeholder="'Text (optional)'"
                                                                     :value="data_get($item, 'content')"
                                                                     :height="200"
-                                                                    :buttons="'italic'"
+                                                                    :buttons="'blockquote|list|image|video'"
                                                                 />
                                                             </div>
                                                             <div class="col-12 col-lg-6">
@@ -554,7 +554,7 @@
                                     </div>
                                 </div>
                                 <div class="col-12">
-                                    <x-admin.field.wysiwyg :name="'description_blocks['. $lang .'][__block__][items][__item__][content]'" :placeholder="'Text (optional)'" :height="200" :buttons="'italic'" />
+                                    <x-admin.field.wysiwyg :name="'description_blocks['. $lang .'][__block__][items][__item__][content]'" :placeholder="'Text (optional)'" :height="200" :buttons="'blockquote|list|image|video'" />
                                 </div>
                                 <div class="col-12 col-lg-6">
                                     <x-admin.field.text :name="'description_blocks['. $lang .'][__block__][items][__item__][link_text]'" :required="false" :placeholder="'Link Text (optional)'" />
