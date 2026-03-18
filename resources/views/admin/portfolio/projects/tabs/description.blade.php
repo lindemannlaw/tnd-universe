@@ -25,6 +25,31 @@
                             : [$fallbackTextBlock]
                     );
 
+                    // #region debug – shows what Spatie returns vs raw DB
+                    if (isset($project) && $lang === 'en') {
+                        $dbgRaw = \Illuminate\Support\Facades\DB::table('projects')->where('id', $project->id)->value('description_blocks');
+                        $dbgDecoded = json_decode($dbgRaw, true);
+                        $dbgSpatie = $project->getTranslation('description_blocks', 'en');
+                        $dbgColSpans = [];
+                        foreach ($blocks as $bi => $blk) {
+                            foreach (data_get($blk, 'items', []) as $ii => $itm) {
+                                $dbgColSpans["block[{$bi}].item[{$ii}]"] = [
+                                    'blade' => data_get($itm, 'col_span', 'MISSING'),
+                                    'spatie' => data_get($dbgSpatie[$bi]['items'][$ii] ?? [], 'col_span', 'MISSING'),
+                                    'rawDb' => data_get($dbgDecoded['en'][$bi]['items'][$ii] ?? [], 'col_span', 'MISSING'),
+                                ];
+                            }
+                        }
+                        \Illuminate\Support\Facades\Log::info('[debug-fb4a59] BLADE RENDER col_span comparison', [
+                            'project_id' => $project->id,
+                            'col_spans' => $dbgColSpans,
+                            'blocks_source' => old('description_blocks.en') !== null ? 'old()' : 'getTranslation()',
+                            'spatie_type' => gettype($dbgSpatie),
+                            'raw_db_type' => gettype($dbgRaw),
+                        ]);
+                    }
+                    // #endregion
+
                     // Migrate legacy flat text_column blocks → text_column_row with single item
                     $blocks = array_map(function ($b) {
                         if (($b['type'] ?? null) === 'text_column') {
@@ -40,6 +65,20 @@
                         return $b;
                     }, $blocks);
                 @endphp
+
+                {{-- #region debug banner --}}
+                @if(isset($project) && $lang === 'en')
+                    <div class="alert alert-info small mb-2 p-2" style="font-family:monospace; font-size:11px; max-height:120px; overflow:auto;">
+                        <strong>DEBUG col_span values (source: {{ old('description_blocks.en') !== null ? 'old()' : 'getTranslation()' }})</strong><br>
+                        @foreach($blocks as $bi => $blk)
+                            @foreach(data_get($blk, 'items', []) as $ii => $itm)
+                                b[{{ $bi }}].i[{{ $ii }}]: blade={{ data_get($itm, 'col_span', '-') }} |
+                                rawDb={{ data_get($dbgDecoded['en'][$bi]['items'][$ii] ?? [], 'col_span', '-') }}<br>
+                            @endforeach
+                        @endforeach
+                    </div>
+                @endif
+                {{-- #endregion --}}
 
                 <div
                     class="d-flex flex-column gap-4"
