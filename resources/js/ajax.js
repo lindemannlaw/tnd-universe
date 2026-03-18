@@ -58,11 +58,16 @@ export function ajax(event, {form, submitter, url = null, method = null, params 
 
     // #region agent log
     if (!isGet && params instanceof FormData) {
-        const dbgEntries = {};
+        const colEntries = {};
+        const allDbEntries = {};
         for (const [k, v] of params.entries()) {
-            if (k.includes('description_blocks') && !(v instanceof File)) dbgEntries[k] = v;
+            if (!(v instanceof File)) {
+                if (k.includes('col_span') || k.includes('col_start')) colEntries[k] = v;
+                if (k.includes('description_blocks') && k.includes('[type]')) allDbEntries[k] = v;
+            }
         }
-        console.log('[debug-fb4a59] FormData being sent to', url, dbgEntries);
+        console.log('[debug-fb4a59 SENT] col values:', JSON.stringify(colEntries));
+        console.log('[debug-fb4a59 SENT] block types:', JSON.stringify(allDbEntries));
     }
     // #endregion
 

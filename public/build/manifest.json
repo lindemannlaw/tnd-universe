@@ -1,6 +1,6 @@
 {
-  "_ajax-HrnPTrp-.js": {
-    "file": "assets/js/ajax-HrnPTrp-.js",
+  "_ajax-DN9ZOlgy.js": {
+    "file": "assets/js/ajax-DN9ZOlgy.js",
     "name": "ajax"
   },
   "resources/css/admin/admin.scss": {
@@ -20,21 +20,21 @@
     ]
   },
   "resources/js/admin/admin.js": {
-    "file": "assets/js/admin-wnxPEYbY.js",
+    "file": "assets/js/admin-DFpOOm5P.js",
     "name": "admin",
     "src": "resources/js/admin/admin.js",
     "isEntry": true,
     "imports": [
-      "_ajax-HrnPTrp-.js"
+      "_ajax-DN9ZOlgy.js"
     ]
   },
   "resources/js/public/public.js": {
-    "file": "assets/js/public-CT4xaqGT.js",
+    "file": "assets/js/public-2UdKp_74.js",
     "name": "public",
     "src": "resources/js/public/public.js",
     "isEntry": true,
     "imports": [
-      "_ajax-HrnPTrp-.js"
+      "_ajax-DN9ZOlgy.js"
     ]
   }
 }

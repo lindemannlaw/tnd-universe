@@ -46,8 +46,11 @@ export function ajaxWithUpdateFromView() {
                             if (data?.html) {
                                 const parser = new DOMParser();
                                 const doc = parser.parseFromString(data.html, 'text/html');
-                                const colFields = [...doc.querySelectorAll('[name*="col_span"],[name*="col_start"]')].map(f => ({name: f.getAttribute('name'), value: f.value}));
-                                console.log('[debug-fb4a59] Modal refresh HTML received - col fields:', colFields);
+                                const colEntries = {};
+                                doc.querySelectorAll('[name*="col_span"],[name*="col_start"]').forEach(f => {
+                                    colEntries[f.getAttribute('name')] = f.value;
+                                });
+                                console.log('[debug-fb4a59 RETURNED] col values from server:', JSON.stringify(colEntries));
                             }
                             // #endregion
                             if (modalEl && data?.html) {
