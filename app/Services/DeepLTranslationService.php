@@ -16,7 +16,7 @@ class DeepLTranslationService
 
     public function __construct()
     {
-        $this->apiKey = config('services.deepl.api_key', '');
+        $this->apiKey = config('services.deepl.api_key') ?? '';
         // Free keys end with :fx and use the free API endpoint
         $this->baseUrl = str_ends_with($this->apiKey, ':fx')
             ? 'https://api-free.deepl.com/v2'

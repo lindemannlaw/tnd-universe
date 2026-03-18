@@ -23,7 +23,7 @@ class SeoGenerationService
 
     public function __construct()
     {
-        $this->apiKey = config('services.openai.api_key', '');
+        $this->apiKey = config('services.openai.api_key') ?? '';
         $this->model  = config('services.openai.seo_model', 'gpt-4o-mini');
     }
 

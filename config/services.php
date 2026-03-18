@@ -36,11 +36,11 @@ return [
     ],
 
     'deepl' => [
-        'api_key' => env('DEEPL_API_KEY'),
+        'api_key' => env('DEEPL_API_KEY', ''),
     ],
 
     'openai' => [
-        'api_key'   => env('OPENAI_API_KEY'),
+        'api_key'   => env('OPENAI_API_KEY', ''),
         'seo_model' => env('OPENAI_SEO_MODEL', 'gpt-4o-mini'),
     ],
 
