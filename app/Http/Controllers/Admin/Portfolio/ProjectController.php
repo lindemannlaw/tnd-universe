@@ -256,6 +256,72 @@ class ProjectController extends Controller
         abort(404);
     }
 
+    public function clone(Request $request, Project $project) {
+        try {
+            DB::beginTransaction();
+
+            $clone = $project->replicate();
+
+            // Append "Clone" to titles
+            foreach (supported_languages_keys() as $locale) {
+                $title = $clone->getTranslation('title', $locale, false);
+                if (filled($title)) {
+                    $clone->setTranslation('title', $locale, $title . ' Clone');
+                }
+            }
+
+            // Generate unique slug
+            $baseSlug = $project->slug . '-clone';
+            $slug = $baseSlug;
+            $counter = 1;
+            while (Project::where('slug', $slug)->exists()) {
+                $counter++;
+                $slug = $baseSlug . '-' . $counter;
+            }
+            $clone->slug = $slug;
+
+            // Reset timestamps and set inactive
+            $clone->active = false;
+            $clone->text_timestamps = null;
+            $clone->sort = Project::max('sort') + 1;
+
+            $clone->save();
+
+            // Copy media (hero, gallery, files, description)
+            foreach (['hero', 'gallery', 'files', 'description'] as $collection) {
+                foreach ($project->getMedia($collection) as $media) {
+                    $media->copy($clone, $collection);
+                }
+            }
+
+            DB::commit();
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            Log::error('Project clone failed', ['exception' => $exception]);
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'message' => 'Duplizierung fehlgeschlagen',
+                    'error' => $exception->getMessage(),
+                ], 500);
+            }
+
+            return redirect()->back()->with('error', __('errors.general'));
+        }
+
+        if ($request->ajax()) {
+            return response()->json([
+                'toast' => [
+                    'type' => 'success',
+                    'message' => "Projekt \"{$clone->title}\" erstellt",
+                ],
+                'html' => $this->getViewProjects(),
+            ]);
+        }
+
+        abort(404);
+    }
+
     public function delete(Request $request, Project $project) {
         try {
             DB::beginTransaction();

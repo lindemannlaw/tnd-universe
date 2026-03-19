@@ -4,6 +4,7 @@ import { fields } from "./fields/fields.js";
 
 import { ajaxViewModalButton } from './components/ajaxViewModalButton.js';
 import { ajaxConfirmDeleteButton } from './components/ajaxConfirmDeleteButton.js';
+import { ajaxCloneButton } from './components/ajaxCloneButton.js';
 import { ajaxWithUpdateFromView } from './components/ajaxWithUpdateFromView.js';
 
 import { scrollbars } from "./components/scrollbars.js";
@@ -24,6 +25,7 @@ fields();
 
 ajaxViewModalButton();
 ajaxConfirmDeleteButton();
+ajaxCloneButton();
 ajaxWithUpdateFromView();
 
 scrollbars();

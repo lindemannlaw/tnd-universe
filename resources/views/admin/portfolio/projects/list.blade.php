@@ -39,6 +39,17 @@
                 :updateIdSection="'projects-list'"
             />
 
+            <x-admin.button
+                class="btn-sm p-2"
+                :btn="'btn-outline-secondary'"
+                :iconName="'copy'"
+                :withLoader="true"
+                data-clone-project
+                data-clone-url="{{ route('admin.portfolio.project.clone', $project->id) }}"
+                data-update-id-section="projects-list"
+                title="Duplizieren"
+            />
+
             <x-admin.ajax.view-modal-button
                 class="btn-sm p-2"
                 :action="route('admin.portfolio.project.edit', $project->id)"
