@@ -148,6 +148,7 @@ Route::group([
             Route::post('/store', [\App\Http\Controllers\Admin\Portfolio\ProjectController::class, 'store'])->name('admin.portfolio.project.store');
             Route::get('/{project}/edit', [\App\Http\Controllers\Admin\Portfolio\ProjectController::class, 'edit'])->name('admin.portfolio.project.edit');
             Route::patch('/{project}/update', [\App\Http\Controllers\Admin\Portfolio\ProjectController::class, 'update'])->name('admin.portfolio.project.update');
+            Route::post('/{project}/update-timestamps', [\App\Http\Controllers\Admin\Portfolio\ProjectController::class, 'updateTextTimestamps'])->name('admin.portfolio.project.update-timestamps');
             Route::delete('/{project}/delete', [\App\Http\Controllers\Admin\Portfolio\ProjectController::class, 'delete'])->name('admin.portfolio.project.delete');
             Route::delete('/{media}/delete-file', [\App\Http\Controllers\Admin\Portfolio\ProjectController::class, 'deleteFile'])->name('admin.portfolio.project.delete.file');
 

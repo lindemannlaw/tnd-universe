@@ -1,17 +1,11 @@
 /**
- * DeepL translation with review overlay + standalone SEO generation.
+ * DeepL translation with timestamp-based review overlay + standalone SEO generation.
  *
- * Flow (Translate):
- *  1. Collect ALL EN text fields
- *  2. Identify changed fields (delta vs DB snapshot)
- *  3. Send ALL fields with content to DeepL
- *  4. Show review overlay: changed fields on top (pre-selected),
- *     unchanged fields below (deselected)
- *  5. Apply approved translations to DE fields
+ * Timestamps are stored server-side per field:
+ *   { "title": { "en_changed_at": "ISO", "de_translated_at": "ISO" }, ... }
  *
- * Flow (SEO):
- *  1. Generate EN SEO via Claude
- *  2. Populate EN SEO fields
+ * A field "needs translation" when en_changed_at > de_translated_at (or de_translated_at missing).
+ * Projects without timestamps = all fields are considered in-sync (unchecked).
  */
 
 const TEXT_ONLY_NAMES = new Set(['content', 'headline', 'link_text', 'link_url', 'subhead']);
@@ -38,24 +32,12 @@ const FIELD_LABELS = {
 // ---------------------------------------------------------------------------
 
 export function translateBlocks() {
-    // Translate buttons
     document.querySelectorAll('[data-translate-blocks]').forEach(button => {
         if (button._translateInited) return;
         button._translateInited = true;
         button.addEventListener('click', () => handleTranslate(button));
-
-        // Seed snapshot from current (DB) values
-        const form = getForm(button);
-        if (form && !form._translationSnapshot) {
-            const initial = new Map();
-            collectTextItems(form, 'en').forEach(({ key, text }) => {
-                if (hasContent(text)) initial.set(key, text);
-            });
-            form._translationSnapshot = initial;
-        }
     });
 
-    // SEO generate buttons (standalone)
     document.querySelectorAll('[data-generate-seo]').forEach(button => {
         if (button._seoInited) return;
         button._seoInited = true;
@@ -64,7 +46,7 @@ export function translateBlocks() {
 }
 
 // ---------------------------------------------------------------------------
-// Form helper
+// Helpers
 // ---------------------------------------------------------------------------
 
 function getForm(button) {
@@ -72,34 +54,47 @@ function getForm(button) {
         ?? button.closest('.modal-content')?.querySelector('form');
 }
 
-// ---------------------------------------------------------------------------
-// SEO generation handler
-// ---------------------------------------------------------------------------
+function getTimestamps(button) {
+    try { return JSON.parse(button.dataset.textTimestamps || '{}'); }
+    catch { return {}; }
+}
 
-async function handleGenerateSeo(button) {
-    const form = getForm(button);
-    if (!form) return;
+function getUpdateTimestampsUrl(button) {
+    return button.dataset.updateTimestampsUrl || '';
+}
 
-    const generateSeoUrl = button.dataset.generateSeoUrl;
-    if (!generateSeoUrl) {
-        console.error('[translateBlocks] data-generate-seo-url missing');
-        return;
-    }
+function csrfToken() {
+    return document.querySelector('meta[name=csrf-token]')?.content ?? '';
+}
 
-    const titleSpan     = button.querySelector('span');
-    const originalTitle = titleSpan?.textContent ?? '';
-    button.disabled     = true;
-    if (titleSpan) titleSpan.textContent = 'SEO erstellen…';
+/**
+ * Convert form field name to normalized timestamp key.
+ * "title[en]" → "title"
+ * "description_blocks[en][1][items][0][content]" → "description_blocks.1.items.0.content"
+ * "property_details[en][property_type]" → "property_details.property_type"
+ */
+function formNameToTimestampKey(name) {
+    return name
+        .replace(/\[en\]/, '')        // remove locale
+        .replace(/\[de\]/, '')
+        .replace(/^\[/, '')
+        .replace(/\[/g, '.')          // [ → .
+        .replace(/\]/g, '');          // remove ]
+}
 
-    try {
-        await generateSeoFields(form, 'en', generateSeoUrl);
-        flashButton(button, '✓ SEO erstellt', 2500, titleSpan, originalTitle);
-    } catch (e) {
-        console.error('[translateBlocks] SEO generation failed:', e);
-        alert('SEO-Generierung fehlgeschlagen: ' + e.message);
-        if (titleSpan) titleSpan.textContent = originalTitle;
-        button.disabled = false;
-    }
+/**
+ * Check if a field needs translation based on timestamps.
+ * Returns true if en_changed_at > de_translated_at or de_translated_at is missing.
+ */
+function needsTranslation(timestamps, tsKey) {
+    const entry = timestamps[tsKey];
+    if (!entry || !entry.en_changed_at) return false; // no timestamp = in-sync
+    if (!entry.de_translated_at) return true;          // never translated
+    return entry.en_changed_at > entry.de_translated_at;
+}
+
+function getEnChangedAt(timestamps, tsKey) {
+    return timestamps[tsKey]?.en_changed_at ?? null;
 }
 
 // ---------------------------------------------------------------------------
@@ -110,11 +105,10 @@ async function handleTranslate(button) {
     const sourceLocale = 'en';
     const targetLocale = button.dataset.targetLocale || 'de';
     const translateUrl = button.dataset.translateUrl;
+    const timestamps   = getTimestamps(button);
+    const updateTsUrl  = getUpdateTimestampsUrl(button);
 
-    if (!translateUrl) {
-        console.error('[translateBlocks] data-translate-url missing on button');
-        return;
-    }
+    if (!translateUrl) return;
 
     const form = getForm(button);
     if (!form) return;
@@ -124,9 +118,7 @@ async function handleTranslate(button) {
     button.disabled     = true;
     if (titleSpan) titleSpan.textContent = 'Übersetze…';
 
-    // Collect all EN text items and determine which ones changed
-    const allItems   = collectTextItems(form, sourceLocale);
-    const snapshot   = form._translationSnapshot ?? null;
+    const allItems         = collectTextItems(form, sourceLocale);
     const itemsWithContent = allItems.filter(({ text }) => hasContent(text));
 
     if (itemsWithContent.length === 0) {
@@ -134,29 +126,19 @@ async function handleTranslate(button) {
         return;
     }
 
-    // Determine which items changed vs snapshot
+    // Determine which items need translation (timestamp-based)
     const changedKeys = new Set();
-    itemsWithContent.forEach(({ key, text }) => {
-        if (snapshot === null) {
-            // No snapshot = first time, treat all as changed
-            changedKeys.add(key);
-        } else if (!snapshot.has(key)) {
-            // New field
-            changedKeys.add(key);
-        } else if (snapshot.get(key) !== text) {
-            // Changed field
-            changedKeys.add(key);
-        }
+    itemsWithContent.forEach(({ key }) => {
+        const tsKey = formNameToTimestampKey(key);
+        if (needsTranslation(timestamps, tsKey)) changedKeys.add(key);
     });
 
     try {
-        const csrfToken = document.querySelector('meta[name=csrf-token]')?.content ?? '';
-
         const response = await fetch(translateUrl, {
             method: 'POST',
             headers: {
-                'Content-Type':     'application/json',
-                'X-CSRF-TOKEN':     csrfToken,
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken(),
                 'X-Requested-With': 'XMLHttpRequest',
             },
             body: JSON.stringify({
@@ -175,35 +157,36 @@ async function handleTranslate(button) {
 
         if (titleSpan) titleSpan.textContent = originalTitle;
 
-        const approved = await showReviewOverlay(translations, itemsWithContent, changedKeys);
+        const approved = await showReviewOverlay(translations, itemsWithContent, changedKeys, timestamps);
 
         button.disabled = false;
-
-        if (approved === null) return; // user cancelled
+        if (approved === null) return; // cancelled
 
         // Apply approved translations to DE fields
         let count = 0;
+        const appliedTsKeys = [];
         for (const [sourceKey, { text: translatedText, isHtml }] of Object.entries(approved)) {
             const targetKey   = sourceKey.replace(`[${sourceLocale}]`, `[${targetLocale}]`);
             const targetField = form.querySelector(`[name="${CSS.escape(targetKey)}"]`);
             if (!targetField) continue;
 
             targetField.value = translatedText;
-
-            if (targetField._sunEditor) {
-                targetField._sunEditor.setContents(translatedText);
-            }
-
+            if (targetField._sunEditor) targetField._sunEditor.setContents(translatedText);
             targetField.dispatchEvent(new Event('input', { bubbles: true }));
             count++;
+            appliedTsKeys.push(formNameToTimestampKey(sourceKey));
         }
 
-        // Update snapshot with all items that were shown (regardless of approval)
-        const newSnapshot = form._translationSnapshot ?? new Map();
-        itemsWithContent.forEach(({ key, text }) => {
-            newSnapshot.set(key, text);
-        });
-        form._translationSnapshot = newSnapshot;
+        // Update server-side timestamps
+        if (updateTsUrl && appliedTsKeys.length > 0) {
+            postTimestampUpdate(updateTsUrl, 'translation', appliedTsKeys);
+            // Update local timestamps so re-opening dialog reflects the change
+            const now = new Date().toISOString();
+            appliedTsKeys.forEach(k => {
+                timestamps[k] = { ...(timestamps[k] ?? {}), de_translated_at: now };
+            });
+            button.dataset.textTimestamps = JSON.stringify(timestamps);
+        }
 
         flashButton(button, `✓ ${count} Feld${count !== 1 ? 'er' : ''} übernommen`, 2500, titleSpan, originalTitle);
 
@@ -216,10 +199,71 @@ async function handleTranslate(button) {
 }
 
 // ---------------------------------------------------------------------------
+// SEO generation handler
+// ---------------------------------------------------------------------------
+
+async function handleGenerateSeo(button) {
+    const form = getForm(button);
+    if (!form) return;
+
+    const generateSeoUrl = button.dataset.generateSeoUrl;
+    const updateTsUrl    = getUpdateTimestampsUrl(button);
+    if (!generateSeoUrl) return;
+
+    const titleSpan     = button.querySelector('span');
+    const originalTitle = titleSpan?.textContent ?? '';
+    button.disabled     = true;
+    if (titleSpan) titleSpan.textContent = 'SEO erstellen…';
+
+    try {
+        await generateSeoFields(form, 'en', generateSeoUrl);
+
+        // Mark SEO fields as generated → triggers "needs translation" on next translate
+        if (updateTsUrl) {
+            postTimestampUpdate(updateTsUrl, 'seo', ['seo_title', 'seo_description', 'seo_keywords']);
+        }
+
+        // Also update the translate button's timestamps if present
+        const translateBtn = form.closest('.modal-content')?.querySelector('[data-translate-blocks]');
+        if (translateBtn) {
+            const ts = getTimestamps(translateBtn);
+            const now = new Date().toISOString();
+            ['seo_title', 'seo_description', 'seo_keywords'].forEach(k => {
+                ts[k] = { ...(ts[k] ?? {}), en_changed_at: now };
+            });
+            translateBtn.dataset.textTimestamps = JSON.stringify(ts);
+        }
+
+        flashButton(button, '✓ SEO erstellt', 2500, titleSpan, originalTitle);
+    } catch (e) {
+        console.error('[translateBlocks] SEO generation failed:', e);
+        alert('SEO-Generierung fehlgeschlagen: ' + e.message);
+        if (titleSpan) titleSpan.textContent = originalTitle;
+        button.disabled = false;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Timestamp update POST (fire-and-forget)
+// ---------------------------------------------------------------------------
+
+function postTimestampUpdate(url, type, keys) {
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken(),
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: JSON.stringify({ type, keys }),
+    }).catch(err => console.warn('[translateBlocks] timestamp update failed:', err));
+}
+
+// ---------------------------------------------------------------------------
 // Review overlay
 // ---------------------------------------------------------------------------
 
-function showReviewOverlay(translations, allItems, changedKeys) {
+function showReviewOverlay(translations, allItems, changedKeys, timestamps) {
     return new Promise(resolve => {
         let settled = false;
 
@@ -234,7 +278,7 @@ function showReviewOverlay(translations, allItems, changedKeys) {
         const onKeydown = e => { if (e.key === 'Escape') finish(null); };
         document.addEventListener('keydown', onKeydown);
 
-        const overlay = buildOverlayEl(translations, allItems, changedKeys);
+        const overlay = buildOverlayEl(translations, allItems, changedKeys, timestamps);
         document.body.appendChild(overlay);
 
         overlay.addEventListener('click', e => { if (e.target === overlay) finish(null); });
@@ -255,7 +299,7 @@ function showReviewOverlay(translations, allItems, changedKeys) {
     });
 }
 
-function buildOverlayEl(translations, allItems, changedKeys) {
+function buildOverlayEl(translations, allItems, changedKeys, timestamps) {
     const overlay = document.createElement('div');
     overlay.style.cssText = [
         'position:fixed;inset:0;z-index:10050;',
@@ -263,14 +307,21 @@ function buildOverlayEl(translations, allItems, changedKeys) {
         'background:rgba(0,0,0,0.55);padding:1rem;',
     ].join('');
 
-    // Sort: changed items first, then unchanged
+    // Sort: changed items first (by en_changed_at DESC), then unchanged
     const sortedItems = [...allItems].sort((a, b) => {
         const aChanged = changedKeys.has(a.key) ? 0 : 1;
         const bChanged = changedKeys.has(b.key) ? 0 : 1;
-        return aChanged - bChanged;
+        if (aChanged !== bChanged) return aChanged - bChanged;
+        // Within changed: sort by en_changed_at DESC
+        if (aChanged === 0) {
+            const aTs = getEnChangedAt(timestamps, formNameToTimestampKey(a.key)) ?? '';
+            const bTs = getEnChangedAt(timestamps, formNameToTimestampKey(b.key)) ?? '';
+            return bTs.localeCompare(aTs); // DESC
+        }
+        return 0;
     });
 
-    const changedCount = [...changedKeys].length;
+    const changedCount = changedKeys.size;
 
     const itemsHtml = sortedItems.map(({ key, text: sourceText, isHtml }) => {
         const translated    = translations[key] ?? '';
@@ -282,18 +333,14 @@ function buildOverlayEl(translations, allItems, changedKeys) {
             : '';
 
         const editorHtml = isHtml
-            ? `<div
-                    contenteditable="true"
+            ? `<div contenteditable="true"
                     class="form-control form-control-sm tro-editor"
                     style="min-height:64px;max-height:200px;overflow-y:auto;white-space:pre-wrap;"
-                    data-key="${escAttr(key)}"
-                    data-is-html="true"
+                    data-key="${escAttr(key)}" data-is-html="true"
                 >${translated}</div>`
-            : `<textarea
-                    class="form-control form-control-sm tro-editor"
+            : `<textarea class="form-control form-control-sm tro-editor"
                     rows="${translated.length > 140 ? 4 : 2}"
-                    data-key="${escAttr(key)}"
-                    data-is-html="false"
+                    data-key="${escAttr(key)}" data-is-html="false"
                 >${escHtml(translated)}</textarea>`;
 
         return `
@@ -304,49 +351,40 @@ function buildOverlayEl(translations, allItems, changedKeys) {
                     ${badgeHtml}
                 </div>
                 <div class="d-flex align-items-start gap-2">
-                    <span class="flex-shrink-0" style="font-size:1rem;line-height:1.4;" title="English">🇬🇧</span>
+                    <span class="flex-shrink-0" style="font-size:1rem;line-height:1.4;" title="English">\u{1F1EC}\u{1F1E7}</span>
                     <div class="small text-muted fst-italic border-start border-2 border-secondary-subtle ps-2 flex-grow-1"
                          style="overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">
                         ${escHtml(sourcePreview)}
                     </div>
                 </div>
                 <div class="d-flex align-items-start gap-2">
-                    <span class="flex-shrink-0" style="font-size:1rem;line-height:1.8;" title="Deutsch">🇩🇪</span>
+                    <span class="flex-shrink-0" style="font-size:1rem;line-height:1.8;" title="Deutsch">\u{1F1E9}\u{1F1EA}</span>
                     <div class="flex-grow-1">${editorHtml}</div>
                 </div>
             </div>`;
     }).join('');
 
-    // Separator between changed and unchanged sections
-    const separatorIndex = changedCount;
-
     overlay.innerHTML = `
         <div class="bg-white rounded-3 shadow-lg d-flex flex-column"
              style="width:min(800px,96vw);max-height:90vh;">
-
             <div class="d-flex align-items-center gap-3 px-4 py-3 border-bottom flex-shrink-0">
-                <h5 class="mb-0 me-auto fw-semibold">Übersetzungen prüfen</h5>
+                <h5 class="mb-0 me-auto fw-semibold">\u{1F310} \u00DCbersetzungen pr\u00FCfen</h5>
                 <label class="d-flex align-items-center gap-2 mb-0 small user-select-none" style="cursor:pointer;">
                     <input class="form-check-input mt-0" type="checkbox" id="tro-select-all">
-                    Alle auswählen
+                    Alle ausw\u00E4hlen
                 </label>
             </div>
-
             <div class="overflow-y-auto flex-grow-1 px-4 py-3 d-flex flex-column gap-3">
-                ${changedCount > 0 && changedCount < allItems.length
-                    ? `<div class="small fw-semibold text-warning-emphasis">${changedCount} geänderte Felder</div>`
-                    : ''}
+                ${changedCount > 0
+                    ? `<div class="small fw-semibold text-warning-emphasis">${changedCount} Feld${changedCount !== 1 ? 'er' : ''} ge\u00E4ndert seit letzter \u00DCbersetzung</div>`
+                    : `<div class="small text-muted">Keine \u00C4nderungen seit letzter \u00DCbersetzung erkannt</div>`}
                 ${itemsHtml}
-                ${changedCount > 0 && changedCount < allItems.length
-                    ? '' // separator is visual via border-warning on changed items
-                    : ''}
             </div>
-
             <div class="d-flex align-items-center justify-content-between gap-2 px-4 py-3 border-top flex-shrink-0">
                 <span class="small text-muted" id="tro-count"></span>
                 <div class="d-flex gap-2">
                     <button type="button" class="btn btn-outline-secondary btn-sm" id="tro-cancel">Abbrechen</button>
-                    <button type="button" class="btn btn-dark btn-sm" id="tro-apply">Übernehmen</button>
+                    <button type="button" class="btn btn-dark btn-sm" id="tro-apply">\u00DCbernehmen</button>
                 </div>
             </div>
         </div>`;
@@ -359,10 +397,10 @@ function buildOverlayEl(translations, allItems, changedKeys) {
     const updateState = () => {
         const all     = [...overlay.querySelectorAll('[data-tro-checkbox]')];
         const checked = all.filter(c => c.checked).length;
-        countEl.textContent          = `${checked} von ${allItems.length} ausgewählt`;
-        selectAllEl.checked          = checked === all.length;
-        selectAllEl.indeterminate    = checked > 0 && checked < all.length;
-        applyBtn.disabled            = checked === 0;
+        countEl.textContent       = `${checked} von ${allItems.length} ausgew\u00E4hlt`;
+        selectAllEl.checked       = checked === all.length;
+        selectAllEl.indeterminate = checked > 0 && checked < all.length;
+        applyBtn.disabled         = checked === 0;
     };
 
     selectAllEl.addEventListener('change', () => {
@@ -388,11 +426,11 @@ function getLabelFromKey(key) {
         const block = parseInt(db[1]) + 1;
         const item  = db[2] !== undefined ? parseInt(db[2]) + 1 : null;
         const field = FIELD_LABELS[db[3]] ?? humanize(db[3]);
-        return item ? `Block ${block} · Spalte ${item} · ${field}` : `Block ${block} · ${field}`;
+        return item ? `Block ${block} \u00B7 Spalte ${item} \u00B7 ${field}` : `Block ${block} \u00B7 ${field}`;
     }
 
     const pd = key.match(/property_details\[en\]\[(\w+)\]/);
-    if (pd) return `Property Details · ${FIELD_LABELS[pd[1]] ?? humanize(pd[1])}`;
+    if (pd) return `Property Details \u00B7 ${FIELD_LABELS[pd[1]] ?? humanize(pd[1])}`;
 
     const sf = key.match(/^(\w+)\[en\]/);
     if (sf) return FIELD_LABELS[sf[1]] ?? humanize(sf[1]);
@@ -431,13 +469,11 @@ async function generateSeoFields(form, locale, generateSeoUrl) {
 
     if (!context.title && !context.short_description) return;
 
-    const csrfToken = document.querySelector('meta[name=csrf-token]')?.content ?? '';
-
     const response = await fetch(generateSeoUrl, {
         method: 'POST',
         headers: {
-            'Content-Type':     'application/json',
-            'X-CSRF-TOKEN':     csrfToken,
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken(),
             'X-Requested-With': 'XMLHttpRequest',
         },
         body: JSON.stringify({ locale, context }),
@@ -479,7 +515,6 @@ function collectTextItems(form, sourceLocale) {
             if (!match || !TEXT_ONLY_NAMES.has(match[1])) return;
         }
 
-        // For WYSIWYG fields, get content from SunEditor if available
         const value = field._sunEditor ? field._sunEditor.getContents() : (field.value ?? '');
 
         items.push({ key: name, text: value, isHtml: field.hasAttribute('data-wysiwyg') });

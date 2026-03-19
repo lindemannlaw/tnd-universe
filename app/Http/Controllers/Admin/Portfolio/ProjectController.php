@@ -120,6 +120,9 @@ class ProjectController extends Controller
         $data = $request->validated();
         $data = $this->prepareDescriptionBlocksData($request, $data);
 
+        // ── Snapshot old EN text values for timestamp comparison ──
+        $oldTexts = $this->extractEnTextValues($project);
+
         try {
             DB::beginTransaction();
 
@@ -215,11 +218,10 @@ class ProjectController extends Controller
 
             DB::commit();
 
-            $rawFromDb = DB::table('projects')->where('id', $project->id)->value('description_blocks');
-            Log::info('[debug-fb4a59] RAW DB after commit', [
-                'project_id' => $project->id,
-                'raw_snippet' => mb_substr((string) $rawFromDb, 0, 500),
-            ]);
+            // ── Update text_timestamps for changed EN fields ──
+            $project->refresh();
+            $newTexts = $this->extractEnTextValues($project);
+            $this->updateTextTimestampsOnSave($project, $oldTexts, $newTexts);
 
         } catch (\Exception $exception) {
             DB::rollBack();
@@ -559,5 +561,115 @@ class ProjectController extends Controller
         $data['description'] = $description;
 
         return $data;
+    }
+
+    // =========================================================================
+    // Text Timestamps — Change Detection for Translation & SEO
+    // =========================================================================
+
+    /**
+     * API endpoint: mark fields as translated or SEO-generated.
+     */
+    public function updateTextTimestamps(Request $request, Project $project): JsonResponse
+    {
+        $request->validate([
+            'type' => 'required|in:translation,seo',
+            'keys' => 'required|array|min:1',
+            'keys.*' => 'string|max:200',
+        ]);
+
+        $type      = $request->input('type');
+        $keys      = $request->input('keys');
+        $now       = now()->toIso8601String();
+        $timestamps = $project->text_timestamps ?? [];
+        $field      = $type === 'translation' ? 'de_translated_at' : 'seo_generated_at';
+
+        foreach ($keys as $key) {
+            $timestamps[$key] = array_merge($timestamps[$key] ?? [], [$field => $now]);
+        }
+
+        DB::table('projects')
+            ->where('id', $project->id)
+            ->update(['text_timestamps' => json_encode($timestamps, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)]);
+
+        return response()->json(['ok' => true, 'updated' => count($keys)]);
+    }
+
+    /**
+     * Extract all EN text values from the project as a flat key→value map.
+     * Keys match the format used in text_timestamps (e.g. "title", "description_blocks.1.items.0.content").
+     */
+    private function extractEnTextValues(Project $project): array
+    {
+        $texts = [];
+        $locale = 'en';
+
+        // Simple translatable fields
+        foreach (['title', 'short_description', 'location', 'seo_title', 'seo_description', 'seo_keywords'] as $field) {
+            $texts[$field] = $this->stripForCompare($project->getTranslation($field, $locale) ?? '');
+        }
+
+        // Property details
+        $pd = $project->getTranslation('property_details', $locale);
+        if (is_array($pd)) {
+            foreach (['property_type', 'status', 'year_built'] as $subField) {
+                $texts["property_details.$subField"] = $this->stripForCompare($pd[$subField] ?? '');
+            }
+        }
+
+        // Description blocks
+        $blocks = $project->getTranslation('description_blocks', $locale);
+        if (is_array($blocks)) {
+            foreach ($blocks as $bi => $block) {
+                $type = $block['type'] ?? '';
+
+                if ($type === 'text') {
+                    $texts["description_blocks.$bi.content"] = $this->stripForCompare($block['content'] ?? '');
+                }
+
+                if (in_array($type, ['text_column_row', 'floating_gallery'], true)) {
+                    foreach ($block['items'] ?? [] as $ii => $item) {
+                        foreach (['content', 'headline', 'link_text', 'link_url', 'subhead'] as $tf) {
+                            if (isset($item[$tf]) || $type === 'text_column_row') {
+                                $texts["description_blocks.$bi.items.$ii.$tf"] = $this->stripForCompare($item[$tf] ?? '');
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return $texts;
+    }
+
+    /**
+     * Compare old vs new text values and update en_changed_at timestamps.
+     */
+    private function updateTextTimestampsOnSave(Project $project, array $oldTexts, array $newTexts): void
+    {
+        $now        = now()->toIso8601String();
+        $timestamps = $project->text_timestamps ?? [];
+        $changed    = false;
+
+        // Check all new text values against old
+        foreach ($newTexts as $key => $newValue) {
+            $oldValue = $oldTexts[$key] ?? '';
+            if ($newValue !== $oldValue) {
+                $timestamps[$key] = array_merge($timestamps[$key] ?? [], ['en_changed_at' => $now]);
+                $changed = true;
+            }
+        }
+
+        if ($changed) {
+            DB::table('projects')
+                ->where('id', $project->id)
+                ->update(['text_timestamps' => json_encode($timestamps, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)]);
+        }
+    }
+
+    private function stripForCompare(string $value): string
+    {
+        // Normalize HTML whitespace for reliable comparison
+        return trim(preg_replace('/\s+/', ' ', strip_tags($value)));
     }
 }

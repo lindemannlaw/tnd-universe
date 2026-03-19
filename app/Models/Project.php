@@ -33,6 +33,8 @@ class Project extends Model implements HasMedia
         'info',
         'area',
 
+        'text_timestamps',
+
         'active',
         'sort',
     ];
@@ -57,6 +59,7 @@ class Project extends Model implements HasMedia
     {
         return [
             'active' => 'boolean',
+            'text_timestamps' => 'array',
         ];
     }
 

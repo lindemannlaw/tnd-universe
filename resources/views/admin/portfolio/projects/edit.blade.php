@@ -11,6 +11,8 @@
         <x-admin.button
             data-generate-seo
             data-generate-seo-url="{{ route('admin.generate-seo') }}"
+            data-update-timestamps-url="{{ route('admin.portfolio.project.update-timestamps', $project) }}"
+            data-text-timestamps="{{ json_encode($project->text_timestamps ?? [], JSON_UNESCAPED_UNICODE) }}"
             :btn="'btn-outline-secondary btn-sm'"
             :iconName="'stars'"
             :title="'SEO generieren'"
@@ -19,6 +21,8 @@
             data-translate-blocks
             data-target-locale="de"
             data-translate-url="{{ route('admin.translate') }}"
+            data-update-timestamps-url="{{ route('admin.portfolio.project.update-timestamps', $project) }}"
+            data-text-timestamps="{{ json_encode($project->text_timestamps ?? [], JSON_UNESCAPED_UNICODE) }}"
             :btn="'btn-outline-info btn-sm'"
             :iconName="'globe'"
             :shortTitle="'Übersetze…'"
