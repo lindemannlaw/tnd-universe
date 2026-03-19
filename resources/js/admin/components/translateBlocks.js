@@ -355,20 +355,17 @@ function buildOverlayEl(translations, allItems, changedKeys, timestamps, current
         else if (hasFormatDiff) badgeHtml = '<span class="badge bg-info text-dark ms-2">Formatierung ge\u00E4ndert</span>';
         else if (isChanged)     badgeHtml = '<span class="badge bg-warning text-dark ms-2">Ge\u00E4ndert</span>';
 
-        // Source display: render HTML so formatting is visible (bold = bold, etc.)
-        // For the diff view: show text diff below the rendered HTML
-        const renderedSource = isHtml ? sanitizeHtml(sourceText) : escHtml(sourceText);
-        const diffBlockHtml  = hasTextDiff
-            ? `<div class="small mt-1 p-2 rounded" style="background:#fff8ed;border:1px dashed #f59e0b;">
-                    <span class="text-muted" style="font-size:0.7rem;">\u00C4nderungen:</span><br>
-                    ${highlightDiff(oldClean, sourceClean)}
-               </div>`
-            : hasFormatDiff
-                ? `<div class="small mt-1 p-2 rounded" style="background:#ecfeff;border:1px dashed #06b6d4;">
-                        <span class="text-muted" style="font-size:0.7rem;">Formatierung ge\u00E4ndert:</span><br>
-                        ${highlightHtmlDiff(rawOldTxt, sourceText)}
-                   </div>`
-                : '';
+        // EN source: only show diff (compact), not full text
+        let enContentHtml;
+        if (hasTextDiff) {
+            enContentHtml = `<div class="small">${highlightDiff(oldClean, sourceClean)}</div>`;
+        } else if (hasFormatDiff) {
+            enContentHtml = `<div class="small">${highlightHtmlDiff(rawOldTxt, sourceText)}</div>`;
+        } else {
+            // No diff available: show truncated preview
+            const preview = sourceClean.length > 120 ? sourceClean.substring(0, 120) + '\u2026' : sourceClean;
+            enContentHtml = `<div class="small text-muted fst-italic">${escHtml(preview)}</div>`;
+        }
 
         const editorHtml = isHtml
             ? `<div contenteditable="true"
@@ -402,10 +399,9 @@ function buildOverlayEl(translations, allItems, changedKeys, timestamps, current
                 </div>
                 <div class="d-flex align-items-start gap-2">
                     <span class="flex-shrink-0" style="font-size:1rem;line-height:1.4;" title="English">\u{1F1EC}\u{1F1E7}</span>
-                    <div class="small text-muted border-start border-2 border-secondary-subtle ps-2 flex-grow-1"
+                    <div class="border-start border-2 border-secondary-subtle ps-2 flex-grow-1"
                          style="white-space:pre-wrap;">
-                        ${renderedSource}
-                        ${diffBlockHtml}
+                        ${enContentHtml}
                     </div>
                 </div>
                 <div class="d-flex align-items-start gap-2">
