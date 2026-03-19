@@ -98,6 +98,7 @@
                                         <option value="text_column_row" {{ data_get($block, 'type') === 'text_column_row' ? 'selected' : null }}>Text Column Row</option>
                                         <option value="video" {{ data_get($block, 'type') === 'video' ? 'selected' : null }}>Video</option>
                                         <option value="embed" {{ data_get($block, 'type') === 'embed' ? 'selected' : null }}>3D Tour / Embed</option>
+                                        <option value="numbers" {{ data_get($block, 'type') === 'numbers' ? 'selected' : null }}>Numbers / KPIs</option>
                                     </select>
                                     <x-admin.button data-block-add-after class="p-2 ms-auto" :btn="'btn-outline-success'" :iconName="'plus-circle'" />
                                     <x-admin.button data-block-duplicate class="p-2" :btn="'btn-outline-secondary'" :iconName="'copy'" />
@@ -554,6 +555,101 @@
                                         </div>
                                     </div>
 
+                                    {{-- NUMBERS / KPIs --}}
+                                    <div data-block-type-panel="numbers" class="d-flex flex-column gap-3 {{ data_get($block, 'type') === 'numbers' ? null : 'd-none' }}">
+                                        {{-- Padding --}}
+                                        <div class="row g-2">
+                                            <div class="col-6">
+                                                <x-admin.field.padding-select
+                                                    :name="'description_blocks['. $lang .'][' . $blockIndex . '][padding_top]'"
+                                                    :value="data_get($block, 'padding_top', 0)"
+                                                    :placeholder="'Padding oben'"
+                                                />
+                                            </div>
+                                            <div class="col-6">
+                                                <x-admin.field.padding-select
+                                                    :name="'description_blocks['. $lang .'][' . $blockIndex . '][padding_bottom]'"
+                                                    :value="data_get($block, 'padding_bottom', 0)"
+                                                    :placeholder="'Padding unten'"
+                                                />
+                                            </div>
+                                        </div>
+                                        {{-- Headline --}}
+                                        <div class="row g-2">
+                                            <div class="col-12 col-lg-6">
+                                                <x-admin.field.text
+                                                    :name="'description_blocks['. $lang .'][' . $blockIndex . '][headline]'"
+                                                    :value="data_get($block, 'headline')"
+                                                    :required="false"
+                                                    :placeholder="'Headline (optional)'"
+                                                />
+                                            </div>
+                                            <div class="col-6 col-lg-3">
+                                                <x-admin.field.number
+                                                    :name="'description_blocks['. $lang .'][' . $blockIndex . '][headline_col_span]'"
+                                                    :value="data_get($block, 'headline_col_span', 12)"
+                                                    :placeholder="'Headline Spalten (1-12)'"
+                                                    :fieldAttrs="'min=1 max=12'"
+                                                />
+                                            </div>
+                                            <div class="col-6 col-lg-3 d-flex align-items-center">
+                                                <div class="form-check form-switch mb-0">
+                                                    <input class="form-check-input" type="checkbox" value="1"
+                                                           name="description_blocks[{{ $lang }}][{{ $blockIndex }}][headline_line]"
+                                                           {{ data_get($block, 'headline_line') ? 'checked' : '' }}>
+                                                    <label class="form-check-label small">Linie unter Headline</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {{-- Items --}}
+                                        <div class="d-flex flex-column gap-3" data-numbers-items-wrapper>
+                                            @foreach((data_get($block, 'items') ?: []) as $itemIndex => $item)
+                                                <div class="border rounded p-3 d-flex flex-column gap-2 bg-light" data-numbers-item>
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <span class="fw-semibold small text-muted">Modul</span>
+                                                        <x-admin.button data-numbers-item-move class="p-2 ms-auto" :btn="'btn-outline-secondary'" :iconName="'arrows-move'" />
+                                                        <x-admin.button data-numbers-item-add-after class="p-2" :btn="'btn-outline-success'" :iconName="'plus-circle'" />
+                                                        <x-admin.button data-numbers-item-remove class="p-2" :btn="'btn-outline-danger'" :iconName="'dash-circle'" />
+                                                    </div>
+                                                    <div class="row g-2">
+                                                        <div class="col-12 col-lg-6">
+                                                            <x-admin.field.text
+                                                                :name="'description_blocks['. $lang .'][' . $blockIndex . '][items][' . $itemIndex . '][title]'"
+                                                                :value="data_get($item, 'title')"
+                                                                :required="false"
+                                                                :placeholder="'Title (z.B. RESIDENCE)'"
+                                                            />
+                                                        </div>
+                                                        <div class="col-12 col-lg-6">
+                                                            <select class="form-select form-select-sm" name="description_blocks[{{ $lang }}][{{ $blockIndex }}][items][{{ $itemIndex }}][line_color]">
+                                                                @foreach(['emerald-900' => 'Emerald 900 (Default)', 'primary' => 'Primary (Dark)', 'emerald-950' => 'Emerald 950', 'emerald-800' => 'Emerald 800', 'gold-bright' => 'Gold Bright'] as $val => $label)
+                                                                    <option value="{{ $val }}" {{ data_get($item, 'line_color', 'emerald-900') === $val ? 'selected' : '' }}>{{ $label }}</option>
+                                                                @endforeach
+                                                            </select>
+                                                        </div>
+                                                        <div class="col-12 col-lg-6">
+                                                            <x-admin.field.text
+                                                                :name="'description_blocks['. $lang .'][' . $blockIndex . '][items][' . $itemIndex . '][number]'"
+                                                                :value="data_get($item, 'number')"
+                                                                :required="false"
+                                                                :placeholder="'Number (z.B. 4, 7,093)'"
+                                                            />
+                                                        </div>
+                                                        <div class="col-12 col-lg-6">
+                                                            <x-admin.field.text
+                                                                :name="'description_blocks['. $lang .'][' . $blockIndex . '][items][' . $itemIndex . '][subline]'"
+                                                                :value="data_get($item, 'subline')"
+                                                                :required="false"
+                                                                :placeholder="'Subline (z.B. Beds, +/- Acres)'"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                        <x-admin.button data-numbers-item-add class="ms-auto" :btn="'btn-outline-primary'" :title="'Modul hinzufügen'" :iconName="'plus-circle'" />
+                                    </div>
+
                                 </div>
                             </div>
                         @endforeach
@@ -587,6 +683,7 @@
                                 <option value="text_column_row">Text Column Row</option>
                                 <option value="video">Video</option>
                                 <option value="embed">3D Tour / Embed</option>
+                                <option value="numbers">Numbers / KPIs</option>
                             </select>
                             <x-admin.button data-block-add-after class="p-2 ms-auto" :btn="'btn-outline-success'" :iconName="'plus-circle'" />
                             <x-admin.button data-block-duplicate class="p-2" :btn="'btn-outline-secondary'" :iconName="'copy'" />
@@ -719,6 +816,32 @@
                                 <div>
                                     <x-admin.field.number :name="'description_blocks['. $lang .'][__block__][embed_height]'" :value="500" :placeholder="'Höhe in Pixel (100-2000)'" :fieldAttrs="'min=100 max=2000'" />
                                 </div>
+                            </div>
+                            <div data-block-type-panel="numbers" class="d-flex flex-column gap-3 d-none">
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <x-admin.field.padding-select :name="'description_blocks['. $lang .'][__block__][padding_top]'" :value="0" :placeholder="'Padding oben'" />
+                                    </div>
+                                    <div class="col-6">
+                                        <x-admin.field.padding-select :name="'description_blocks['. $lang .'][__block__][padding_bottom]'" :value="0" :placeholder="'Padding unten'" />
+                                    </div>
+                                </div>
+                                <div class="row g-2">
+                                    <div class="col-12 col-lg-6">
+                                        <x-admin.field.text :name="'description_blocks['. $lang .'][__block__][headline]'" :required="false" :placeholder="'Headline (optional)'" />
+                                    </div>
+                                    <div class="col-6 col-lg-3">
+                                        <x-admin.field.number :name="'description_blocks['. $lang .'][__block__][headline_col_span]'" :value="12" :placeholder="'Headline Spalten (1-12)'" :fieldAttrs="'min=1 max=12'" />
+                                    </div>
+                                    <div class="col-6 col-lg-3 d-flex align-items-center">
+                                        <div class="form-check form-switch mb-0">
+                                            <input class="form-check-input" type="checkbox" value="1" name="description_blocks[{{ $lang }}][__block__][headline_line]">
+                                            <label class="form-check-label small">Linie unter Headline</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex flex-column gap-3" data-numbers-items-wrapper></div>
+                                <x-admin.button data-numbers-item-add class="ms-auto" :btn="'btn-outline-primary'" :title="'Modul hinzufügen'" :iconName="'plus-circle'" />
                             </div>
                         </div>
                     </div>
@@ -853,6 +976,38 @@
                             </div>
                         </div>
 
+                    </div>
+                </template>
+
+                {{-- Numbers item template --}}
+                <template data-numbers-item-template>
+                    <div class="border rounded p-3 d-flex flex-column gap-2 bg-light" data-numbers-item>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="fw-semibold small text-muted">Modul</span>
+                            <x-admin.button data-numbers-item-move class="p-2 ms-auto" :btn="'btn-outline-secondary'" :iconName="'arrows-move'" />
+                            <x-admin.button data-numbers-item-add-after class="p-2" :btn="'btn-outline-success'" :iconName="'plus-circle'" />
+                            <x-admin.button data-numbers-item-remove class="p-2" :btn="'btn-outline-danger'" :iconName="'dash-circle'" />
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-12 col-lg-6">
+                                <x-admin.field.text :name="'description_blocks['. $lang .'][__block__][items][__item__][title]'" :required="false" :placeholder="'Title (z.B. RESIDENCE)'" />
+                            </div>
+                            <div class="col-12 col-lg-6">
+                                <select class="form-select form-select-sm" name="description_blocks[{{ $lang }}][__block__][items][__item__][line_color]">
+                                    <option value="emerald-900" selected>Emerald 900 (Default)</option>
+                                    <option value="primary">Primary (Dark)</option>
+                                    <option value="emerald-950">Emerald 950</option>
+                                    <option value="emerald-800">Emerald 800</option>
+                                    <option value="gold-bright">Gold Bright</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-lg-6">
+                                <x-admin.field.text :name="'description_blocks['. $lang .'][__block__][items][__item__][number]'" :required="false" :placeholder="'Number (z.B. 4, 7,093)'" />
+                            </div>
+                            <div class="col-12 col-lg-6">
+                                <x-admin.field.text :name="'description_blocks['. $lang .'][__block__][items][__item__][subline]'" :required="false" :placeholder="'Subline (z.B. Beds, +/- Acres)'" />
+                            </div>
+                        </div>
                     </div>
                 </template>
 

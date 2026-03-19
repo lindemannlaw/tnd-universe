@@ -55,14 +55,22 @@ class UpdateRequest extends FormRequest
             $rules['short_description.' . $locale] = ['required', 'string'];
             $rules['description.' . $locale] = ['nullable', 'string'];
             $rules['description_blocks.' . $locale] = ['required', 'array', 'min:1'];
-            $rules['description_blocks.' . $locale . '.*.type'] = ['required', 'string', 'in:text,floating_gallery,text_column_row,video,embed'];
+            $rules['description_blocks.' . $locale . '.*.type'] = ['required', 'string', 'in:text,floating_gallery,text_column_row,video,embed,numbers'];
             $rules['description_blocks.' . $locale . '.*.content'] = ['nullable', 'string'];
+            $rules['description_blocks.' . $locale . '.*.headline'] = ['nullable', 'string', 'max:255'];
+            $rules['description_blocks.' . $locale . '.*.headline_col_span'] = ['nullable', 'integer', 'min:1', 'max:12'];
+            $rules['description_blocks.' . $locale . '.*.headline_line'] = ['nullable'];
             $rules['description_blocks.' . $locale . '.*.padding_top'] = ['nullable', 'integer', 'min:0', 'max:300'];
             $rules['description_blocks.' . $locale . '.*.padding_bottom'] = ['nullable', 'integer', 'min:0', 'max:300'];
             // floating_gallery items
             $rules['description_blocks.' . $locale . '.*.items'] = ['nullable', 'array'];
             $rules['description_blocks.' . $locale . '.*.items.*.headline'] = ['nullable', 'string', 'max:255'];
             $rules['description_blocks.' . $locale . '.*.items.*.subhead'] = ['nullable', 'string', 'max:255'];
+            // numbers item fields
+            $rules['description_blocks.' . $locale . '.*.items.*.title'] = ['nullable', 'string', 'max:255'];
+            $rules['description_blocks.' . $locale . '.*.items.*.number'] = ['nullable', 'string', 'max:255'];
+            $rules['description_blocks.' . $locale . '.*.items.*.subline'] = ['nullable', 'string', 'max:255'];
+            $rules['description_blocks.' . $locale . '.*.items.*.line_color'] = ['nullable', 'string', 'in:emerald-950,emerald-900,emerald-800,primary,gold-bright'];
             $rules['description_blocks.' . $locale . '.*.items.*.col_span'] = ['nullable', 'integer', 'min:1', 'max:12'];
             $rules['description_blocks.' . $locale . '.*.items.*.col_start'] = ['nullable', 'integer', 'min:1', 'max:12'];
             $rules['description_blocks.' . $locale . '.*.items.*.image'] = ['nullable', 'string', 'max:2048'];

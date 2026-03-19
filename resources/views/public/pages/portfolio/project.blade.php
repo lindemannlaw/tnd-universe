@@ -318,6 +318,50 @@ $galleryImageSizes = [
                                 <iframe src="{{ $embedUrl }}" width="100%" height="{{ $embedHeight }}" frameborder="0" allowfullscreen allow="autoplay; encrypted-media; xr-spatial-tracking" loading="lazy" style="border: 0;"></iframe>
                             </div>
                         @endif
+                    @elseif(data_get($blockOrRow, 'type') === 'numbers')
+                        @php
+                            $nPtop    = max(0, min(300, (int)data_get($blockOrRow, 'padding_top', 0)));
+                            $nPbottom = max(0, min(300, (int)data_get($blockOrRow, 'padding_bottom', 0)));
+                            $nHeadlineColSpan = max(1, min(12, (int)data_get($blockOrRow, 'headline_col_span', 12)));
+                            $nHeadlineLine = (bool)data_get($blockOrRow, 'headline_line', false);
+                            $nItems = data_get($blockOrRow, 'items', []);
+                            $lineColors = [
+                                'emerald-950' => 'var(--color-primary-brand-950-darkest)',
+                                'emerald-900' => 'var(--color-primary-brand-900-darker-silent)',
+                                'emerald-800' => 'var(--color-primary-brand-800-dark)',
+                                'primary'     => 'var(--color-font-primary)',
+                                'gold-bright' => 'var(--color-gold-lighter)',
+                            ];
+                        @endphp
+                        <div class="project-numbers"
+                             style="{{ $nPtop > 0 ? 'padding-top:' . $nPtop . 'px;' : '' }}{{ $nPbottom > 0 ? 'padding-bottom:' . $nPbottom . 'px;' : '' }}">
+                            @if(filled(data_get($blockOrRow, 'headline')))
+                                <h2 class="project-numbers-headline{{ $nHeadlineLine ? ' has-line' : '' }}"
+                                    style="--col-span: {{ $nHeadlineColSpan }};">
+                                    {{ data_get($blockOrRow, 'headline') }}
+                                </h2>
+                            @endif
+                            <div class="project-numbers-grid">
+                                @foreach($nItems as $item)
+                                    @php
+                                        $itemLineColor = $lineColors[data_get($item, 'line_color', 'emerald-900')] ?? 'var(--color-primary-brand-900-darker-silent)';
+                                        $hasNumber = filled(data_get($item, 'number'));
+                                    @endphp
+                                    <div class="project-numbers-item{{ !$hasNumber ? ' no-number' : '' }}">
+                                        @if(filled(data_get($item, 'title')))
+                                            <span class="project-numbers-item-title">{{ data_get($item, 'title') }}</span>
+                                        @endif
+                                        <hr class="project-numbers-item-line" style="background: {{ $itemLineColor }};">
+                                        @if($hasNumber)
+                                            <span class="project-numbers-item-number">{{ data_get($item, 'number') }}</span>
+                                        @endif
+                                        @if(filled(data_get($item, 'subline')))
+                                            <span class="project-numbers-item-subline">{{ data_get($item, 'subline') }}</span>
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
                     @else
                         <div class="project-description-content">
                             {!! data_get($blockOrRow, 'content') !!}

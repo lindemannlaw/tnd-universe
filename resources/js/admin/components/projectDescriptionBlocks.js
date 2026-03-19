@@ -3,7 +3,7 @@ import { fields } from '../fields/fields.js';
 import { wysiwyg } from './wysiwyg.js';
 
 // Field name suffixes that are text-only (per-language, not synced to other languages)
-const TEXT_ONLY_NAMES = new Set(['content', 'headline', 'link_text', 'link_url', 'subhead']);
+const TEXT_ONLY_NAMES = new Set(['content', 'headline', 'link_text', 'link_url', 'subhead', 'title', 'number', 'subline']);
 
 export function projectDescriptionBlocks() {
     const builders = document.querySelectorAll('[data-project-description-builder]');
@@ -62,7 +62,7 @@ function getBlockAtIndex(builder, index) {
 }
 
 function getItemIndex(item, itemSelector) {
-    const wrapper = item.closest('[data-tc-items-wrapper], [data-gallery-items-wrapper]');
+    const wrapper = item.closest('[data-tc-items-wrapper], [data-gallery-items-wrapper], [data-numbers-items-wrapper]');
     if (!wrapper) return -1;
     return [...wrapper.querySelectorAll(`:scope > ${itemSelector}`)].indexOf(item);
 }
@@ -186,6 +186,16 @@ function syncBuildersOnInit(primaryBuilder, siblingBuilder) {
                 }
                 if (primaryCount > siblingCount) { reindexBuilder(siblingBuilder); fields(); }
             }
+        } else if (primaryType === 'numbers') {
+            const primaryCount = primaryBlock.querySelectorAll('[data-numbers-items-wrapper] > [data-numbers-item]').length;
+            const siblingWrapper = siblingBlock.querySelector('[data-numbers-items-wrapper]');
+            if (siblingWrapper) {
+                const siblingCount = siblingWrapper.querySelectorAll(':scope > [data-numbers-item]').length;
+                for (let i = siblingCount; i < primaryCount; i++) {
+                    siblingWrapper.appendChild(createNumbersItem(siblingBuilder));
+                }
+                if (primaryCount > siblingCount) { reindexBuilder(siblingBuilder); fields(); }
+            }
         }
     });
 
@@ -289,6 +299,7 @@ function initBuilder(builder) {
 
         initGalleryItemsSortable(block, builder);
         initTcItemsSortable(block, builder);
+        initNumbersItemsSortable(block, builder);
     });
 
     reindexBuilder(builder);
@@ -312,6 +323,10 @@ function handleBlockTypeChange(typeSelect, builder) {
         ensureTcItem(block, builder);
     }
 
+    if (typeSelect.value === 'numbers') {
+        ensureNumbersItem(block, builder);
+    }
+
     reindexBuilder(builder);
 
     // Mirror type change to sibling
@@ -327,6 +342,7 @@ function handleBlockTypeChange(typeSelect, builder) {
 
             if (typeSelect.value === 'floating_gallery') ensureGalleryItem(siblingBlock, sibling);
             if (typeSelect.value === 'text_column_row')  ensureTcItem(siblingBlock, sibling);
+            if (typeSelect.value === 'numbers')          ensureNumbersItem(siblingBlock, sibling);
             if (typeSelect.value === 'video') ensureWysiwygForBlock(siblingBlock);
 
             reindexBuilder(sibling);
@@ -348,6 +364,9 @@ function handleClick(event, builder, blocksWrapper) {
     const addTcItemButton        = event.target.closest('[data-tc-item-add]');
     const addTcItemAfter         = event.target.closest('[data-tc-item-add-after]');
     const removeTcItem           = event.target.closest('[data-tc-item-remove]');
+    const addNumbersItemButton   = event.target.closest('[data-numbers-item-add]');
+    const addNumbersItemAfter    = event.target.closest('[data-numbers-item-add-after]');
+    const removeNumbersItem      = event.target.closest('[data-numbers-item-remove]');
 
     if (toggleBlockButton) {
         const block      = toggleBlockButton.closest('[data-block]');
@@ -422,6 +441,7 @@ function handleClick(event, builder, blocksWrapper) {
         wysiwyg();
         initGalleryItemsSortable(clone, builder);
         initTcItemsSortable(clone, builder);
+        initNumbersItemsSortable(clone, builder);
 
         if (sibling) {
             try {
@@ -434,6 +454,7 @@ function handleClick(event, builder, blocksWrapper) {
                     wysiwyg();
                     initGalleryItemsSortable(siblingClone, sibling);
                     initTcItemsSortable(siblingClone, sibling);
+                    initNumbersItemsSortable(siblingClone, sibling);
                 }
             } catch (e) { console.error('[descBlocks] duplicate sibling sync failed', e); }
         }
@@ -628,6 +649,86 @@ function handleClick(event, builder, blocksWrapper) {
         }
         return;
     }
+
+    // ── Numbers item: add at end ────────────────────────────────────────
+    if (addNumbersItemButton) {
+        const currentBlock = addNumbersItemButton.closest('[data-block]');
+        if (!currentBlock) return;
+        const blockIdx     = getBlockIndex(currentBlock);
+        const itemsWrapper = currentBlock.querySelector('[data-numbers-items-wrapper]');
+        if (!itemsWrapper) return;
+
+        itemsWrapper.appendChild(createNumbersItem(builder));
+        reindexBuilder(builder);
+        fields();
+
+        if (sibling) {
+            const siblingBlock   = getBlockAtIndex(sibling, blockIdx);
+            const siblingWrapper = siblingBlock?.querySelector('[data-numbers-items-wrapper]');
+            if (siblingWrapper) {
+                siblingWrapper.appendChild(createNumbersItem(sibling));
+                reindexBuilder(sibling);
+                fields();
+            }
+        }
+        return;
+    }
+
+    // ── Numbers item: add after ─────────────────────────────────────────
+    if (addNumbersItemAfter) {
+        const currentItem  = addNumbersItemAfter.closest('[data-numbers-item]');
+        if (!currentItem) return;
+        const currentBlock = currentItem.closest('[data-block]');
+        const blockIdx     = getBlockIndex(currentBlock);
+        const itemIdx      = getItemIndex(currentItem, '[data-numbers-item]');
+
+        currentItem.insertAdjacentElement('afterend', createNumbersItem(builder));
+        reindexBuilder(builder);
+        fields();
+
+        if (sibling) {
+            const siblingBlock   = getBlockAtIndex(sibling, blockIdx);
+            const siblingWrapper = siblingBlock?.querySelector('[data-numbers-items-wrapper]');
+            if (siblingWrapper) {
+                const siblingItems = siblingWrapper.querySelectorAll(':scope > [data-numbers-item]');
+                const siblingRef   = siblingItems[itemIdx];
+                const newItem      = createNumbersItem(sibling);
+                if (siblingRef) {
+                    siblingRef.insertAdjacentElement('afterend', newItem);
+                } else {
+                    siblingWrapper.appendChild(newItem);
+                }
+                reindexBuilder(sibling);
+                fields();
+            }
+        }
+        return;
+    }
+
+    // ── Numbers item: remove ────────────────────────────────────────────
+    if (removeNumbersItem) {
+        const currentItem  = removeNumbersItem.closest('[data-numbers-item]');
+        const itemsWrapper = removeNumbersItem.closest('[data-numbers-items-wrapper]');
+        if (!currentItem || !itemsWrapper) return;
+        if (itemsWrapper.querySelectorAll('[data-numbers-item]').length <= 1) return;
+
+        const currentBlock = currentItem.closest('[data-block]');
+        const blockIdx     = getBlockIndex(currentBlock);
+        const itemIdx      = getItemIndex(currentItem, '[data-numbers-item]');
+
+        currentItem.remove();
+        reindexBuilder(builder);
+
+        if (sibling) {
+            const siblingBlock = getBlockAtIndex(sibling, blockIdx);
+            const siblingItems = siblingBlock?.querySelectorAll('[data-numbers-items-wrapper] > [data-numbers-item]');
+            if (siblingItems?.length > 1 && siblingItems[itemIdx]) {
+                siblingItems[itemIdx].remove();
+                reindexBuilder(sibling);
+            }
+        }
+        return;
+    }
 }
 
 // ─── Sortable init ───────────────────────────────────────────────────────────
@@ -670,6 +771,29 @@ function initTcItemsSortable(block, builder) {
                 const siblingBlock = getBlockAtIndex(sibling, blockIdx);
                 const siblingWrapper = siblingBlock?.querySelector('[data-tc-items-wrapper]');
                 mirrorItemMove(siblingWrapper, '[data-tc-item]', evt.oldIndex, evt.newIndex);
+                reindexBuilder(sibling);
+            }
+        },
+    });
+
+    itemsWrapper.dataset.sortableInited = 'true';
+}
+
+function initNumbersItemsSortable(block, builder) {
+    const itemsWrapper = block.querySelector('[data-numbers-items-wrapper]');
+    if (!itemsWrapper || itemsWrapper.dataset.sortableInited) return;
+
+    Sortable.create(itemsWrapper, {
+        draggable: '[data-numbers-item]',
+        handle: '[data-numbers-item-move]',
+        onEnd: (evt) => {
+            reindexBuilder(builder);
+            const sibling = getSiblingBuilder(builder);
+            if (sibling) {
+                const blockIdx     = getBlockIndex(block);
+                const siblingBlock = getBlockAtIndex(sibling, blockIdx);
+                const siblingWrapper = siblingBlock?.querySelector('[data-numbers-items-wrapper]');
+                mirrorItemMove(siblingWrapper, '[data-numbers-item]', evt.oldIndex, evt.newIndex);
                 reindexBuilder(sibling);
             }
         },
@@ -727,6 +851,7 @@ function createBlock(builder, type = 'text') {
 
     initGalleryItemsSortable(block, builder);
     initTcItemsSortable(block, builder);
+    initNumbersItemsSortable(block, builder);
 
     return block;
 }
@@ -759,6 +884,20 @@ function ensureTcItem(block, builder) {
     }
 }
 
+function createNumbersItem(builder) {
+    const itemTemplate = getTemplateFromPane(builder, '[data-numbers-item-template]');
+    if (!itemTemplate) return document.createElement('div');
+    return itemTemplate.content.firstElementChild.cloneNode(true);
+}
+
+function ensureNumbersItem(block, builder) {
+    const itemsWrapper = block.querySelector('[data-numbers-items-wrapper]');
+    if (itemsWrapper && itemsWrapper.querySelectorAll('[data-numbers-item]').length === 0) {
+        itemsWrapper.appendChild(createNumbersItem(builder));
+        fields();
+    }
+}
+
 function getTemplateFromPane(builder, selector) {
     const pane = builder.closest('.tab-pane');
     return pane ? pane.querySelector(selector) : document.querySelector(selector);
@@ -771,8 +910,9 @@ function setBlockType(block, type) {
     const textPanel    = block.querySelector('[data-block-type-panel="text"]');
     const galleryPanel = block.querySelector('[data-block-type-panel="floating_gallery"]');
     const tcRowPanel   = block.querySelector('[data-block-type-panel="text_column_row"]');
-    const videoPanel   = block.querySelector('[data-block-type-panel="video"]');
-    const embedPanel   = block.querySelector('[data-block-type-panel="embed"]');
+    const videoPanel    = block.querySelector('[data-block-type-panel="video"]');
+    const embedPanel    = block.querySelector('[data-block-type-panel="embed"]');
+    const numbersPanel  = block.querySelector('[data-block-type-panel="numbers"]');
 
     if (typeInput) typeInput.value = type;
 
@@ -781,12 +921,14 @@ function setBlockType(block, type) {
     tcRowPanel?.classList.toggle('d-none', type !== 'text_column_row');
     videoPanel?.classList.toggle('d-none', type !== 'video');
     embedPanel?.classList.toggle('d-none', type !== 'embed');
+    numbersPanel?.classList.toggle('d-none', type !== 'numbers');
 
     togglePanelRequired(textPanel,    type === 'text');
     togglePanelRequired(galleryPanel, type === 'floating_gallery');
     togglePanelRequired(tcRowPanel,   type === 'text_column_row');
     togglePanelRequired(videoPanel,   type === 'video');
     togglePanelRequired(embedPanel,   type === 'embed');
+    togglePanelRequired(numbersPanel, type === 'numbers');
 }
 
 function ensureWysiwygForBlock(block) {
@@ -871,6 +1013,15 @@ function reindexBuilder(builder) {
                 field.setAttribute('name', name.replace(/\[items\]\[(?:\d+|__item__)\]/g, `[items][${itemIndex}]`));
             });
         });
+
+        // Numbers items
+        block.querySelectorAll('[data-numbers-items-wrapper] > [data-numbers-item]').forEach((item, itemIndex) => {
+            item.querySelectorAll('[name]').forEach((field) => {
+                const name = field.getAttribute('name');
+                if (!name) return;
+                field.setAttribute('name', name.replace(/\[items\]\[(?:\d+|__item__)\]/g, `[items][${itemIndex}]`));
+            });
+        });
     });
 }
 
@@ -883,12 +1034,17 @@ function updateBlockLabel(block, blockIndex) {
         : type === 'text_column_row' ? 'Text Column Row'
         : type === 'video' ? 'Video'
         : type === 'embed' ? '3D Tour / Embed'
+        : type === 'numbers' ? 'Numbers / KPIs'
         : 'Content';
 
     // Extract a content preview from the block
     let preview = '';
     if (type === 'text_column_row' || type === 'floating_gallery') {
         const headlineField = block.querySelector(`[data-block-type-panel="${type}"] [name*="[headline]"]:not([disabled])`);
+        preview = headlineField?.value?.trim() || '';
+    }
+    if (!preview && type === 'numbers') {
+        const headlineField = block.querySelector('[data-block-type-panel="numbers"] [name*="[headline]"]:not([disabled])');
         preview = headlineField?.value?.trim() || '';
     }
     if (!preview && type === 'video') {

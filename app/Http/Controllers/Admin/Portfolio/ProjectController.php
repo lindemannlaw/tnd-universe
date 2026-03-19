@@ -413,7 +413,7 @@ class ProjectController extends Controller
             foreach ($localeBlocks as $blockIndex => $block) {
                 $type = data_get($block, 'type');
 
-            if (!in_array($type, ['text', 'floating_gallery', 'text_column', 'text_column_row', 'video', 'embed'], true)) {
+            if (!in_array($type, ['text', 'floating_gallery', 'text_column', 'text_column_row', 'video', 'embed', 'numbers'], true)) {
                 continue;
             }
 
@@ -606,6 +606,38 @@ class ProjectController extends Controller
 
                     continue;
                 }
+
+                if ($type === 'numbers') {
+                    $allowedColors = ['emerald-950', 'emerald-900', 'emerald-800', 'primary', 'gold-bright'];
+                    $preparedItems = [];
+
+                    foreach ((data_get($block, 'items') ?: []) as $itemIndex => $item) {
+                        $lineColor = data_get($item, 'line_color', 'emerald-900');
+
+                        $preparedItems[] = [
+                            'title'      => data_get($item, 'title') ?: null,
+                            'line_color' => in_array($lineColor, $allowedColors) ? $lineColor : 'emerald-900',
+                            'number'     => data_get($item, 'number') ?: null,
+                            'subline'    => data_get($item, 'subline') ?: null,
+                        ];
+                    }
+
+                    if (empty($preparedItems)) {
+                        continue;
+                    }
+
+                    $preparedLocaleBlocks[] = [
+                        'type'              => 'numbers',
+                        'padding_top'       => max(0, min(300, (int)data_get($block, 'padding_top', 0))),
+                        'padding_bottom'    => max(0, min(300, (int)data_get($block, 'padding_bottom', 0))),
+                        'headline'          => data_get($block, 'headline') ?: null,
+                        'headline_col_span' => max(1, min(12, (int)data_get($block, 'headline_col_span', 12))),
+                        'headline_line'     => (bool)data_get($block, 'headline_line', false),
+                        'items'             => $preparedItems,
+                    ];
+
+                    continue;
+                }
             }
 
             if (empty($preparedLocaleBlocks)) {
@@ -629,10 +661,11 @@ class ProjectController extends Controller
 
         // Text-only fields per block/item type — preserved from target language
         $textFields = [
-            'text'            => ['content'],
-            'text_column_row' => ['headline', 'content', 'link_text', 'link_url'],
+            'text'             => ['content'],
+            'text_column_row'  => ['headline', 'content', 'link_text', 'link_url'],
             'floating_gallery' => ['headline', 'subhead'],
-            'video'           => ['headline', 'content'],
+            'video'            => ['headline', 'content'],
+            'numbers'          => ['headline', 'title', 'number', 'subline'],
         ];
 
         foreach ($otherLocales as $otherLocale) {
@@ -909,6 +942,19 @@ class ProjectController extends Controller
                         }
                     }
                 }
+
+                if ($type === 'numbers') {
+                    if (isset($block['headline'])) {
+                        $texts["description_blocks.$bi.headline"] = $this->stripForCompare($block['headline'] ?? '');
+                    }
+                    foreach ($block['items'] ?? [] as $ii => $item) {
+                        foreach (['title', 'number', 'subline'] as $tf) {
+                            if (isset($item[$tf])) {
+                                $texts["description_blocks.$bi.items.$ii.$tf"] = $this->stripForCompare($item[$tf] ?? '');
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -975,6 +1021,18 @@ class ProjectController extends Controller
                     foreach ($block['items'] ?? [] as $ii => $item) {
                         foreach (['content', 'headline', 'link_text', 'link_url', 'subhead'] as $tf) {
                             if (isset($item[$tf]) || $type === 'text_column_row') {
+                                $texts["description_blocks.$bi.items.$ii.$tf"] = (string) ($item[$tf] ?? '');
+                            }
+                        }
+                    }
+                }
+                if ($type === 'numbers') {
+                    if (isset($block['headline'])) {
+                        $texts["description_blocks.$bi.headline"] = (string) ($block['headline'] ?? '');
+                    }
+                    foreach ($block['items'] ?? [] as $ii => $item) {
+                        foreach (['title', 'number', 'subline'] as $tf) {
+                            if (isset($item[$tf])) {
                                 $texts["description_blocks.$bi.items.$ii.$tf"] = (string) ($item[$tf] ?? '');
                             }
                         }
