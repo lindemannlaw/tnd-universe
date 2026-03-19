@@ -11,6 +11,11 @@ export function wysiwyg() {
 	elements.forEach((element) => {
 		if (element.wysiwygInited) return;
 
+		// Skip WYSIWYG editors inside hidden/inactive panels (d-none)
+		// They cause duplicate SunEditor instances and latency
+		const hiddenPanel = element.closest('[data-block-type-panel].d-none');
+		if (hiddenPanel) return;
+
 		const editor = element.nextElementSibling;
 
 		if (editor?.classList?.contains('sun-editor')) {
