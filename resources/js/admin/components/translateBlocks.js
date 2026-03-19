@@ -328,18 +328,35 @@ function buildOverlayEl(translations, allItems, changedKeys, timestamps) {
         const label         = getLabelFromKey(key);
         const isChanged     = changedKeys.has(key);
         const sourceClean   = sourceText.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-        const badgeHtml     = isChanged
-            ? '<span class="badge bg-warning text-dark ms-2">Ge\u00E4ndert</span>'
-            : '';
 
-        // Diff highlighting: compare old text (from timestamps) with current
+        // Diff analysis
         const tsKey     = formNameToTimestampKey(key);
         const rawOldTxt = (isChanged && timestamps[tsKey]?.en_old_text) || '';
-        // Strip old text the same way as current (HTML tags → space, collapse whitespace)
         const oldClean  = rawOldTxt.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-        const sourceHtml = (isChanged && oldClean && oldClean !== sourceClean)
-            ? highlightDiff(oldClean, sourceClean)
-            : escHtml(sourceClean);
+
+        const hasTextDiff   = isChanged && oldClean && oldClean !== sourceClean;
+        const hasFormatDiff = isChanged && rawOldTxt && !hasTextDiff && rawOldTxt !== sourceText;
+
+        // Badges
+        let badgeHtml = '';
+        if (hasTextDiff)        badgeHtml = '<span class="badge bg-warning text-dark ms-2">Text ge\u00E4ndert</span>';
+        else if (hasFormatDiff) badgeHtml = '<span class="badge bg-info text-dark ms-2">Formatierung ge\u00E4ndert</span>';
+        else if (isChanged)     badgeHtml = '<span class="badge bg-warning text-dark ms-2">Ge\u00E4ndert</span>';
+
+        // Source display: render HTML so formatting is visible (bold = bold, etc.)
+        // For the diff view: show text diff below the rendered HTML
+        const renderedSource = isHtml ? sanitizeHtml(sourceText) : escHtml(sourceText);
+        const diffBlockHtml  = hasTextDiff
+            ? `<div class="small mt-1 p-2 rounded" style="background:#fff8ed;border:1px dashed #f59e0b;">
+                    <span class="text-muted" style="font-size:0.7rem;">\u00C4nderungen:</span><br>
+                    ${highlightDiff(oldClean, sourceClean)}
+               </div>`
+            : hasFormatDiff
+                ? `<div class="small mt-1 p-2 rounded" style="background:#ecfeff;border:1px dashed #06b6d4;">
+                        <span class="text-muted" style="font-size:0.7rem;">Formatierung ge\u00E4ndert:</span><br>
+                        ${highlightHtmlDiff(rawOldTxt, sourceText)}
+                   </div>`
+                : '';
 
         const editorHtml = isHtml
             ? `<div contenteditable="true"
@@ -361,9 +378,10 @@ function buildOverlayEl(translations, allItems, changedKeys, timestamps) {
                 </div>
                 <div class="d-flex align-items-start gap-2">
                     <span class="flex-shrink-0" style="font-size:1rem;line-height:1.4;" title="English">\u{1F1EC}\u{1F1E7}</span>
-                    <div class="small text-muted fst-italic border-start border-2 border-secondary-subtle ps-2 flex-grow-1"
+                    <div class="small text-muted border-start border-2 border-secondary-subtle ps-2 flex-grow-1"
                          style="white-space:pre-wrap;">
-                        ${sourceHtml}
+                        ${renderedSource}
+                        ${diffBlockHtml}
                     </div>
                 </div>
                 <div class="d-flex align-items-start gap-2">
@@ -555,6 +573,123 @@ function escHtml(str) {
 
 function escAttr(str) {
     return String(str ?? '').replace(/"/g, '&quot;');
+}
+
+/**
+ * Sanitize HTML: allow only safe formatting tags, escape everything else.
+ */
+function sanitizeHtml(html) {
+    const ALLOWED = /^(b|strong|i|em|u|s|strike|br|p|ul|ol|li|a|blockquote|h[1-6]|span|sub|sup)$/i;
+    // Use DOMParser for safe parsing
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    return serializeNode(doc.body);
+}
+
+function serializeNode(node) {
+    if (node.nodeType === Node.TEXT_NODE) return escHtml(node.textContent);
+    if (node.nodeType !== Node.ELEMENT_NODE) return '';
+
+    const tag = node.tagName.toLowerCase();
+    const ALLOWED = /^(b|strong|i|em|u|s|strike|br|p|ul|ol|li|a|blockquote|h[1-6]|span|sub|sup)$/;
+    if (!ALLOWED.test(tag)) {
+        // Not allowed tag: render children only
+        return Array.from(node.childNodes).map(serializeNode).join('');
+    }
+
+    const inner = Array.from(node.childNodes).map(serializeNode).join('');
+    if (tag === 'br') return '<br>';
+    // For links, keep href
+    if (tag === 'a') {
+        const href = node.getAttribute('href') || '';
+        return `<a href="${escAttr(href)}" style="color:inherit;text-decoration:underline;">${inner}</a>`;
+    }
+    return `<${tag}>${inner}</${tag}>`;
+}
+
+/**
+ * Show formatting differences between old and new HTML.
+ * Highlights added/removed HTML tags inline.
+ */
+function highlightHtmlDiff(oldHtml, newHtml) {
+    // Tokenize into text and tag segments
+    const oldTokens = tokenizeHtml(oldHtml);
+    const newTokens = tokenizeHtml(newHtml);
+
+    const result = [];
+    const maxLen = Math.max(oldTokens.length, newTokens.length);
+
+    // Simple token-by-token comparison
+    let oi = 0, ni = 0;
+    while (oi < oldTokens.length || ni < newTokens.length) {
+        const oldT = oldTokens[oi];
+        const newT = newTokens[ni];
+
+        if (oi >= oldTokens.length) {
+            // Added in new
+            result.push(formatToken(newTokens[ni], 'added'));
+            ni++;
+        } else if (ni >= newTokens.length) {
+            // Removed from old
+            result.push(formatToken(oldTokens[oi], 'removed'));
+            oi++;
+        } else if (oldT.text === newT.text && oldT.isTag === newT.isTag) {
+            // Same
+            result.push(formatToken(newT, 'same'));
+            oi++; ni++;
+        } else {
+            // Different — try to find match ahead
+            let foundNew = -1;
+            for (let j = ni + 1; j < Math.min(ni + 5, newTokens.length); j++) {
+                if (oldT.text === newTokens[j].text && oldT.isTag === newTokens[j].isTag) {
+                    foundNew = j; break;
+                }
+            }
+            if (foundNew >= 0) {
+                // New tokens were added before the match
+                for (let j = ni; j < foundNew; j++) {
+                    result.push(formatToken(newTokens[j], 'added'));
+                }
+                ni = foundNew;
+            } else {
+                // Token changed or removed
+                result.push(formatToken(oldT, 'removed'));
+                result.push(formatToken(newT, 'added'));
+                oi++; ni++;
+            }
+        }
+    }
+
+    return result.join('');
+}
+
+function tokenizeHtml(html) {
+    const tokens = [];
+    const re = /(<[^>]+>)|([^<]+)/g;
+    let m;
+    while ((m = re.exec(html)) !== null) {
+        if (m[1]) tokens.push({ text: m[1], isTag: true });
+        else if (m[2]) tokens.push({ text: m[2], isTag: false });
+    }
+    return tokens;
+}
+
+function formatToken(token, type) {
+    if (type === 'same') {
+        return token.isTag
+            ? `<code style="font-size:0.7rem;color:#6b7280;">${escHtml(token.text)}</code>`
+            : escHtml(token.text);
+    }
+    if (type === 'added') {
+        const style = 'background:#fef3c7;color:#92400e;border-radius:2px;padding:0 1px;';
+        return token.isTag
+            ? `<code style="font-size:0.7rem;${style}">+ ${escHtml(token.text)}</code>`
+            : `<span style="${style}">${escHtml(token.text)}</span>`;
+    }
+    // removed
+    const style = 'color:#b45309;text-decoration:line-through;opacity:0.6;';
+    return token.isTag
+        ? `<code style="font-size:0.7rem;${style}">\u2212 ${escHtml(token.text)}</code>`
+        : `<span style="${style}">${escHtml(token.text)}</span>`;
 }
 
 /**
