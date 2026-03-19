@@ -333,10 +333,12 @@ function buildOverlayEl(translations, allItems, changedKeys, timestamps) {
             : '';
 
         // Diff highlighting: compare old text (from timestamps) with current
-        const tsKey  = formNameToTimestampKey(key);
-        const oldTxt = (isChanged && timestamps[tsKey]?.en_old_text) || '';
-        const sourceHtml = (isChanged && oldTxt)
-            ? highlightDiff(oldTxt, sourceClean)
+        const tsKey     = formNameToTimestampKey(key);
+        const rawOldTxt = (isChanged && timestamps[tsKey]?.en_old_text) || '';
+        // Strip old text the same way as current (HTML tags → space, collapse whitespace)
+        const oldClean  = rawOldTxt.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+        const sourceHtml = (isChanged && oldClean && oldClean !== sourceClean)
+            ? highlightDiff(oldClean, sourceClean)
             : escHtml(sourceClean);
 
         const editorHtml = isHtml

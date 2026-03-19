@@ -121,7 +121,8 @@ class ProjectController extends Controller
         $data = $this->prepareDescriptionBlocksData($request, $data);
 
         // ── Snapshot old EN text values for timestamp comparison ──
-        $oldTexts = $this->extractEnTextValues($project);
+        $oldTexts    = $this->extractEnTextValues($project);
+        $rawOldTexts = $this->extractRawEnTextValues($project);
 
         try {
             DB::beginTransaction();
@@ -221,7 +222,7 @@ class ProjectController extends Controller
             // ── Update text_timestamps for changed EN fields ──
             $project->refresh();
             $newTexts = $this->extractEnTextValues($project);
-            $this->updateTextTimestampsOnSave($project, $oldTexts, $newTexts);
+            $this->updateTextTimestampsOnSave($project, $oldTexts, $newTexts, $rawOldTexts);
 
         } catch (\Exception $exception) {
             DB::rollBack();
@@ -645,7 +646,7 @@ class ProjectController extends Controller
     /**
      * Compare old vs new text values and update en_changed_at timestamps.
      */
-    private function updateTextTimestampsOnSave(Project $project, array $oldTexts, array $newTexts): void
+    private function updateTextTimestampsOnSave(Project $project, array $oldTexts, array $newTexts, array $rawOldTexts = []): void
     {
         $now        = now()->toIso8601String();
         $timestamps = $project->text_timestamps ?? [];
@@ -655,9 +656,11 @@ class ProjectController extends Controller
         foreach ($newTexts as $key => $newValue) {
             $oldValue = $oldTexts[$key] ?? '';
             if ($newValue !== $oldValue) {
+                // Store the RAW old text (before stripping) for JS diff display
+                $rawOld = $rawOldTexts[$key] ?? $oldValue;
                 $timestamps[$key] = array_merge($timestamps[$key] ?? [], [
                     'en_changed_at' => $now,
-                    'en_old_text'   => mb_substr($oldValue, 0, 2000),
+                    'en_old_text'   => mb_substr($rawOld, 0, 5000),
                 ]);
                 $changed = true;
             }
@@ -670,9 +673,50 @@ class ProjectController extends Controller
         }
     }
 
+    /**
+     * Extract raw (un-stripped) EN text values for storing as en_old_text.
+     */
+    private function extractRawEnTextValues(Project $project): array
+    {
+        $texts = [];
+        $locale = 'en';
+
+        foreach (['title', 'short_description', 'location', 'seo_title', 'seo_description', 'seo_keywords'] as $field) {
+            $texts[$field] = (string) ($project->getTranslation($field, $locale) ?? '');
+        }
+
+        $pd = $project->getTranslation('property_details', $locale);
+        if (is_array($pd)) {
+            foreach (['property_type', 'status', 'year_built'] as $subField) {
+                $texts["property_details.$subField"] = (string) ($pd[$subField] ?? '');
+            }
+        }
+
+        $blocks = $project->getTranslation('description_blocks', $locale);
+        if (is_array($blocks)) {
+            foreach ($blocks as $bi => $block) {
+                $type = $block['type'] ?? '';
+                if ($type === 'text') {
+                    $texts["description_blocks.$bi.content"] = (string) ($block['content'] ?? '');
+                }
+                if (in_array($type, ['text_column_row', 'floating_gallery'], true)) {
+                    foreach ($block['items'] ?? [] as $ii => $item) {
+                        foreach (['content', 'headline', 'link_text', 'link_url', 'subhead'] as $tf) {
+                            if (isset($item[$tf]) || $type === 'text_column_row') {
+                                $texts["description_blocks.$bi.items.$ii.$tf"] = (string) ($item[$tf] ?? '');
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return $texts;
+    }
+
     private function stripForCompare(string $value): string
     {
-        // Normalize HTML whitespace for reliable comparison
-        return trim(preg_replace('/\s+/', ' ', strip_tags($value)));
+        // Replace HTML tags with space (matching JS behavior), then normalize whitespace
+        return trim(preg_replace('/\s+/', ' ', preg_replace('/<[^>]*>/', ' ', $value)));
     }
 }
