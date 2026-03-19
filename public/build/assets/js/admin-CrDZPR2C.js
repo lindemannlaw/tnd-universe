@@ -32,11 +32,17 @@ body{height: min-content; overflow: hidden;}
                     <span class="fw-semibold small text-uppercase">${ws(k)}</span>
                     ${h}
                 </div>
-                <div class="small text-muted fst-italic border-start border-2 border-secondary-subtle ps-2"
-                     style="overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">
-                    ${ws(r)}
+                <div class="d-flex align-items-start gap-2">
+                    <span class="flex-shrink-0" style="font-size:1rem;line-height:1.4;" title="English">🇬🇧</span>
+                    <div class="small text-muted fst-italic border-start border-2 border-secondary-subtle ps-2 flex-grow-1"
+                         style="overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">
+                        ${ws(r)}
+                    </div>
                 </div>
-                ${p}
+                <div class="d-flex align-items-start gap-2">
+                    <span class="flex-shrink-0" style="font-size:1rem;line-height:1.8;" title="Deutsch">🇩🇪</span>
+                    <div class="flex-grow-1">${p}</div>
+                </div>
             </div>`}).join("");n.innerHTML=`
         <div class="bg-white rounded-3 shadow-lg d-flex flex-column"
              style="width:min(800px,96vw);max-height:90vh;">

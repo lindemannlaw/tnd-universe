@@ -303,11 +303,17 @@ function buildOverlayEl(translations, allItems, changedKeys) {
                     <span class="fw-semibold small text-uppercase">${escHtml(label)}</span>
                     ${badgeHtml}
                 </div>
-                <div class="small text-muted fst-italic border-start border-2 border-secondary-subtle ps-2"
-                     style="overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">
-                    ${escHtml(sourcePreview)}
+                <div class="d-flex align-items-start gap-2">
+                    <span class="flex-shrink-0" style="font-size:1rem;line-height:1.4;" title="English">🇬🇧</span>
+                    <div class="small text-muted fst-italic border-start border-2 border-secondary-subtle ps-2 flex-grow-1"
+                         style="overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">
+                        ${escHtml(sourcePreview)}
+                    </div>
                 </div>
-                ${editorHtml}
+                <div class="d-flex align-items-start gap-2">
+                    <span class="flex-shrink-0" style="font-size:1rem;line-height:1.8;" title="Deutsch">🇩🇪</span>
+                    <div class="flex-grow-1">${editorHtml}</div>
+                </div>
             </div>`;
     }).join('');
 
