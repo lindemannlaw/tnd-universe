@@ -659,13 +659,17 @@ class ProjectController extends Controller
         $primaryLocale = $locales[0];                              // 'en'
         $otherLocales  = array_slice($locales, 1);                 // ['de', …]
 
-        // Text-only fields per block/item type — preserved from target language
-        $textFields = [
-            'text'             => ['content'],
+        // Text-only fields per block type — preserved from target language
+        // Item-level text fields (inside items array)
+        $itemTextFields = [
             'text_column_row'  => ['headline', 'content', 'link_text', 'link_url'],
             'floating_gallery' => ['headline', 'subhead'],
+            'numbers'          => ['title', 'number', 'subline'],
+        ];
+        // Block-level text fields (on the block itself, not inside items)
+        $blockTextFields = [
             'video'            => ['headline', 'content'],
-            'numbers'          => ['headline', 'title', 'number', 'subline'],
+            'numbers'          => ['headline'],
         ];
 
         foreach ($otherLocales as $otherLocale) {
@@ -693,7 +697,7 @@ class ProjectController extends Controller
                 if (in_array($primaryType, ['video', 'embed'], true)) {
                     $merged = $primaryBlock;
                     if ($otherType === $primaryType) {
-                        foreach ($textFields[$primaryType] ?? [] as $field) {
+                        foreach ($blockTextFields[$primaryType] ?? [] as $field) {
                             if (array_key_exists($field, $otherBlock)) {
                                 $merged[$field] = $otherBlock[$field];
                             }
@@ -703,8 +707,20 @@ class ProjectController extends Controller
                     continue;
                 }
 
-                // For structured blocks (text_column_row, floating_gallery)
+                // For structured blocks (text_column_row, floating_gallery, numbers)
                 // copy all layout from primary; overlay text fields from other
+                $merged = $primaryBlock;
+
+                // Block-level text fields (e.g. numbers.headline)
+                if ($otherType === $primaryType) {
+                    foreach ($blockTextFields[$primaryType] ?? [] as $field) {
+                        if (array_key_exists($field, $otherBlock)) {
+                            $merged[$field] = $otherBlock[$field];
+                        }
+                    }
+                }
+
+                // Item-level text fields
                 $otherItems   = ($otherType === $primaryType) ? ($otherBlock['items'] ?? []) : [];
                 $syncedItems  = [];
 
@@ -712,7 +728,7 @@ class ProjectController extends Controller
                     $otherItem  = $otherItems[$itemIndex] ?? [];
                     $mergedItem = $primaryItem; // start with primary (all layout)
 
-                    foreach ($textFields[$primaryType] ?? [] as $field) {
+                    foreach ($itemTextFields[$primaryType] ?? [] as $field) {
                         if (array_key_exists($field, $otherItem)) {
                             $mergedItem[$field] = $otherItem[$field];
                         }
@@ -721,7 +737,7 @@ class ProjectController extends Controller
                     $syncedItems[] = $mergedItem;
                 }
 
-                $synced[] = array_merge($primaryBlock, ['items' => $syncedItems]);
+                $synced[] = array_merge($merged, ['items' => $syncedItems]);
             }
 
             $descriptionBlocks[$otherLocale] = array_values($synced);

@@ -8,7 +8,7 @@
  * Projects without timestamps = all fields are considered in-sync (unchecked).
  */
 
-const TEXT_ONLY_NAMES = new Set(['content', 'headline', 'link_text', 'link_url', 'subhead']);
+const TEXT_ONLY_NAMES = new Set(['content', 'headline', 'link_text', 'link_url', 'subhead', 'title', 'number', 'subline']);
 
 const FIELD_LABELS = {
     title:             'Titel',
@@ -25,6 +25,9 @@ const FIELD_LABELS = {
     link_text:         'Link Text',
     link_url:          'Link URL',
     subhead:           'Subheadline',
+    title:             'Titel',
+    number:            'Zahl',
+    subline:           'Subline',
 };
 
 // ---------------------------------------------------------------------------
