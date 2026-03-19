@@ -655,7 +655,10 @@ class ProjectController extends Controller
         foreach ($newTexts as $key => $newValue) {
             $oldValue = $oldTexts[$key] ?? '';
             if ($newValue !== $oldValue) {
-                $timestamps[$key] = array_merge($timestamps[$key] ?? [], ['en_changed_at' => $now]);
+                $timestamps[$key] = array_merge($timestamps[$key] ?? [], [
+                    'en_changed_at' => $now,
+                    'en_old_text'   => mb_substr($oldValue, 0, 2000),
+                ]);
                 $changed = true;
             }
         }

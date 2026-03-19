@@ -327,10 +327,17 @@ function buildOverlayEl(translations, allItems, changedKeys, timestamps) {
         const translated    = translations[key] ?? '';
         const label         = getLabelFromKey(key);
         const isChanged     = changedKeys.has(key);
-        const sourcePreview = sourceText.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+        const sourceClean   = sourceText.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
         const badgeHtml     = isChanged
-            ? '<span class="badge bg-warning text-dark ms-2">Geändert</span>'
+            ? '<span class="badge bg-warning text-dark ms-2">Ge\u00E4ndert</span>'
             : '';
+
+        // Diff highlighting: compare old text (from timestamps) with current
+        const tsKey  = formNameToTimestampKey(key);
+        const oldTxt = (isChanged && timestamps[tsKey]?.en_old_text) || '';
+        const sourceHtml = (isChanged && oldTxt)
+            ? highlightDiff(oldTxt, sourceClean)
+            : escHtml(sourceClean);
 
         const editorHtml = isHtml
             ? `<div contenteditable="true"
@@ -353,8 +360,8 @@ function buildOverlayEl(translations, allItems, changedKeys, timestamps) {
                 <div class="d-flex align-items-start gap-2">
                     <span class="flex-shrink-0" style="font-size:1rem;line-height:1.4;" title="English">\u{1F1EC}\u{1F1E7}</span>
                     <div class="small text-muted fst-italic border-start border-2 border-secondary-subtle ps-2 flex-grow-1"
-                         style="overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">
-                        ${escHtml(sourcePreview)}
+                         style="white-space:pre-wrap;">
+                        ${sourceHtml}
                     </div>
                 </div>
                 <div class="d-flex align-items-start gap-2">
@@ -546,4 +553,82 @@ function escHtml(str) {
 
 function escAttr(str) {
     return String(str ?? '').replace(/"/g, '&quot;');
+}
+
+/**
+ * Word-level diff: highlight words in newText that differ from oldText.
+ * Changed/added words get an orange background; removed words get strikethrough.
+ */
+function highlightDiff(oldText, newText) {
+    const oldWords = oldText.split(/(\s+)/);
+    const newWords = newText.split(/(\s+)/);
+
+    // Simple LCS-based diff on words
+    const lcs = buildLcs(oldWords, newWords);
+    const result = [];
+
+    let oi = 0, ni = 0, li = 0;
+    while (oi < oldWords.length || ni < newWords.length) {
+        if (li < lcs.length && oi < oldWords.length && ni < newWords.length
+            && oldWords[oi] === lcs[li] && newWords[ni] === lcs[li]) {
+            // Common word
+            result.push(escHtml(newWords[ni]));
+            oi++; ni++; li++;
+        } else if (li < lcs.length && ni < newWords.length && newWords[ni] === lcs[li]) {
+            // Deleted from old
+            if (oldWords[oi]?.trim()) {
+                result.push(`<span style="color:#b45309;text-decoration:line-through;opacity:0.6;">${escHtml(oldWords[oi])}</span>`);
+            }
+            oi++;
+        } else if (ni < newWords.length) {
+            // Added in new
+            if (newWords[ni]?.trim()) {
+                result.push(`<span style="background:#fef3c7;color:#92400e;border-radius:2px;padding:0 2px;">${escHtml(newWords[ni])}</span>`);
+            } else {
+                result.push(escHtml(newWords[ni])); // whitespace
+            }
+            ni++;
+        } else {
+            // Remaining old words (deleted)
+            if (oldWords[oi]?.trim()) {
+                result.push(`<span style="color:#b45309;text-decoration:line-through;opacity:0.6;">${escHtml(oldWords[oi])}</span>`);
+            }
+            oi++;
+        }
+    }
+
+    return result.join('');
+}
+
+/**
+ * Build longest common subsequence of two word arrays.
+ */
+function buildLcs(a, b) {
+    const m = a.length, n = b.length;
+    // For very long texts, skip LCS (too expensive) and just highlight everything
+    if (m * n > 500000) return [];
+
+    const dp = Array.from({ length: m + 1 }, () => new Uint16Array(n + 1));
+
+    for (let i = 1; i <= m; i++) {
+        for (let j = 1; j <= n; j++) {
+            dp[i][j] = a[i - 1] === b[j - 1]
+                ? dp[i - 1][j - 1] + 1
+                : Math.max(dp[i - 1][j], dp[i][j - 1]);
+        }
+    }
+
+    const lcs = [];
+    let i = m, j = n;
+    while (i > 0 && j > 0) {
+        if (a[i - 1] === b[j - 1]) {
+            lcs.unshift(a[i - 1]);
+            i--; j--;
+        } else if (dp[i - 1][j] > dp[i][j - 1]) {
+            i--;
+        } else {
+            j--;
+        }
+    }
+    return lcs;
 }
