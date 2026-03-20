@@ -111,9 +111,6 @@ async function handleTranslate(button) {
     const targetLocale = button.dataset.targetLocale || 'de';
     const translateUrl = button.dataset.translateUrl;
     const timestamps   = getTimestamps(button);
-    const updateTsUrl  = getUpdateTimestampsUrl(button);
-
-    if (!translateUrl) return;
 
     const form = getForm(button);
     if (!form) return;
@@ -121,7 +118,7 @@ async function handleTranslate(button) {
     const titleSpan     = button.querySelector('span');
     const originalTitle = titleSpan?.textContent ?? '';
     button.disabled     = true;
-    if (titleSpan) titleSpan.textContent = 'Übersetze…';
+    if (titleSpan) titleSpan.textContent = 'Lade…';
 
     const allItems         = collectTextItems(form, sourceLocale);
     const itemsWithContent = allItems.filter(({ text }) => hasContent(text));
@@ -138,26 +135,28 @@ async function handleTranslate(button) {
         if (needsTranslation(timestamps, tsKey)) changedKeys.add(key);
     });
 
-    // Capture current DE values before translation for diff display
+    // Capture current DE values — these are shown in the overlay editors (no DeepL call)
     const currentDeValues = {};
-    const emptyDeKeys = new Set(); // Track fields where DE is empty but EN has content
-    const deEqualsEnKeys = new Set(); // Track fields where DE text ≈ EN text (never translated)
+    const emptyDeKeys = new Set();
+    const deEqualsEnKeys = new Set();
+    // Build "translations" from current DE form values (instead of calling DeepL)
+    const translations = {};
     itemsWithContent.forEach(({ key, text: enText }) => {
         const deKey   = key.replace(`[${sourceLocale}]`, `[${targetLocale}]`);
         const deField = form.querySelector(`[name="${CSS.escape(deKey)}"]:not([disabled])`)
                      ?? form.querySelector(`[name="${CSS.escape(deKey)}"]`);
         if (!deField) return;
         const val = deField._sunEditor ? deField._sunEditor.getContents() : (deField.value ?? '');
+        translations[key] = val; // Use current DE value as editor content
         if (hasContent(val)) {
             currentDeValues[key] = val;
-            // Check if DE text is identical to EN text (never properly translated)
             const enClean = enText.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
             const deClean = val.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
             if (enClean && deClean && enClean === deClean) {
                 deEqualsEnKeys.add(key);
             }
         } else {
-            emptyDeKeys.add(key); // DE is empty → needs translation
+            emptyDeKeys.add(key);
         }
     });
 
@@ -165,98 +164,69 @@ async function handleTranslate(button) {
     emptyDeKeys.forEach(key => changedKeys.add(key));
     deEqualsEnKeys.forEach(key => changedKeys.add(key));
 
-    try {
-        const response = await fetch(translateUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken(),
-                'X-Requested-With': 'XMLHttpRequest',
-            },
-            body: JSON.stringify({
-                source_lang: sourceLocale,
-                target_lang: targetLocale,
-                items: itemsWithContent.map(({ key, text, isHtml }) => ({ key, text, isHtml })),
-            }),
-        });
+    if (titleSpan) titleSpan.textContent = originalTitle;
 
-        if (!response.ok) {
-            const err = await response.json().catch(() => ({}));
-            throw new Error(err.error || `HTTP ${response.status}`);
+    const approved = await showReviewOverlay(translations, itemsWithContent, changedKeys, timestamps, currentDeValues, emptyDeKeys, deEqualsEnKeys, translateUrl);
+
+    button.disabled = false;
+    if (approved === null) return; // cancelled
+
+    // Apply approved values to DE form fields (for live preview)
+    let count = 0;
+    const appliedTsKeys = [];
+    const translationsPayload = [];
+    for (const [sourceKey, { text: translatedText, isHtml }] of Object.entries(approved)) {
+        const targetKey   = sourceKey.replace(`[${sourceLocale}]`, `[${targetLocale}]`);
+        const targetField = form.querySelector(`[name="${CSS.escape(targetKey)}"]:not([disabled])`)
+                         ?? form.querySelector(`[name="${CSS.escape(targetKey)}"]`);
+        if (targetField) {
+            targetField.value = translatedText;
+            if (targetField._sunEditor) targetField._sunEditor.setContents(translatedText);
+            targetField.dispatchEvent(new Event('input', { bubbles: true }));
         }
+        count++;
+        appliedTsKeys.push(formNameToTimestampKey(sourceKey));
+        translationsPayload.push({ key: sourceKey, text: translatedText });
+    }
 
-        const { translations = {} } = await response.json();
+    // Save directly to DB via API
+    const applyUrl = button.dataset.applyTranslationsUrl;
+    if (applyUrl && translationsPayload.length > 0) {
+        try {
+            const saveResp = await fetch(applyUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken(),
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify({
+                    translations: translationsPayload,
+                    timestamp_keys: appliedTsKeys,
+                }),
+            });
 
-        if (titleSpan) titleSpan.textContent = originalTitle;
-
-        const approved = await showReviewOverlay(translations, itemsWithContent, changedKeys, timestamps, currentDeValues, emptyDeKeys, deEqualsEnKeys, translateUrl);
-
-        button.disabled = false;
-        if (approved === null) return; // cancelled
-
-        // Apply approved translations to DE form fields (for live preview)
-        let count = 0;
-        const appliedTsKeys = [];
-        const translationsPayload = [];
-        for (const [sourceKey, { text: translatedText, isHtml }] of Object.entries(approved)) {
-            const targetKey   = sourceKey.replace(`[${sourceLocale}]`, `[${targetLocale}]`);
-            const targetField = form.querySelector(`[name="${CSS.escape(targetKey)}"]:not([disabled])`)
-                             ?? form.querySelector(`[name="${CSS.escape(targetKey)}"]`);
-            if (targetField) {
-                targetField.value = translatedText;
-                if (targetField._sunEditor) targetField._sunEditor.setContents(translatedText);
-                targetField.dispatchEvent(new Event('input', { bubbles: true }));
+            if (!saveResp.ok) {
+                const errData = await saveResp.json().catch(() => ({}));
+                throw new Error(errData.error || `HTTP ${saveResp.status}`);
             }
-            count++;
-            appliedTsKeys.push(formNameToTimestampKey(sourceKey));
-            translationsPayload.push({ key: sourceKey, text: translatedText });
+
+            // Update local timestamps
+            const now = new Date().toISOString();
+            appliedTsKeys.forEach(k => {
+                timestamps[k] = { ...(timestamps[k] ?? {}), de_translated_at: now };
+            });
+            button.dataset.textTimestamps = JSON.stringify(timestamps);
+
+            showToast('success', `${count} Übersetzung${count !== 1 ? 'en' : ''} gespeichert`);
+            flashButton(button, `✓ ${count} gespeichert`, 2500, titleSpan, originalTitle);
+        } catch (saveErr) {
+            console.error('[translateBlocks] Save failed:', saveErr);
+            showToast('error', 'Speichern fehlgeschlagen: ' + saveErr.message);
+            flashButton(button, '✗ Fehler', 2500, titleSpan, originalTitle);
         }
-
-        // Save directly to DB via API
-        const applyUrl = button.dataset.applyTranslationsUrl;
-        if (applyUrl && translationsPayload.length > 0) {
-            try {
-                const saveResp = await fetch(applyUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken(),
-                        'X-Requested-With': 'XMLHttpRequest',
-                    },
-                    body: JSON.stringify({
-                        translations: translationsPayload,
-                        timestamp_keys: appliedTsKeys,
-                    }),
-                });
-
-                if (!saveResp.ok) {
-                    const errData = await saveResp.json().catch(() => ({}));
-                    throw new Error(errData.error || `HTTP ${saveResp.status}`);
-                }
-
-                // Update local timestamps
-                const now = new Date().toISOString();
-                appliedTsKeys.forEach(k => {
-                    timestamps[k] = { ...(timestamps[k] ?? {}), de_translated_at: now };
-                });
-                button.dataset.textTimestamps = JSON.stringify(timestamps);
-
-                showToast('success', `${count} Übersetzung${count !== 1 ? 'en' : ''} gespeichert`);
-                flashButton(button, `✓ ${count} gespeichert`, 2500, titleSpan, originalTitle);
-            } catch (saveErr) {
-                console.error('[translateBlocks] Save failed:', saveErr);
-                showToast('error', 'Speichern fehlgeschlagen: ' + saveErr.message);
-                flashButton(button, '✗ Fehler', 2500, titleSpan, originalTitle);
-            }
-        } else {
-            flashButton(button, `✓ ${count} übernommen`, 2500, titleSpan, originalTitle);
-        }
-
-    } catch (error) {
-        console.error('[translateBlocks] Translation failed:', error);
-        alert('Übersetzung fehlgeschlagen: ' + error.message);
-        if (titleSpan) titleSpan.textContent = originalTitle;
-        button.disabled = false;
+    } else {
+        flashButton(button, `✓ ${count} übernommen`, 2500, titleSpan, originalTitle);
     }
 }
 
@@ -493,7 +463,7 @@ function buildOverlayEl(translations, allItems, changedKeys, timestamps, current
         <div class="bg-white rounded-3 shadow-lg d-flex flex-column"
              style="width:min(800px,96vw);max-height:90vh;">
             <div class="d-flex align-items-center gap-3 px-4 py-3 border-bottom flex-shrink-0">
-                <h5 class="mb-0 me-auto fw-semibold">\u{1F310} \u00DCbersetzungen pr\u00FCfen</h5>
+                <h5 class="mb-0 me-auto fw-semibold">\u{1F310} \u00DCbersetzungen</h5>
                 <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1" id="tro-retranslate-all"
                         title="Alle ausgew\u00E4hlten Felder neu mit DeepL \u00FCbersetzen">
                     ${TRANSLATE_ICON}
