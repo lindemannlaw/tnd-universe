@@ -663,7 +663,6 @@
         grid-template-columns: repeat(4, 1fr);
         column-gap: var(--numbers-col-gap);
         row-gap: range.build(32, 56, px, 375, 1240);
-        overflow: hidden;
     }
 
     .project-numbers-item {
