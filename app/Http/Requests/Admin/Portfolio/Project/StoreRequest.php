@@ -26,6 +26,7 @@ class StoreRequest extends FormRequest
         $rules['area'] = ['nullable', 'integer'];
         $rules['sort'] = ['required', 'integer'];
         $rules['active'] = ['required', 'boolean'];
+        $rules['inquiry_button_active'] = ['required', 'boolean'];
 
         $rules['new_files'] = ['nullable', 'array'];
         $rules['new_files.*.name'] = ['nullable', 'string', 'max:255', 'required_with:files.*.file'];

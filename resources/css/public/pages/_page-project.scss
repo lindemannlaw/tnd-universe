@@ -845,6 +845,10 @@
     }
 }
 
+.project-inquiry-btn {
+    margin-top: range.build(8, 20);
+}
+
 .other-projects {
     --container-pt: #{range.build(60, 90)};
 

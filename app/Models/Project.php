@@ -36,6 +36,7 @@ class Project extends Model implements HasMedia
         'text_timestamps',
 
         'active',
+        'inquiry_button_active',
         'sort',
     ];
 
@@ -59,6 +60,7 @@ class Project extends Model implements HasMedia
     {
         return [
             'active' => 'boolean',
+            'inquiry_button_active' => 'boolean',
             'text_timestamps' => 'array',
         ];
     }
@@ -110,6 +112,9 @@ class Project extends Model implements HasMedia
         $details = $this->property_details;
 
         if (!is_array($details)) return [];
+
+        // Exclude non-display fields
+        unset($details['inquiry_button_text']);
 
         $order = ['property_type', 'status', 'year_built'];
         $sorted = array_merge(array_flip($order), $details);

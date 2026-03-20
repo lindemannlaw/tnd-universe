@@ -77,6 +77,20 @@ $galleryImageSizes = [
                                 </p>
                             @endif
                         @endforeach
+
+                        @if ($project->inquiry_button_active)
+                            @php
+                                $btnText = data_get(
+                                    $project->getTranslation('property_details', app()->getLocale()),
+                                    'inquiry_button_text'
+                                );
+                            @endphp
+                            @if ($btnText)
+                                <a href="{{ route('public.contacts') }}" class="btn btn-submit project-inquiry-btn">
+                                    {{ $btnText }}
+                                </a>
+                            @endif
+                        @endif
                     </div>
                 @endif
 

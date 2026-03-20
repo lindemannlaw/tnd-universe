@@ -68,6 +68,8 @@ return [
     'name' => 'Name',
     'sort' => 'Sort',
     'show' => 'Show',
+    'inquiry_button_text' => 'Inquiry Button Text',
+    'inquiry_button_active' => 'Show Inquiry Button',
     'cancel' => 'Cancel',
     'short_description' => 'Short Description',
     'description' => 'Description',

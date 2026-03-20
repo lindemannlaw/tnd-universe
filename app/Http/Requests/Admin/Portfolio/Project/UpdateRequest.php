@@ -26,6 +26,7 @@ class UpdateRequest extends FormRequest
         $rules['area'] = ['nullable', 'integer'];
         $rules['sort'] = ['required', 'integer'];
         $rules['active'] = ['required', 'boolean'];
+        $rules['inquiry_button_active'] = ['required', 'boolean'];
 
         $rules['current_files'] = ['nullable', 'array'];
         $rules['current_files.*.name'] = ['nullable', 'string', 'max:255'];

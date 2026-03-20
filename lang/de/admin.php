@@ -68,6 +68,8 @@ return [
     'name' => 'Name',
     'sort' => 'Sortieren',
     'show' => 'Anzeigen',
+    'inquiry_button_text' => 'Anfrage-Button Text',
+    'inquiry_button_active' => 'Anfrage-Button anzeigen',
     'cancel' => 'Abbrechen',
     'short_description' => 'Kurzbeschreibung',
     'description' => 'Beschreibung',

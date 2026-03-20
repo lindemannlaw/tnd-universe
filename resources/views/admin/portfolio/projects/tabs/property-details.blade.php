@@ -45,8 +45,30 @@
                             : null"
                         :required="false"
                     />
+
+                    <hr class="my-1">
+
+                    <!-- inquiry button text -->
+                    <x-admin.field.text
+                        :name="'property_details[' . $lang . '][inquiry_button_text]'"
+                        :placeholder="__('admin.inquiry_button_text')"
+                        :value="isset($project)
+                            ? data_get($project->getTranslations('property_details'), $lang . '.inquiry_button_text')
+                            : ($lang === 'en' ? 'Inquire for Details...' : 'Anfrage für Details...')"
+                        :required="false"
+                    />
                 </div>
             </x-admin.tabs.pane>
         @endforeach
+
+        <!-- Toggle (outside language tabs, applies globally) -->
+        <div class="mt-3 pt-3 border-top">
+            <x-admin.field.radio-switch
+                class="m-0 me-auto"
+                :name="'inquiry_button_active'"
+                :title="__('admin.inquiry_button_active')"
+                :checked="isset($project) ? $project->inquiry_button_active : false"
+            />
+        </div>
     </x-slot:content>
 </x-admin.tabs.wrapper>

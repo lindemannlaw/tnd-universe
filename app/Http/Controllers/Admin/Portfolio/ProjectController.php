@@ -940,7 +940,7 @@ class ProjectController extends Controller
         // Property details
         $pd = $project->getTranslation('property_details', $locale);
         if (is_array($pd)) {
-            foreach (['property_type', 'status', 'year_built'] as $subField) {
+            foreach (['property_type', 'status', 'year_built', 'inquiry_button_text'] as $subField) {
                 $texts["property_details.$subField"] = $this->stripForCompare($pd[$subField] ?? '');
             }
         }
@@ -1027,7 +1027,7 @@ class ProjectController extends Controller
 
         $pd = $project->getTranslation('property_details', $locale);
         if (is_array($pd)) {
-            foreach (['property_type', 'status', 'year_built'] as $subField) {
+            foreach (['property_type', 'status', 'year_built', 'inquiry_button_text'] as $subField) {
                 $texts["property_details.$subField"] = (string) ($pd[$subField] ?? '');
             }
         }
