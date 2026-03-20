@@ -436,10 +436,7 @@ function buildOverlayEl(translations, allItems, changedKeys, timestamps, current
                 </div>
                 <div class="d-flex align-items-start gap-1" style="line-height:1.3;">
                     <span class="flex-shrink-0" style="font-size:0.85rem;line-height:1.3;" title="English">\u{1F1EC}\u{1F1E7}</span>
-                    <div class="border-start border-2 border-secondary-subtle ps-2 flex-grow-1"
-                         style="white-space:pre-wrap;margin:0;padding:0;">
-                        ${enContentHtml}
-                    </div>
+                    <div class="border-start border-2 border-secondary-subtle ps-2 flex-grow-1" style="margin:0;padding:0;">${enContentHtml}</div>
                 </div>
                 <div class="d-flex align-items-start gap-1">
                     <div class="flex-shrink-0 d-flex flex-column align-items-center gap-1">
