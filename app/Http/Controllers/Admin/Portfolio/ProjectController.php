@@ -635,6 +635,7 @@ class ProjectController extends Controller
                         'headline'          => data_get($block, 'headline') ?: null,
                         'headline_col_span' => max(1, min(12, (int)data_get($block, 'headline_col_span', 12))),
                         'headline_line'     => (bool)data_get($block, 'headline_line', false),
+                        'headline_font'     => data_get($block, 'headline_font', 'pangea') === 'nicevar' ? 'nicevar' : 'pangea',
                         'grid_col_span'     => max(1, min(12, (int)data_get($block, 'grid_col_span', 12))),
                         'grid_col_start'    => max(1, min(12, (int)data_get($block, 'grid_col_start', 1))),
                         'items'             => $preparedItems,

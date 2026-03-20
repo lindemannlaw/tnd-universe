@@ -324,6 +324,7 @@ $galleryImageSizes = [
                             $nPbottom = max(0, min(300, (int)data_get($blockOrRow, 'padding_bottom', 0)));
                             $nHeadlineColSpan = max(1, min(12, (int)data_get($blockOrRow, 'headline_col_span', 12)));
                             $nHeadlineLine = (bool)data_get($blockOrRow, 'headline_line', false);
+                            $nHeadlineFont = data_get($blockOrRow, 'headline_font', 'pangea') === 'nicevar' ? 'font-nicevar' : '';
                             $nGridColSpan = max(1, min(12, (int)data_get($blockOrRow, 'grid_col_span', 12)));
                             $nGridColStart = max(1, min(12, (int)data_get($blockOrRow, 'grid_col_start', 1)));
                             $nItems = data_get($blockOrRow, 'items', []);
@@ -338,7 +339,7 @@ $galleryImageSizes = [
                         <div class="project-numbers"
                              style="--grid-col-span: {{ $nGridColSpan }}; --grid-col-start: {{ $nGridColStart }};{{ $nPtop > 0 ? ' padding-top:' . $nPtop . 'px;' : '' }}{{ $nPbottom > 0 ? ' padding-bottom:' . $nPbottom . 'px;' : '' }}">
                             @if(filled(data_get($blockOrRow, 'headline')))
-                                <h2 class="project-numbers-headline{{ $nHeadlineLine ? ' has-line' : '' }}"
+                                <h2 class="project-numbers-headline{{ $nHeadlineLine ? ' has-line' : '' }}{{ $nHeadlineFont ? ' ' . $nHeadlineFont : '' }}"
                                     style="--col-span: {{ $nHeadlineColSpan }};">
                                     {{ data_get($blockOrRow, 'headline') }}
                                 </h2>

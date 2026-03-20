@@ -651,6 +651,12 @@
         color: var(--color-font-primary);
         margin: 0;
 
+        &.font-nicevar {
+            font-family: var(--font-primary);
+            font-variation-settings: var(--font-primary-settings-headline);
+            font-weight: 200;
+        }
+
         &.has-line {
             display: grid;
             grid-template-columns: range.build(40, 60, px, 375, 1240) 1fr;

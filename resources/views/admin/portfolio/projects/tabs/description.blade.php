@@ -608,12 +608,20 @@
                                                     :fieldAttrs="'min=1 max=12'"
                                                 />
                                             </div>
-                                            <div class="col-6 col-lg-3 d-flex align-items-center">
+                                            <div class="col-3 col-lg-1 d-flex align-items-center">
                                                 <div class="form-check form-switch mb-0">
                                                     <input class="form-check-input" type="checkbox" value="1"
                                                            name="description_blocks[{{ $lang }}][{{ $blockIndex }}][headline_line]"
                                                            {{ data_get($block, 'headline_line') ? 'checked' : '' }}>
-                                                    <label class="form-check-label small">Linie unter Headline</label>
+                                                    <label class="form-check-label small">Linie</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-3 col-lg-2 d-flex align-items-center">
+                                                <div class="form-check form-switch mb-0">
+                                                    <input class="form-check-input" type="checkbox" value="nicevar"
+                                                           name="description_blocks[{{ $lang }}][{{ $blockIndex }}][headline_font]"
+                                                           {{ data_get($block, 'headline_font') === 'nicevar' ? 'checked' : '' }}>
+                                                    <label class="form-check-label small">NiceVar</label>
                                                 </div>
                                             </div>
                                         </div>
@@ -872,10 +880,16 @@
                                     <div class="col-6 col-lg-3">
                                         <x-admin.field.number :name="'description_blocks['. $lang .'][__block__][headline_col_span]'" :value="12" :placeholder="'Headline Spalten (1-12)'" :fieldAttrs="'min=1 max=12'" />
                                     </div>
-                                    <div class="col-6 col-lg-3 d-flex align-items-center">
+                                    <div class="col-3 col-lg-1 d-flex align-items-center">
                                         <div class="form-check form-switch mb-0">
                                             <input class="form-check-input" type="checkbox" value="1" name="description_blocks[{{ $lang }}][__block__][headline_line]">
-                                            <label class="form-check-label small">Linie unter Headline</label>
+                                            <label class="form-check-label small">Linie</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-3 col-lg-2 d-flex align-items-center">
+                                        <div class="form-check form-switch mb-0">
+                                            <input class="form-check-input" type="checkbox" value="nicevar" name="description_blocks[{{ $lang }}][__block__][headline_font]">
+                                            <label class="form-check-label small">NiceVar</label>
                                         </div>
                                     </div>
                                 </div>
