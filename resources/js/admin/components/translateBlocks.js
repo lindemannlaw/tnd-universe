@@ -393,7 +393,12 @@ function buildOverlayEl(translations, allItems, changedKeys, timestamps, current
     const changedCount = changedKeys.size;
 
     const itemsHtml = sortedItems.map(({ key, text: sourceText, isHtml }) => {
-        const translated    = translations[key] ?? '';
+        const rawTranslated = translations[key] ?? '';
+        // If DeepL returned same text as source, keep current DE value instead
+        const srcNorm = sourceText.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+        const tgtNorm = rawTranslated.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+        const deeplSameAsSource = srcNorm && tgtNorm && srcNorm === tgtNorm;
+        const translated = deeplSameAsSource ? (currentDeValues[key] || rawTranslated) : rawTranslated;
         const label         = getLabelFromKey(key);
         const isChanged     = changedKeys.has(key);
         const sourceClean   = sourceText.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
@@ -585,28 +590,33 @@ function wireRetranslateButtons(overlay, allItems, translateUrl) {
                 }
 
                 const data = await response.json();
-                console.log('[translateBlocks] Single response:', JSON.stringify(data).substring(0, 300));
-                console.log('[translateBlocks] Looking for key:', key);
                 const translated = data.translations?.[key] ?? '';
 
-                if (translated) {
-                    if (editor.dataset.isHtml === 'true') {
-                        editor.innerHTML = translated;
-                    } else {
-                        editor.value = translated;
-                    }
-                    // Auto-check the checkbox
-                    const troItem = btn.closest('[data-tro-item]');
-                    const cb = troItem?.querySelector('[data-tro-checkbox]');
-                    if (cb && !cb.checked) {
-                        cb.checked = true;
-                        cb.dispatchEvent(new Event('change', { bubbles: true }));
-                    }
-                    btn.innerHTML = '\u2705';
-                } else {
-                    console.warn('[translateBlocks] No translation returned for key:', key, data);
+                if (!translated) {
                     btn.innerHTML = '\u274C';
                     showToast('error', 'Keine \u00DCbersetzung erhalten');
+                } else {
+                    // Check if DeepL returned same text as source (not actually translated)
+                    const srcClean = item.text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+                    const tgtClean = translated.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+                    if (srcClean === tgtClean) {
+                        btn.innerHTML = '\u26A0\uFE0F';
+                        showToast('error', 'DeepL hat nicht \u00FCbersetzt (Quelltext = \u00DCbersetzung)');
+                    } else {
+                        if (editor.dataset.isHtml === 'true') {
+                            editor.innerHTML = translated;
+                        } else {
+                            editor.value = translated;
+                        }
+                        // Auto-check the checkbox
+                        const troItem = btn.closest('[data-tro-item]');
+                        const cb = troItem?.querySelector('[data-tro-checkbox]');
+                        if (cb && !cb.checked) {
+                            cb.checked = true;
+                            cb.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+                        btn.innerHTML = '\u2705';
+                    }
                 }
             } catch (err) {
                 console.error('[translateBlocks] Re-translate failed:', err);
@@ -675,11 +685,19 @@ function wireRetranslateButtons(overlay, allItems, translateUrl) {
                 let updated = 0;
                 let skipped = 0;
 
-                checkedItems.forEach(({ key, editor }) => {
+                let unchanged = 0;
+
+                checkedItems.forEach(({ key, item, editor }) => {
                     const translated = translations[key];
                     if (translated === undefined || translated === null) {
                         skipped++;
-                        console.warn('[translateBlocks] Key not found in response:', key);
+                        return;
+                    }
+                    // Skip if DeepL returned the same text as EN source (not actually translated)
+                    const srcClean = item.text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+                    const tgtClean = translated.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+                    if (srcClean === tgtClean) {
+                        unchanged++;
                         return;
                     }
                     if (editor.dataset.isHtml === 'true') {
@@ -690,14 +708,15 @@ function wireRetranslateButtons(overlay, allItems, translateUrl) {
                     updated++;
                 });
 
-                console.log('[translateBlocks] Bulk result:', { updated, skipped, totalResponse: responseKeys.length });
                 retranslateAllBtn.innerHTML = `\u2705 <span>${updated} \u00FCbersetzt</span>`;
                 if (updated > 0) {
-                    showToast('success', `${updated} Feld${updated !== 1 ? 'er' : ''} \u00FCbersetzt`);
-                } else if (skipped > 0) {
-                    showToast('error', `${skipped} Keys nicht in Response gefunden`);
+                    let msg = `${updated} Feld${updated !== 1 ? 'er' : ''} \u00FCbersetzt`;
+                    if (unchanged > 0) msg += ` (${unchanged} unver\u00E4ndert)`;
+                    showToast('success', msg);
+                } else if (unchanged > 0) {
+                    showToast('error', `DeepL hat ${unchanged} Feld${unchanged !== 1 ? 'er' : ''} nicht \u00FCbersetzt (Quelltext = \u00DCbersetzung)`);
                 } else {
-                    showToast('error', 'Keine \u00DCbersetzungen in Response');
+                    showToast('error', 'Keine \u00DCbersetzungen erhalten');
                 }
             } catch (err) {
                 console.error('[translateBlocks] Retranslate-all failed:', err);
