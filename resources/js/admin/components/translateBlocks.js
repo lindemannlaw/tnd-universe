@@ -8,6 +8,8 @@
  * Projects without timestamps = all fields are considered in-sync (unchecked).
  */
 
+const TRANSLATE_ICON = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12.913 17H20.087M12.913 17L11 21M12.913 17L15.7783 11.009C16.0092 10.5263 16.1246 10.2849 16.2826 10.2086C16.4199 10.1423 16.5801 10.1423 16.7174 10.2086C16.8754 10.2849 16.9908 10.5263 17.2217 11.009L20.087 17M20.087 17L22 21M2 5H8M8 5H11.5M8 5V3M11.5 5H14M11.5 5C11.0039 7.95729 9.85259 10.6362 8.16555 12.8844M10 14C9.38747 13.7248 8.76265 13.3421 8.16555 12.8844M8.16555 12.8844C6.81302 11.8478 5.60276 10.4266 5 9M8.16555 12.8844C6.56086 15.0229 4.47143 16.7718 2 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
 const TEXT_ONLY_NAMES = new Set(['content', 'headline', 'link_text', 'link_url', 'subhead', 'title', 'number', 'subline']);
 
 const FIELD_LABELS = {
@@ -464,19 +466,19 @@ function buildOverlayEl(translations, allItems, changedKeys, timestamps, current
                     </div>
                 </div>
                 <div class="d-flex align-items-start gap-1">
-                    <span class="flex-shrink-0" style="font-size:0.85rem;" title="Deutsch">\u{1F1E9}\u{1F1EA}</span>
+                    <div class="flex-shrink-0 d-flex flex-column align-items-center gap-1">
+                        <span style="font-size:0.85rem;" title="Deutsch">\u{1F1E9}\u{1F1EA}</span>
+                        <button type="button"
+                            class="btn btn-sm btn-outline-secondary tro-retranslate p-0 d-flex align-items-center justify-content-center"
+                            data-retranslate-key="${escAttr(key)}"
+                            title="Neu \u00FCbersetzen"
+                            style="width:22px;height:22px;">
+                            ${TRANSLATE_ICON}
+                        </button>
+                    </div>
                     <div class="flex-grow-1">
                         ${deDiffHtml}
-                        <div class="d-flex align-items-start gap-1">
-                            <div class="flex-grow-1">${editorHtml}</div>
-                            <button type="button"
-                                class="btn btn-sm btn-outline-secondary flex-shrink-0 tro-retranslate"
-                                data-retranslate-key="${escAttr(key)}"
-                                title="Einzeln neu \u00FCbersetzen"
-                                style="padding:2px 5px;line-height:1;font-size:0.75rem;margin-top:1px;">
-                                \u{1F504}
-                            </button>
-                        </div>
+                        ${editorHtml}
                     </div>
                 </div>
             </div>`;
@@ -489,7 +491,7 @@ function buildOverlayEl(translations, allItems, changedKeys, timestamps, current
                 <h5 class="mb-0 me-auto fw-semibold">\u{1F310} \u00DCbersetzungen pr\u00FCfen</h5>
                 <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1" id="tro-retranslate-all"
                         title="Alle ausgew\u00E4hlten Felder neu mit DeepL \u00FCbersetzen">
-                    <span style="font-size:0.85rem;">\u{1F30D}</span>
+                    ${TRANSLATE_ICON}
                     <span>Alle mit DeepL \u00FCbersetzen (<span id="tro-retranslate-count">0</span>)</span>
                 </button>
                 <label class="d-flex align-items-center gap-2 mb-0 small user-select-none" style="cursor:pointer;">
@@ -558,9 +560,9 @@ function wireRetranslateButtons(overlay, allItems, translateUrl) {
             if (!editor) return;
 
             // Visual feedback
-            const origLabel = btn.textContent;
-            btn.disabled    = true;
-            btn.textContent = '\u231B';
+            const origHtml = btn.innerHTML;
+            btn.disabled   = true;
+            btn.innerHTML  = '\u231B';
 
             try {
                 const response = await fetch(translateUrl, {
@@ -582,8 +584,8 @@ function wireRetranslateButtons(overlay, allItems, translateUrl) {
                     throw new Error(err.error || `HTTP ${response.status}`);
                 }
 
-                const { translations = {} } = await response.json();
-                const translated = translations[key] ?? '';
+                const data = await response.json();
+                const translated = data.translations?.[key] ?? '';
 
                 if (translated) {
                     if (editor.dataset.isHtml === 'true') {
@@ -598,18 +600,21 @@ function wireRetranslateButtons(overlay, allItems, translateUrl) {
                         cb.checked = true;
                         cb.dispatchEvent(new Event('change', { bubbles: true }));
                     }
-                    btn.textContent = '\u2705';
+                    btn.innerHTML = '\u2705';
                 } else {
-                    btn.textContent = '\u274C';
+                    console.warn('[translateBlocks] No translation returned for key:', key, data);
+                    btn.innerHTML = '\u274C';
+                    showToast('error', 'Keine \u00DCbersetzung erhalten');
                 }
             } catch (err) {
                 console.error('[translateBlocks] Re-translate failed:', err);
-                btn.textContent = '\u274C';
+                btn.innerHTML = '\u274C';
+                showToast('error', '\u00DCbersetzung fehlgeschlagen: ' + err.message);
             }
 
             setTimeout(() => {
-                btn.textContent = origLabel;
-                btn.disabled    = false;
+                btn.innerHTML = origHtml;
+                btn.disabled  = false;
             }, 1500);
         });
     });
@@ -635,7 +640,7 @@ function wireRetranslateButtons(overlay, allItems, translateUrl) {
             // Visual feedback
             const origHtml = retranslateAllBtn.innerHTML;
             retranslateAllBtn.disabled  = true;
-            retranslateAllBtn.innerHTML = `<span style="font-size:0.85rem;">\u231B</span> <span>\u00DCbersetze ${checkedItems.length} Felder\u2026</span>`;
+            retranslateAllBtn.innerHTML = `\u231B <span>\u00DCbersetze ${checkedItems.length} Felder\u2026</span>`;
 
             try {
                 const response = await fetch(translateUrl, {
@@ -673,10 +678,12 @@ function wireRetranslateButtons(overlay, allItems, translateUrl) {
                     updated++;
                 });
 
-                retranslateAllBtn.innerHTML = `<span style="font-size:0.85rem;">\u2705</span> <span>${updated} \u00FCbersetzt</span>`;
+                retranslateAllBtn.innerHTML = `\u2705 <span>${updated} \u00FCbersetzt</span>`;
+                if (updated > 0) showToast('success', `${updated} Feld${updated !== 1 ? 'er' : ''} \u00FCbersetzt`);
             } catch (err) {
                 console.error('[translateBlocks] Retranslate-all failed:', err);
-                retranslateAllBtn.innerHTML = `<span style="font-size:0.85rem;">\u274C</span> <span>Fehler</span>`;
+                retranslateAllBtn.innerHTML = `\u274C <span>Fehler</span>`;
+                showToast('error', '\u00DCbersetzung fehlgeschlagen: ' + err.message);
             }
 
             setTimeout(() => {
