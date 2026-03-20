@@ -620,12 +620,20 @@
                                                                 :placeholder="'Title (z.B. RESIDENCE)'"
                                                             />
                                                         </div>
-                                                        <div class="col-12 col-lg-6">
+                                                        <div class="col-12 col-lg-3">
                                                             <select class="form-select form-select-sm" name="description_blocks[{{ $lang }}][{{ $blockIndex }}][items][{{ $itemIndex }}][line_color]">
                                                                 @foreach(['emerald-900' => 'Emerald 900 (Default)', 'primary' => 'Primary (Dark)', 'emerald-950' => 'Emerald 950', 'emerald-800' => 'Emerald 800', 'gold-bright' => 'Gold Bright'] as $val => $label)
                                                                     <option value="{{ $val }}" {{ data_get($item, 'line_color', 'emerald-900') === $val ? 'selected' : '' }}>{{ $label }}</option>
                                                                 @endforeach
                                                             </select>
+                                                        </div>
+                                                        <div class="col-12 col-lg-3">
+                                                            <x-admin.field.number
+                                                                :name="'description_blocks['. $lang .'][' . $blockIndex . '][items][' . $itemIndex . '][item_col_span]'"
+                                                                :value="data_get($item, 'item_col_span', 3)"
+                                                                :placeholder="'Spalten (1-12)'"
+                                                                :fieldAttrs="'min=1 max=12'"
+                                                            />
                                                         </div>
                                                         <div class="col-12 col-lg-6">
                                                             <x-admin.field.text
@@ -1001,7 +1009,7 @@
                             <div class="col-12 col-lg-6">
                                 <x-admin.field.text :name="'description_blocks['. $lang .'][__block__][items][__item__][title]'" :required="false" :placeholder="'Title (z.B. RESIDENCE)'" />
                             </div>
-                            <div class="col-12 col-lg-6">
+                            <div class="col-12 col-lg-3">
                                 <select class="form-select form-select-sm" name="description_blocks[{{ $lang }}][__block__][items][__item__][line_color]">
                                     <option value="emerald-900" selected>Emerald 900 (Default)</option>
                                     <option value="primary">Primary (Dark)</option>
@@ -1009,6 +1017,9 @@
                                     <option value="emerald-800">Emerald 800</option>
                                     <option value="gold-bright">Gold Bright</option>
                                 </select>
+                            </div>
+                            <div class="col-12 col-lg-3">
+                                <x-admin.field.number :name="'description_blocks['. $lang .'][__block__][items][__item__][item_col_span]'" :value="3" :placeholder="'Spalten (1-12)'" :fieldAttrs="'min=1 max=12'" />
                             </div>
                             <div class="col-12 col-lg-6">
                                 <x-admin.field.text :name="'description_blocks['. $lang .'][__block__][items][__item__][number]'" :required="false" :pattern="false" :placeholder="'Number (z.B. 4, 7,093)'" />

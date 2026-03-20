@@ -347,8 +347,10 @@ $galleryImageSizes = [
                                         $itemLineColor = $lineColors[data_get($item, 'line_color', 'emerald-900')] ?? 'var(--color-primary-brand-900-darker-silent)';
                                         $hasNumber = filled(data_get($item, 'number'));
                                         $fullWidthLine = (bool)data_get($item, 'full_width_line', false);
+                                        $itemColSpan = max(1, min(12, (int)data_get($item, 'item_col_span', 3)));
                                     @endphp
-                                    <div class="project-numbers-item{{ !$hasNumber ? ' no-number' : '' }}{{ $fullWidthLine ? ' has-full-line' : '' }}">
+                                    <div class="project-numbers-item{{ !$hasNumber ? ' no-number' : '' }}{{ $fullWidthLine ? ' has-full-line' : '' }}"
+                                         style="--item-col-span: {{ $itemColSpan }};">
                                         <span class="project-numbers-item-title">{{ data_get($item, 'title') }}</span>
                                         <hr class="project-numbers-item-line" style="background: {{ $itemLineColor }};">
                                         @if($hasNumber)

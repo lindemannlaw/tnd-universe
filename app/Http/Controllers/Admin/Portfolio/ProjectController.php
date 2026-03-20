@@ -620,6 +620,7 @@ class ProjectController extends Controller
                             'number'          => data_get($item, 'number') ?: null,
                             'subline'         => data_get($item, 'subline') ?: null,
                             'full_width_line' => (bool)data_get($item, 'full_width_line', false),
+                            'item_col_span'   => max(1, min(12, (int)data_get($item, 'item_col_span', 3))),
                         ];
                     }
 
