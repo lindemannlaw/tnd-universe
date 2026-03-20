@@ -856,8 +856,10 @@ class ProjectController extends Controller
                 $this->applyTranslationToProject($project, $deKey, $text, $targetLocale);
             }
 
-            Log::info('[applyTranslations] saving project', ['id' => $project->id, 'dirty' => $project->getDirty()]);
+            $dirty = $project->getDirty();
+            Log::info('[applyTranslations] saving project', ['id' => $project->id, 'dirty_keys' => array_keys($dirty)]);
             $project->saveOrFail();
+            $isDirty = !empty($dirty);
 
             // Update timestamps: mark these fields as translated
             if (!empty($timestampKeys)) {
@@ -873,7 +875,7 @@ class ProjectController extends Controller
 
             DB::commit();
 
-            return response()->json(['ok' => true, 'applied' => count($translations)]);
+            return response()->json(['ok' => true, 'applied' => count($translations), 'was_dirty' => $isDirty, 'dirty_keys' => array_keys($dirty)]);
 
         } catch (\Throwable $e) {
             DB::rollBack();
