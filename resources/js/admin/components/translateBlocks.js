@@ -487,6 +487,11 @@ function buildOverlayEl(translations, allItems, changedKeys, timestamps, current
              style="width:min(800px,96vw);max-height:90vh;">
             <div class="d-flex align-items-center gap-3 px-4 py-3 border-bottom flex-shrink-0">
                 <h5 class="mb-0 me-auto fw-semibold">\u{1F310} \u00DCbersetzungen pr\u00FCfen</h5>
+                <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1" id="tro-retranslate-all"
+                        title="Alle ausgew\u00E4hlten Felder neu mit DeepL \u00FCbersetzen">
+                    <span style="font-size:0.85rem;">\u{1F30D}</span>
+                    <span>Alle mit DeepL \u00FCbersetzen (<span id="tro-retranslate-count">0</span>)</span>
+                </button>
                 <label class="d-flex align-items-center gap-2 mb-0 small user-select-none" style="cursor:pointer;">
                     <input class="form-check-input mt-0" type="checkbox" id="tro-select-all">
                     Alle ausw\u00E4hlen
@@ -508,9 +513,10 @@ function buildOverlayEl(translations, allItems, changedKeys, timestamps, current
         </div>`;
 
     // Select-All + count logic
-    const selectAllEl = overlay.querySelector('#tro-select-all');
-    const countEl     = overlay.querySelector('#tro-count');
-    const applyBtn    = overlay.querySelector('#tro-apply');
+    const selectAllEl       = overlay.querySelector('#tro-select-all');
+    const countEl           = overlay.querySelector('#tro-count');
+    const applyBtn          = overlay.querySelector('#tro-apply');
+    const retranslateCountEl = overlay.querySelector('#tro-retranslate-count');
 
     const updateState = () => {
         const all     = [...overlay.querySelectorAll('[data-tro-checkbox]')];
@@ -519,6 +525,7 @@ function buildOverlayEl(translations, allItems, changedKeys, timestamps, current
         selectAllEl.checked       = checked === all.length;
         selectAllEl.indeterminate = checked > 0 && checked < all.length;
         applyBtn.disabled         = checked === 0;
+        if (retranslateCountEl) retranslateCountEl.textContent = checked;
     };
 
     selectAllEl.addEventListener('change', () => {
@@ -606,6 +613,84 @@ function wireRetranslateButtons(overlay, allItems, translateUrl) {
             }, 1500);
         });
     });
+
+    // "Alle mit DeepL übersetzen" button
+    const retranslateAllBtn = overlay.querySelector('#tro-retranslate-all');
+    if (retranslateAllBtn) {
+        retranslateAllBtn.addEventListener('click', async () => {
+            // Collect all checked items
+            const checkedItems = [];
+            overlay.querySelectorAll('[data-tro-item]').forEach(troItem => {
+                const cb = troItem.querySelector('[data-tro-checkbox]');
+                if (!cb?.checked) return;
+                const editor = troItem.querySelector('.tro-editor');
+                if (!editor) return;
+                const key  = editor.dataset.key;
+                const item = itemMap[key];
+                if (item) checkedItems.push({ key, item, editor });
+            });
+
+            if (checkedItems.length === 0) return;
+
+            // Visual feedback
+            const origHtml = retranslateAllBtn.innerHTML;
+            retranslateAllBtn.disabled  = true;
+            retranslateAllBtn.innerHTML = `<span style="font-size:0.85rem;">\u231B</span> <span>\u00DCbersetze ${checkedItems.length} Felder\u2026</span>`;
+
+            try {
+                const response = await fetch(translateUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken(),
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: JSON.stringify({
+                        source_lang: 'en',
+                        target_lang: 'de',
+                        items: checkedItems.map(({ item }) => ({
+                            key: item.key, text: item.text, isHtml: item.isHtml,
+                        })),
+                    }),
+                });
+
+                if (!response.ok) {
+                    const err = await response.json().catch(() => ({}));
+                    throw new Error(err.error || `HTTP ${response.status}`);
+                }
+
+                const { translations = {} } = await response.json();
+                let updated = 0;
+
+                checkedItems.forEach(({ key, editor }) => {
+                    const translated = translations[key];
+                    if (!translated) return;
+                    if (editor.dataset.isHtml === 'true') {
+                        editor.innerHTML = translated;
+                    } else {
+                        editor.value = translated;
+                    }
+                    updated++;
+                });
+
+                retranslateAllBtn.innerHTML = `<span style="font-size:0.85rem;">\u2705</span> <span>${updated} \u00FCbersetzt</span>`;
+            } catch (err) {
+                console.error('[translateBlocks] Retranslate-all failed:', err);
+                retranslateAllBtn.innerHTML = `<span style="font-size:0.85rem;">\u274C</span> <span>Fehler</span>`;
+            }
+
+            setTimeout(() => {
+                retranslateAllBtn.innerHTML = origHtml;
+                retranslateAllBtn.disabled  = false;
+                // Update count
+                const countSpan = retranslateAllBtn.querySelector('#tro-retranslate-count');
+                if (countSpan) {
+                    const checked = [...overlay.querySelectorAll('[data-tro-checkbox]')].filter(c => c.checked).length;
+                    countSpan.textContent = checked;
+                }
+            }, 2000);
+        });
+    }
 }
 
 // ---------------------------------------------------------------------------
