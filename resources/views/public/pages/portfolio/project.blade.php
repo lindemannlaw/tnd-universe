@@ -336,15 +336,14 @@ $galleryImageSizes = [
                             ];
                         @endphp
                         <div class="project-numbers"
-                             style="{{ $nPtop > 0 ? 'padding-top:' . $nPtop . 'px;' : '' }}{{ $nPbottom > 0 ? 'padding-bottom:' . $nPbottom . 'px;' : '' }}">
+                             style="--grid-col-span: {{ $nGridColSpan }}; --grid-col-start: {{ $nGridColStart }};{{ $nPtop > 0 ? ' padding-top:' . $nPtop . 'px;' : '' }}{{ $nPbottom > 0 ? ' padding-bottom:' . $nPbottom . 'px;' : '' }}">
                             @if(filled(data_get($blockOrRow, 'headline')))
                                 <h2 class="project-numbers-headline{{ $nHeadlineLine ? ' has-line' : '' }}"
                                     style="--col-span: {{ $nHeadlineColSpan }};">
                                     {{ data_get($blockOrRow, 'headline') }}
                                 </h2>
                             @endif
-                            <div class="project-numbers-grid"
-                                 style="--grid-col-span: {{ $nGridColSpan }}; --grid-col-start: {{ $nGridColStart }};">
+                            <div class="project-numbers-grid">
                                 @foreach($nItems as $item)
                                     @php
                                         $itemLineColor = $lineColors[data_get($item, 'line_color', 'emerald-900')] ?? 'var(--color-primary-brand-900-darker-silent)';
