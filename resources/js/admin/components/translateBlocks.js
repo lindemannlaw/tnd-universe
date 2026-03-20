@@ -147,7 +147,7 @@ async function handleTranslate(button) {
                      ?? form.querySelector(`[name="${CSS.escape(deKey)}"]`);
         if (!deField) return;
         const val = deField._sunEditor ? deField._sunEditor.getContents() : (deField.value ?? '');
-        translations[key] = val; // Use current DE value as editor content
+        translations[key] = hasContent(val) ? val : enText; // Pre-fill with EN value when DE is empty
         if (hasContent(val)) {
             currentDeValues[key] = val;
             const enClean = enText.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
@@ -394,13 +394,13 @@ function buildOverlayEl(translations, allItems, changedKeys, timestamps, current
         // EN source: only show diff (compact), not full text
         let enContentHtml;
         if (hasTextDiff) {
-            enContentHtml = `<div class="small">${highlightDiff(oldClean, sourceClean)}</div>`;
+            enContentHtml = `<div class="small" style="margin:0;line-height:1.3;">${highlightDiff(oldClean, sourceClean)}</div>`;
         } else if (hasFormatDiff) {
-            enContentHtml = `<div class="small">${highlightHtmlDiff(rawOldTxt, sourceText)}</div>`;
+            enContentHtml = `<div class="small" style="margin:0;line-height:1.3;">${highlightHtmlDiff(rawOldTxt, sourceText)}</div>`;
         } else {
             // No diff available: show truncated preview
             const preview = sourceClean.length > 120 ? sourceClean.substring(0, 120) + '\u2026' : sourceClean;
-            enContentHtml = `<div class="small text-muted fst-italic">${escHtml(preview)}</div>`;
+            enContentHtml = `<div class="small text-muted fst-italic" style="margin:0;line-height:1.3;">${escHtml(preview)}</div>`;
         }
 
         const editorHtml = isHtml
@@ -410,7 +410,7 @@ function buildOverlayEl(translations, allItems, changedKeys, timestamps, current
                     data-key="${escAttr(key)}" data-is-html="true"
                 >${translated}</div>`
             : `<textarea class="form-control form-control-sm tro-editor"
-                    rows="${translated.length > 140 ? 4 : 2}"
+                    rows="${translated.length > 140 ? 4 : translated.length > 40 ? 2 : 1}"
                     data-key="${escAttr(key)}" data-is-html="false"
                 >${escHtml(translated)}</textarea>`;
 
@@ -433,10 +433,10 @@ function buildOverlayEl(translations, allItems, changedKeys, timestamps, current
                     <span class="fw-semibold small text-uppercase">${escHtml(label)}</span>
                     ${badgeHtml}
                 </div>
-                <div class="d-flex align-items-start gap-1">
-                    <span class="flex-shrink-0" style="font-size:0.85rem;" title="English">\u{1F1EC}\u{1F1E7}</span>
+                <div class="d-flex align-items-start gap-1" style="line-height:1.3;">
+                    <span class="flex-shrink-0" style="font-size:0.85rem;line-height:1.3;" title="English">\u{1F1EC}\u{1F1E7}</span>
                     <div class="border-start border-2 border-secondary-subtle ps-2 flex-grow-1"
-                         style="white-space:pre-wrap;">
+                         style="white-space:pre-wrap;margin:0;padding:0;">
                         ${enContentHtml}
                     </div>
                 </div>
@@ -586,22 +586,23 @@ function wireRetranslateButtons(overlay, allItems, translateUrl) {
                     // Check if DeepL returned same text as source (not actually translated)
                     const srcClean = item.text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
                     const tgtClean = translated.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
-                    if (srcClean === tgtClean) {
-                        btn.innerHTML = '\u26A0\uFE0F';
-                        showToast('error', 'DeepL hat nicht \u00FCbersetzt (Quelltext = \u00DCbersetzung)');
+                    // Write value to editor (even if same as source — numbers etc. don't change)
+                    if (editor.dataset.isHtml === 'true') {
+                        editor.innerHTML = translated;
                     } else {
-                        if (editor.dataset.isHtml === 'true') {
-                            editor.innerHTML = translated;
-                        } else {
-                            editor.value = translated;
-                        }
-                        // Auto-check the checkbox
-                        const troItem = btn.closest('[data-tro-item]');
-                        const cb = troItem?.querySelector('[data-tro-checkbox]');
-                        if (cb && !cb.checked) {
-                            cb.checked = true;
-                            cb.dispatchEvent(new Event('change', { bubbles: true }));
-                        }
+                        editor.value = translated;
+                    }
+                    // Auto-check the checkbox
+                    const troItem = btn.closest('[data-tro-item]');
+                    const cb = troItem?.querySelector('[data-tro-checkbox]');
+                    if (cb && !cb.checked) {
+                        cb.checked = true;
+                        cb.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                    if (srcClean === tgtClean) {
+                        btn.innerHTML = '\u2705';
+                        showToast('success', '\u00DCbernommen (Quelltext = \u00DCbersetzung)');
+                    } else {
                         btn.innerHTML = '\u2705';
                     }
                 }
@@ -680,12 +681,12 @@ function wireRetranslateButtons(overlay, allItems, translateUrl) {
                         skipped++;
                         return;
                     }
-                    // Skip if DeepL returned the same text as EN source (not actually translated)
+                    // Check if DeepL returned the same text as EN source
                     const srcClean = item.text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
                     const tgtClean = translated.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
                     if (srcClean === tgtClean) {
                         unchanged++;
-                        return;
+                        // Still write value to editor (numbers, codes etc. are the same in all languages)
                     }
                     if (editor.dataset.isHtml === 'true') {
                         editor.innerHTML = translated;
