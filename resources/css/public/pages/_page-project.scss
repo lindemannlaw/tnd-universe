@@ -643,7 +643,7 @@
     }
 
     .project-numbers-headline {
-        grid-column: 1 / span var(--col-span, 12);
+        grid-column: var(--grid-col-start, 1) / span var(--col-span, 12);
         font-family: var(--font-secondary);
         font-variation-settings: var(--font-secondary-settings);
         font-size: range.build(28, 48, px, 375, 1240);
@@ -652,8 +652,17 @@
         margin: 0;
 
         &.has-line {
-            padding-bottom: range.build(16, 24, px, 375, 1240);
-            border-bottom: 1px solid var(--color-font-primary);
+            display: grid;
+            grid-template-columns: range.build(40, 60, px, 375, 1240) 1fr;
+            column-gap: range.build(14, 20, px, 375, 1240);
+            align-items: center;
+
+            &::before {
+                content: '';
+                display: block;
+                height: 1px;
+                background: currentColor;
+            }
         }
     }
 
