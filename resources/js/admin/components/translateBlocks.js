@@ -171,8 +171,6 @@ async function handleTranslate(button) {
     button.disabled = false;
     if (approved === null) return; // cancelled
 
-    console.log('[translateBlocks] approved items:', Object.keys(approved).length, Object.keys(approved));
-
     // Apply approved values to DE form fields (for live preview)
     let count = 0;
     const appliedTsKeys = [];
@@ -181,7 +179,6 @@ async function handleTranslate(button) {
         const targetKey   = sourceKey.replace(`[${sourceLocale}]`, `[${targetLocale}]`);
         const targetField = form.querySelector(`[name="${CSS.escape(targetKey)}"]:not([disabled])`)
                          ?? form.querySelector(`[name="${CSS.escape(targetKey)}"]`);
-        console.log('[translateBlocks] apply:', sourceKey, '→', targetKey, 'found:', !!targetField, 'text:', translatedText?.substring(0, 50));
         if (targetField) {
             targetField.value = translatedText;
             if (targetField._sunEditor) targetField._sunEditor.setContents(translatedText);
@@ -194,8 +191,6 @@ async function handleTranslate(button) {
 
     // Save directly to DB via API
     const applyUrl = button.dataset.applyTranslationsUrl;
-    console.log('[translateBlocks] applyUrl:', applyUrl, 'payload count:', translationsPayload.length);
-    console.log('[translateBlocks] payload:', JSON.stringify(translationsPayload, null, 2));
     if (applyUrl && translationsPayload.length > 0) {
         try {
             const saveResp = await fetch(applyUrl, {
@@ -211,10 +206,9 @@ async function handleTranslate(button) {
                 }),
             });
 
-            const saveRespData = await saveResp.json().catch(() => ({}));
-            console.log('[translateBlocks] save response:', saveResp.status, saveRespData);
             if (!saveResp.ok) {
-                throw new Error(saveRespData.error || `HTTP ${saveResp.status}`);
+                const errData = await saveResp.json().catch(() => ({}));
+                throw new Error(errData.error || `HTTP ${saveResp.status}`);
             }
 
             // Update local timestamps
@@ -337,11 +331,8 @@ function showReviewOverlay(translations, allItems, changedKeys, timestamps, curr
                 if (!editor) return;
                 const key    = editor.dataset.key;
                 const isHtml = editor.dataset.isHtml === 'true';
-                const val    = isHtml ? editor.innerHTML : editor.value;
-                console.log('[translateBlocks] COLLECT editor:', key, 'tagName:', editor.tagName, 'isHtml:', isHtml, 'value:', val?.substring(0, 80));
-                result[key]  = { text: val, isHtml };
+                result[key]  = { text: isHtml ? editor.innerHTML : editor.value, isHtml };
             });
-            console.log('[translateBlocks] COLLECT result keys:', Object.keys(result));
             finish(result);
         });
     });
@@ -521,6 +512,23 @@ function buildOverlayEl(translations, allItems, changedKeys, timestamps, current
 
     overlay.querySelectorAll('[data-tro-checkbox]').forEach(cb => {
         cb.addEventListener('change', updateState);
+    });
+
+    // Auto-check checkbox when user edits a field
+    overlay.querySelectorAll('.tro-editor').forEach(editor => {
+        const handler = () => {
+            const troItem = editor.closest('[data-tro-item]');
+            const cb = troItem?.querySelector('[data-tro-checkbox]');
+            if (cb && !cb.checked) {
+                cb.checked = true;
+                updateState();
+            }
+        };
+        editor.addEventListener('input', handler);
+        // For contenteditable divs (isHtml editors)
+        if (editor.hasAttribute('contenteditable')) {
+            editor.addEventListener('keydown', handler);
+        }
     });
 
     updateState();
