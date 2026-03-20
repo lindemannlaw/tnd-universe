@@ -349,9 +349,7 @@ $galleryImageSizes = [
                                         $fullWidthLine = (bool)data_get($item, 'full_width_line', false);
                                     @endphp
                                     <div class="project-numbers-item{{ !$hasNumber ? ' no-number' : '' }}{{ $fullWidthLine ? ' has-full-line' : '' }}">
-                                        @if(filled(data_get($item, 'title')))
-                                            <span class="project-numbers-item-title">{{ data_get($item, 'title') }}</span>
-                                        @endif
+                                        <span class="project-numbers-item-title">{{ data_get($item, 'title') }}</span>
                                         <hr class="project-numbers-item-line" style="background: {{ $itemLineColor }};">
                                         @if($hasNumber)
                                             <span class="project-numbers-item-number">{{ data_get($item, 'number') }}</span>

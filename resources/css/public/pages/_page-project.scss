@@ -673,6 +673,7 @@
     }
 
     .project-numbers-item-title {
+        display: block;
         font-family: var(--font-primary);
         font-variation-settings: var(--font-primary-settings);
         font-size: range.build(10, 12, px, 375, 1240);
@@ -681,6 +682,11 @@
         text-transform: uppercase;
         color: var(--color-font-primary);
         margin-bottom: range.build(8, 12, px, 375, 1240);
+
+        // Preserve vertical space when title is empty so lines stay aligned
+        &:empty::before {
+            content: '\00a0';
+        }
     }
 
     .project-numbers-item-line {
