@@ -585,6 +585,8 @@ function wireRetranslateButtons(overlay, allItems, translateUrl) {
                 }
 
                 const data = await response.json();
+                console.log('[translateBlocks] Single response:', JSON.stringify(data).substring(0, 300));
+                console.log('[translateBlocks] Looking for key:', key);
                 const translated = data.translations?.[key] ?? '';
 
                 if (translated) {
@@ -664,12 +666,22 @@ function wireRetranslateButtons(overlay, allItems, translateUrl) {
                     throw new Error(err.error || `HTTP ${response.status}`);
                 }
 
-                const { translations = {} } = await response.json();
+                const data = await response.json();
+                const translations = data.translations ?? {};
+                const responseKeys = Object.keys(translations);
+                console.log('[translateBlocks] Bulk response keys:', responseKeys.length, responseKeys.slice(0, 3));
+                console.log('[translateBlocks] Expected keys:', checkedItems.slice(0, 3).map(ci => ci.key));
+
                 let updated = 0;
+                let skipped = 0;
 
                 checkedItems.forEach(({ key, editor }) => {
                     const translated = translations[key];
-                    if (!translated) return;
+                    if (translated === undefined || translated === null) {
+                        skipped++;
+                        console.warn('[translateBlocks] Key not found in response:', key);
+                        return;
+                    }
                     if (editor.dataset.isHtml === 'true') {
                         editor.innerHTML = translated;
                     } else {
@@ -678,8 +690,15 @@ function wireRetranslateButtons(overlay, allItems, translateUrl) {
                     updated++;
                 });
 
+                console.log('[translateBlocks] Bulk result:', { updated, skipped, totalResponse: responseKeys.length });
                 retranslateAllBtn.innerHTML = `\u2705 <span>${updated} \u00FCbersetzt</span>`;
-                if (updated > 0) showToast('success', `${updated} Feld${updated !== 1 ? 'er' : ''} \u00FCbersetzt`);
+                if (updated > 0) {
+                    showToast('success', `${updated} Feld${updated !== 1 ? 'er' : ''} \u00FCbersetzt`);
+                } else if (skipped > 0) {
+                    showToast('error', `${skipped} Keys nicht in Response gefunden`);
+                } else {
+                    showToast('error', 'Keine \u00DCbersetzungen in Response');
+                }
             } catch (err) {
                 console.error('[translateBlocks] Retranslate-all failed:', err);
                 retranslateAllBtn.innerHTML = `\u274C <span>Fehler</span>`;
