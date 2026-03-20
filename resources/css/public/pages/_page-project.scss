@@ -634,10 +634,11 @@
 
     // ── Numbers / KPIs block ──────────────────────────────────────────────────
     .project-numbers {
+        --numbers-col-gap: #{range.build(24, 48, px, 375, 1240)};
         grid-column: 1 / -1;
         display: grid;
         grid-template-columns: repeat(12, minmax(0, 1fr));
-        column-gap: range.build(24, 48, px, 375, 1240);
+        column-gap: var(--numbers-col-gap);
         row-gap: range.build(24, 48, px, 375, 1240);
         align-items: start;
     }
@@ -673,11 +674,9 @@
     }
 
     .project-numbers-grid {
-        --numbers-col-gap: #{range.build(24, 48, px, 375, 1240)};
         grid-column: var(--grid-col-start, 1) / span var(--grid-col-span, 12);
         display: grid;
-        grid-template-columns: repeat(12, 1fr);
-        column-gap: var(--numbers-col-gap);
+        grid-template-columns: subgrid;
         row-gap: range.build(32, 56, px, 375, 1240);
     }
 
@@ -748,7 +747,9 @@
 
     @media (max-width: 767px) {
         .project-numbers-grid {
+            grid-column: 1 / -1;
             grid-template-columns: repeat(2, 1fr);
+            column-gap: var(--numbers-col-gap);
         }
 
         .project-numbers-item {
