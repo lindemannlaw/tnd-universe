@@ -846,20 +846,11 @@ class ProjectController extends Controller
                 // Convert EN form key to DE
                 $deKey = str_replace('[en]', "[$targetLocale]", $formKey);
 
-                Log::info('[applyTranslations] applying', [
-                    'en_key' => $formKey,
-                    'de_key' => $deKey,
-                    'text_preview' => mb_substr($text, 0, 80),
-                ]);
-
                 // Parse the key to determine which field/attribute to update
                 $this->applyTranslationToProject($project, $deKey, $text, $targetLocale);
             }
 
-            $dirty = $project->getDirty();
-            Log::info('[applyTranslations] saving project', ['id' => $project->id, 'dirty_keys' => array_keys($dirty)]);
             $project->saveOrFail();
-            $isDirty = !empty($dirty);
 
             // Update timestamps: mark these fields as translated
             if (!empty($timestampKeys)) {
@@ -875,7 +866,7 @@ class ProjectController extends Controller
 
             DB::commit();
 
-            return response()->json(['ok' => true, 'applied' => count($translations), 'was_dirty' => $isDirty, 'dirty_keys' => array_keys($dirty)]);
+            return response()->json(['ok' => true, 'applied' => count($translations)]);
 
         } catch (\Throwable $e) {
             DB::rollBack();
@@ -930,7 +921,6 @@ class ProjectController extends Controller
             return;
         }
 
-        Log::warning('[applyTranslations] unmatched key', ['de_key' => $deFormKey]);
     }
 
     /**
