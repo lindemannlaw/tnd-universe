@@ -178,7 +178,7 @@ class TranslationCheckController extends Controller
         }
     }
 
-    private function fieldStatus(?string $sourceVal, ?string $targetVal): string
+    private function fieldStatus(mixed $sourceVal, mixed $targetVal): string
     {
         $sourceEmpty = !filled($sourceVal);
         $targetEmpty = !filled($targetVal);
@@ -186,7 +186,7 @@ class TranslationCheckController extends Controller
         if ($sourceEmpty && $targetEmpty) return 'missing';
         if ($sourceEmpty) return 'missing';
         if ($targetEmpty) return 'untranslated';
-        if ($sourceVal === $targetVal) return 'inherited';
+        if ($sourceVal == $targetVal) return 'inherited';
         return 'ok';
     }
 
