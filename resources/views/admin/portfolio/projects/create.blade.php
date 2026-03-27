@@ -11,7 +11,7 @@
         <x-admin.button
             data-generate-seo
             data-generate-seo-url="{{ route('admin.generate-seo') }}"
-            :btn="'btn-outline-secondary btn-sm'"
+            :btn="'btn-outline-success btn-sm'"
             :iconName="'stars'"
             :title="'SEO generieren'"
         />

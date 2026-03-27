@@ -801,10 +801,17 @@ class ProjectController extends Controller
         $keys      = $request->input('keys');
         $now       = now()->toIso8601String();
         $timestamps = $project->text_timestamps ?? [];
-        $field      = $type === 'translation' ? 'de_translated_at' : 'seo_generated_at';
 
         foreach ($keys as $key) {
-            $timestamps[$key] = array_merge($timestamps[$key] ?? [], [$field => $now]);
+            if ($type === 'seo') {
+                // SEO generates both EN + DE, so mark as changed AND translated
+                $timestamps[$key] = array_merge($timestamps[$key] ?? [], [
+                    'en_changed_at'    => $now,
+                    'de_translated_at' => $now,
+                ]);
+            } else {
+                $timestamps[$key] = array_merge($timestamps[$key] ?? [], ['de_translated_at' => $now]);
+            }
         }
 
         DB::table('projects')

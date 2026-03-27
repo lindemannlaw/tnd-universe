@@ -160,9 +160,12 @@ async function handleTranslate(button) {
         }
     });
 
-    // Also mark fields where DE is empty or DE=EN as needing translation
-    emptyDeKeys.forEach(key => changedKeys.add(key));
-    deEqualsEnKeys.forEach(key => changedKeys.add(key));
+    // Only add DE-empty / DE=EN keys if there are NO timestamp-based changes at all,
+    // so the overlay is not cluttered with unchanged fields when real changes exist.
+    if (changedKeys.size === 0) {
+        emptyDeKeys.forEach(key => changedKeys.add(key));
+        deEqualsEnKeys.forEach(key => changedKeys.add(key));
+    }
 
     if (titleSpan) titleSpan.textContent = originalTitle;
 
@@ -248,25 +251,27 @@ async function handleGenerateSeo(button) {
     if (titleSpan) titleSpan.textContent = 'SEO erstellen…';
 
     try {
+        // Generate SEO for both EN and DE
         await generateSeoFields(form, 'en', generateSeoUrl);
+        await generateSeoFields(form, 'de', generateSeoUrl);
 
-        // Mark SEO fields as generated → triggers "needs translation" on next translate
+        // Mark SEO fields as translated (both locales filled) so they don't show in translation overlay
         if (updateTsUrl) {
             postTimestampUpdate(updateTsUrl, 'seo', ['seo_title', 'seo_description', 'seo_keywords']);
         }
 
-        // Also update the translate button's timestamps if present
+        // Also update the translate button's timestamps — mark as both changed AND translated
         const translateBtn = form.closest('.modal-content')?.querySelector('[data-translate-blocks]');
         if (translateBtn) {
             const ts = getTimestamps(translateBtn);
             const now = new Date().toISOString();
             ['seo_title', 'seo_description', 'seo_keywords'].forEach(k => {
-                ts[k] = { ...(ts[k] ?? {}), en_changed_at: now };
+                ts[k] = { ...(ts[k] ?? {}), en_changed_at: now, de_translated_at: now };
             });
             translateBtn.dataset.textTimestamps = JSON.stringify(ts);
         }
 
-        flashButton(button, '✓ SEO erstellt', 2500, titleSpan, originalTitle);
+        flashButton(button, '✓ SEO erstellt (DE+EN)', 2500, titleSpan, originalTitle);
     } catch (e) {
         console.error('[translateBlocks] SEO generation failed:', e);
         alert('SEO-Generierung fehlgeschlagen: ' + e.message);
@@ -767,11 +772,12 @@ async function generateSeoFields(form, locale, generateSeoUrl) {
         el.dispatchEvent(new Event('input', { bubbles: true }));
     };
 
+    // Always use EN source content for context (most complete), regardless of target locale
     const context = {
-        title:             get(`title[${locale}]`),
-        short_description: get(`short_description[${locale}]`),
-        location:          get(`location[${locale}]`),
-        property_type:     get(`property_details[${locale}][property_type]`),
+        title:             get('title[en]'),
+        short_description: get('short_description[en]'),
+        location:          get('location[en]'),
+        property_type:     get('property_details[en][property_type]'),
         area:              get('area'),
     };
 

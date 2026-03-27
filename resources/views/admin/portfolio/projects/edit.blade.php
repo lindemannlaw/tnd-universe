@@ -13,7 +13,7 @@
             data-generate-seo-url="{{ route('admin.generate-seo') }}"
             data-update-timestamps-url="{{ route('admin.portfolio.project.update-timestamps', $project) }}"
             data-text-timestamps="{{ json_encode($project->text_timestamps ?? [], JSON_UNESCAPED_UNICODE) }}"
-            :btn="'btn-outline-secondary btn-sm'"
+            :btn="'btn-outline-success btn-sm'"
             :iconName="'stars'"
             :title="'SEO generieren'"
         />
