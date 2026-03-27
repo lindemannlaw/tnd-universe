@@ -26,7 +26,7 @@ class TranslationCheckController extends Controller
 
         $typeFilter = $request->get('type', 'all');
         $targetLang = $request->get('lang', $locales[1] ?? 'de');
-        $statusFilter = $request->get('status', 'untranslated');
+        $statusFilter = $request->get('status', 'all');
 
         $items = [];
 
