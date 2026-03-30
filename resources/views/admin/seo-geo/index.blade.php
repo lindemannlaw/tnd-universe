@@ -133,9 +133,14 @@
 @endpush
 
 @push('footer-scripts')
+@php
+    $itemsForJs = array_values(array_map(function($i) {
+        return ['type' => $i['type'], 'id' => $i['id'], 'title' => $i['title']];
+    }, $items));
+@endphp
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const ITEMS        = @json(array_map(fn($i) => ['type' => $i['type'], 'id' => $i['id'], 'title' => $i['title']], $items));
+    const ITEMS        = @json($itemsForJs);
     const GENERATE_URL = @json(route('admin.seo-geo.generate'));
     const SAVE_URL     = @json(route('admin.seo-geo.save-field'));
     const CSRF         = document.querySelector('meta[name="csrf-token"]')?.content;
