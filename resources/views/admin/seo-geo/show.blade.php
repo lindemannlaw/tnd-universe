@@ -8,6 +8,10 @@
             <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#arrow-left"/></svg>
             Zurück
         </a>
+        <a href="{{ $editUrl }}" class="btn btn-sm btn-outline-secondary me-2">
+            <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#pencil"/></svg>
+            Eintrag bearbeiten
+        </a>
         <button type="button" class="btn btn-sm btn-outline-primary me-2" id="btnGenerate">
             <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#stars"/></svg>
             Alle Felder neu generieren

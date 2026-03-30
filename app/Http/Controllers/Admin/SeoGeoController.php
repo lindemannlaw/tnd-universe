@@ -118,6 +118,7 @@ class SeoGeoController extends Controller
             'fields'   => $fields,
             'locales'  => $locales,
             'seoFields' => $seoFields,
+            'editUrl'  => $this->resolveEditUrl($type, $model),
         ]);
     }
 
@@ -275,6 +276,41 @@ class SeoGeoController extends Controller
             Log::error('[SeoGeo] Apply failed', ['message' => $e->getMessage()]);
             return response()->json(['error' => $e->getMessage()], 500);
         }
+    }
+
+    private function resolveEditUrl(string $type, $model): string
+    {
+        return match ($type) {
+            'project'          => route('admin.portfolio.projects'),
+            'service'          => route('admin.services.services'),
+            'service_category' => route('admin.services.categories'),
+            'news_article'     => route('admin.news.articles'),
+            'news_category'    => route('admin.news.categories'),
+            'page'             => $this->resolvePageEditUrl($model),
+            default            => route('admin.seo-geo.index'),
+        };
+    }
+
+    private function resolvePageEditUrl($model): string
+    {
+        $slugRouteMap = [
+            'home'           => 'admin.home.page',
+            'about'          => 'admin.about.page',
+            'contacts'       => 'admin.contacts.page',
+            'imprint'        => 'admin.imprint.page',
+            'privacy-notice' => 'admin.privacy-notice.page',
+            'terms-of-use'   => 'admin.terms-of-use.page',
+            'services'       => 'admin.services.page',
+            'portfolio'      => 'admin.portfolio.page',
+            'news'           => 'admin.news.page',
+        ];
+
+        $slug      = $model->slug ?? '';
+        $routeName = $slugRouteMap[$slug] ?? null;
+
+        return $routeName && \Illuminate\Support\Facades\Route::has($routeName)
+            ? route($routeName)
+            : route('admin.seo-geo.index');
     }
 
     private function quickStatus(array $item, array $locales, array $seoFields, int $totalSlots): string
