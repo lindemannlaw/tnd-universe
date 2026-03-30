@@ -4,7 +4,11 @@
 
 @section('panel')
     <x-admin.main-panel :title="__('admin.translation_check')">
-        <button type="button" class="btn btn-sm btn-outline-primary me-2" id="btnTranslateSelected" disabled>
+        <div class="form-check mb-0 me-auto">
+            <input class="form-check-input" type="checkbox" id="selectAll">
+            <label class="form-check-label small" for="selectAll">Alle auswählen</label>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-primary" id="btnTranslateSelected" disabled>
             <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#translate"/></svg>
             Mit DeepL übersetzen (<span id="selectedCount">0</span>)
         </button>
@@ -32,12 +36,10 @@
     ];
     @endphp
 
-    <x-admin.container>
-        <div class="row g-4 align-items-start">
+    <div id="twoPanelLayout" class="d-flex px-3 px-sm-4" style="overflow:hidden; gap:1.25rem;">
 
             {{-- ── Sidebar ───────────────────────────────────────────────────── --}}
-            <div class="col-md-3 col-xl-2">
-                <div class="sidebar-filter-col" style="position:sticky; top:64px; max-height:calc(100vh - 80px); overflow-y:auto; padding-right:2px;">
+            <div style="width:220px; flex-shrink:0; overflow-y:auto; padding-right:2px;">
 
                     {{-- Sprachen --}}
                     <div class="border rounded mb-2">
@@ -97,25 +99,35 @@
                             <svg class="bi sidebar-chevron" width="11" height="11" fill="currentColor" style="transition:transform .2s;flex-shrink:0;"><use xlink:href="/img/icons/bootstrap-icons.svg#chevron-up"/></svg>
                         </div>
                         <div class="collapse show" id="sidebarStatus">
-                            <div class="d-flex flex-column px-2 py-2" style="gap:2px;">
-                                @foreach($statusConfig as $key => $cfg)
-                                    @php $active = in_array($key, $statusFilter); @endphp
-                                    <label class="d-flex align-items-center gap-2 px-2 py-1 rounded small status-filter-label"
-                                           style="cursor:pointer;{{ $active ? 'background:rgba(0,0,0,.06);' : '' }}">
-                                        <input type="checkbox"
-                                               class="form-check-input flex-shrink-0 status-check"
-                                               data-status="{{ $key }}"
-                                               style="cursor:pointer;margin-top:0;accent-color:{{ $cfg['accentColor'] ?? 'auto' }};"
-                                               {{ $active ? 'checked' : '' }}>
-                                        <span class="flex-grow-1 {{ $active ? 'fw-semibold ' . ($cfg['badgeText'] ?? '') : 'text-body' }}">
-                                            {{ $cfg['label'] }}
-                                        </span>
-                                        @if($key !== 'all' && isset($counts[$key]))
-                                            <span class="badge {{ $active ? ($cfg['badge'] ?? 'bg-secondary') : 'bg-secondary bg-opacity-50 text-body' }} ms-auto"
-                                                  style="font-size:.7em;">{{ $counts[$key] }}</span>
-                                        @endif
-                                    </label>
-                                @endforeach
+                            <div class="px-2 py-2">
+                                <div class="d-flex justify-content-between align-items-center mb-1 px-1" style="font-size:.8rem;">
+                                    <span class="text-muted">Filter:</span>
+                                    <div class="d-flex gap-2">
+                                        <a href="#" class="text-primary text-decoration-none" id="selectAllStatus">Alle</a>
+                                        <span class="text-muted">/</span>
+                                        <a href="#" class="text-secondary text-decoration-none" id="deselectAllStatus">Keine</a>
+                                    </div>
+                                </div>
+                                <div class="d-flex flex-column" style="gap:2px;">
+                                    @foreach($statusConfig as $key => $cfg)
+                                        @php $active = in_array($key, $statusFilter); @endphp
+                                        <label class="d-flex align-items-center gap-2 px-2 py-1 rounded small status-filter-label"
+                                               style="cursor:pointer;{{ $active ? 'background:rgba(0,0,0,.06);' : '' }}">
+                                            <input type="checkbox"
+                                                   class="form-check-input flex-shrink-0 status-check"
+                                                   data-status="{{ $key }}"
+                                                   style="cursor:pointer;margin-top:0;"
+                                                   {{ $active ? 'checked' : '' }}>
+                                            <span class="flex-grow-1 {{ $active ? 'fw-semibold ' . ($cfg['badgeText'] ?? '') : 'text-body' }}">
+                                                {{ $cfg['label'] }}
+                                            </span>
+                                            @if($key !== 'all' && isset($counts[$key]))
+                                                <span class="badge {{ $cfg['badge'] ?? 'bg-secondary' }} ms-auto"
+                                                      style="font-size:.7em;">{{ $counts[$key] }}</span>
+                                            @endif
+                                        </label>
+                                    @endforeach
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -141,21 +153,14 @@
                         </div>
                     </div>
 
-                </div>
-            </div>
+            </div>{{-- /sidebar --}}
 
             {{-- ── Main content ───────────────────────────────────────────────── --}}
-            <div class="col-md-9 col-xl-10">
+            <div style="flex:1; overflow-y:auto; min-width:0;">
 
-                {{-- Sticky sub-header: select-all checkbox + record sub-filter --}}
-                <div class="d-flex align-items-center gap-3 mb-3 bg-white py-2 border-bottom"
-                     style="position:sticky; top:0; z-index:5;">
-                    <div class="form-check mb-0">
-                        <input class="form-check-input" type="checkbox" id="selectAll">
-                        <label class="form-check-label small" for="selectAll">Alle auswählen</label>
-                    </div>
-
-                    @if($typeFilter !== 'all' && count($typeRecords) > 0)
+                {{-- Record sub-filter --}}
+                @if($typeFilter !== 'all' && count($typeRecords) > 0)
+                    <div class="mb-3">
                         <form method="GET" action="{{ route('admin.translations.index') }}" class="d-flex gap-2 align-items-center">
                             <input type="hidden" name="type" value="{{ $typeFilter }}">
                             <input type="hidden" name="lang" value="{{ $targetLang }}">
@@ -169,8 +174,8 @@
                                 @endforeach
                             </select>
                         </form>
-                    @endif
-                </div>
+                    </div>
+                @endif
 
                 {{-- Items --}}
                 <div id="translationItems">
@@ -214,9 +219,8 @@
                     @endforelse
                 </div>
 
-            </div>{{-- /col --}}
-        </div>{{-- /row --}}
-    </x-admin.container>
+            </div>{{-- /content --}}
+        </div>{{-- /twoPanelLayout --}}
 @endsection
 
 @push('modals')
@@ -260,6 +264,15 @@ document.addEventListener('DOMContentLoaded', function () {
     const CSRF           = document.querySelector('meta[name="csrf-token"]')?.content;
     const LOCALE_FLAGS   = @json($localeFlags);
     const ITEMS          = @json($items);
+
+    // ── Two-panel layout height ───────────────────────────────────────────
+    const layout = document.getElementById('twoPanelLayout');
+    function resizeLayout() {
+        if (!layout) return;
+        layout.style.height = (window.innerHeight - layout.getBoundingClientRect().top - 8) + 'px';
+    }
+    resizeLayout();
+    window.addEventListener('resize', resizeLayout);
 
     // ── Sidebar collapse chevron rotation ─────────────────────────────────
     document.querySelectorAll('.sidebar-section-toggle').forEach(toggle => {
@@ -362,8 +375,6 @@ document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('.source-input').forEach(ta => autoResize(ta));
     }
 
-    updateColumns();
-
     // ── Source textarea auto-resize + save button ────────────────────────
     document.querySelectorAll('.source-input').forEach(ta => {
         const idx = ta.dataset.index;
@@ -427,50 +438,89 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('btnApplyAll').disabled = count === 0;
     }
 
+    // ── Status Alle / Keine ───────────────────────────────────────────────
+    function navigateWithStatus(statuses) {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('status');
+        url.searchParams.delete('status[]');
+        if (statuses.length === 0 || statuses.includes('all')) {
+            url.searchParams.set('status', 'all');
+        } else {
+            statuses.forEach(s => url.searchParams.append('status[]', s));
+        }
+        window.location.href = url.toString();
+    }
+
+    document.getElementById('selectAllStatus')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        navigateWithStatus(['all']);
+    });
+    document.getElementById('deselectAllStatus')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        // Uncheck all without navigating so user can pick fresh
+        document.querySelectorAll('.status-check:not([data-status="all"])').forEach(c => c.checked = false);
+        const allCb = document.querySelector('.status-check[data-status="all"]');
+        if (allCb) allCb.checked = true;
+    });
+
     // ── Status multi-select (checkbox → URL navigation) ──────────────────
     document.querySelectorAll('.status-check').forEach(cb => {
         cb.addEventListener('change', () => {
-            const allCb    = document.querySelector('.status-check[data-status="all"]');
-            const specific = Array.from(document.querySelectorAll('.status-check:not([data-status="all"]):checked'))
-                                  .map(c => c.dataset.status);
-
+            const allCb = document.querySelector('.status-check[data-status="all"]');
             if (cb.dataset.status === 'all' && cb.checked) {
-                // "Alle" checked → deselect specific
                 document.querySelectorAll('.status-check:not([data-status="all"])').forEach(c => c.checked = false);
             } else if (cb.dataset.status !== 'all') {
-                // Specific item changed → uncheck "Alle"
                 if (allCb) allCb.checked = false;
             }
-
             const now = Array.from(document.querySelectorAll('.status-check:not([data-status="all"]):checked'))
                              .map(c => c.dataset.status);
-
-            const url = new URL(window.location.href);
-            // Remove both plain and array variants
-            url.searchParams.delete('status');
-            url.searchParams.delete('status[]');
-            if (now.length === 0) {
-                url.searchParams.set('status', 'all');
-            } else {
-                now.forEach(s => url.searchParams.append('status[]', s));
-            }
-            window.location.href = url.toString();
+            navigateWithStatus(now.length === 0 ? ['all'] : now);
         });
     });
 
-    // ── Language multi-select ─────────────────────────────────────────────
+    // ── Language multi-select + localStorage persistence ──────────────────
+    const LANG_STORAGE_KEY = 'tnd_trans_checked_langs';
+
+    function saveLangs() {
+        const checked = Array.from(document.querySelectorAll('.lang-translate-check:checked'))
+                             .map(cb => cb.dataset.locale);
+        localStorage.setItem(LANG_STORAGE_KEY, JSON.stringify(checked));
+    }
+
+    function restoreLangs() {
+        const stored = localStorage.getItem(LANG_STORAGE_KEY);
+        if (stored === null) {
+            // Default: all checked
+            document.querySelectorAll('.lang-translate-check').forEach(cb => cb.checked = true);
+        } else {
+            try {
+                const saved = JSON.parse(stored);
+                document.querySelectorAll('.lang-translate-check').forEach(cb => {
+                    cb.checked = saved.includes(cb.dataset.locale);
+                });
+            } catch(e) {
+                document.querySelectorAll('.lang-translate-check').forEach(cb => cb.checked = true);
+            }
+        }
+        updateColumns();
+    }
+
+    restoreLangs();
+
     document.getElementById('selectAllLangs')?.addEventListener('click', (e) => {
         e.preventDefault();
         document.querySelectorAll('.lang-translate-check').forEach(cb => cb.checked = true);
+        saveLangs();
         updateColumns();
     });
     document.getElementById('deselectAllLangs')?.addEventListener('click', (e) => {
         e.preventDefault();
         document.querySelectorAll('.lang-translate-check').forEach(cb => cb.checked = false);
+        saveLangs();
         updateColumns();
     });
     document.querySelectorAll('.lang-translate-check').forEach(cb => {
-        cb.addEventListener('change', () => updateColumns());
+        cb.addEventListener('change', () => { saveLangs(); updateColumns(); });
     });
 
     // ── Translate selected (multi-lang) ───────────────────────────────────
