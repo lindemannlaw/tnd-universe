@@ -54,6 +54,13 @@
                                     <span id="counter-{{ $field }}-en">{{ $enLen }}</span>/{{ $config['maxLen'] }}
                                 </span>
                             @endif
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-warning ms-auto btn-regen-field"
+                                    data-field="{{ $field }}"
+                                    title="Diesen Block für alle Sprachen neu generieren">
+                                <svg class="bi" width="13" height="13" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#arrow-clockwise"/></svg>
+                                Block neu generieren
+                            </button>
                         </div>
 
                         {{-- Per-locale rows --}}
@@ -105,15 +112,6 @@
                                             title="Speichern">
                                         <svg class="bi" width="13" height="13" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#floppy"/></svg>
                                     </button>
-                                    @if($locale === 'en')
-                                        <button type="button"
-                                                class="btn btn-sm btn-outline-warning btn-regen-field"
-                                                data-field="{{ $field }}"
-                                                title="Diesen Block für alle Sprachen neu generieren">
-                                            <svg class="bi" width="13" height="13" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#arrow-clockwise"/></svg>
-                                            Block
-                                        </button>
-                                    @endif
                                 </div>
                             </div>
                         @endforeach
