@@ -11,75 +11,39 @@
 @section('content')
     <x-admin.container>
 
-        {{-- Summary cards --}}
-        <div class="row g-3 mb-4">
-            <div class="col-auto">
-                <div class="card border-0 text-center" style="min-width: 120px;">
-                    <div class="card-body py-3">
-                        <div class="fs-2 fw-bold text-success">{{ $complete }}</div>
-                        <div class="small text-muted">Vollständig</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-auto">
-                <div class="card border-0 text-center" style="min-width: 120px;">
-                    <div class="card-body py-3">
-                        <div class="fs-2 fw-bold text-warning">{{ $partial }}</div>
-                        <div class="small text-muted">Teilweise</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-auto">
-                <div class="card border-0 text-center" style="min-width: 120px;">
-                    <div class="card-body py-3">
-                        <div class="fs-2 fw-bold text-danger">{{ $empty }}</div>
-                        <div class="small text-muted">Leer</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-auto">
-                <div class="card border-0 text-center" style="min-width: 120px;">
-                    <div class="card-body py-3">
-                        <div class="fs-2 fw-bold">{{ $total }}</div>
-                        <div class="small text-muted">Gesamt</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         {{-- Filters --}}
-        <form method="GET" action="{{ route('admin.seo-geo.index') }}" class="d-flex gap-2 mb-4 flex-wrap">
-            <div class="d-flex align-items-center gap-2">
-                <span class="small text-muted">Filter:</span>
-
-                <a href="{{ route('admin.seo-geo.index', ['status' => $statusFilter]) }}"
-                   class="btn btn-sm {{ $typeFilter === 'all' ? 'btn-primary' : 'btn-outline-secondary' }}">
-                    Alle Typen
+        <form method="GET" action="{{ route('admin.seo-geo.index') }}" class="d-flex gap-2 mb-4 flex-wrap align-items-center">
+            {{-- Type filter --}}
+            <a href="{{ route('admin.seo-geo.index', ['status' => $statusFilter]) }}"
+               class="btn btn-sm {{ $typeFilter === 'all' ? 'btn-primary' : 'btn-outline-secondary' }}">
+                Alle Typen
+            </a>
+            @foreach($types as $type)
+                <a href="{{ route('admin.seo-geo.index', ['type' => $type, 'status' => $statusFilter]) }}"
+                   class="btn btn-sm {{ $typeFilter === $type ? 'btn-primary' : 'btn-outline-secondary' }}">
+                    {{ ucfirst(str_replace('_', ' ', $type)) }}
                 </a>
-                @foreach($types as $type)
-                    <a href="{{ route('admin.seo-geo.index', ['type' => $type, 'status' => $statusFilter]) }}"
-                       class="btn btn-sm {{ $typeFilter === $type ? 'btn-primary' : 'btn-outline-secondary' }}">
-                        {{ ucfirst(str_replace('_', ' ', $type)) }}
-                    </a>
-                @endforeach
+            @endforeach
 
-                <span class="mx-2 text-muted">|</span>
+            <span class="mx-1 text-muted">|</span>
 
+            {{-- Status filter with counts --}}
+            <div class="btn-group btn-group-sm">
                 <a href="{{ route('admin.seo-geo.index', ['type' => $typeFilter]) }}"
-                   class="btn btn-sm {{ $statusFilter === 'all' ? 'btn-primary' : 'btn-outline-secondary' }}">
-                    Alle
+                   class="btn {{ $statusFilter === 'all' ? 'btn-primary' : 'btn-outline-secondary' }}">
+                    Alle <span class="badge bg-light text-dark ms-1">{{ $total }}</span>
                 </a>
                 <a href="{{ route('admin.seo-geo.index', ['type' => $typeFilter, 'status' => 'empty']) }}"
-                   class="btn btn-sm {{ $statusFilter === 'empty' ? 'btn-danger' : 'btn-outline-secondary' }}">
-                    Leer
+                   class="btn {{ $statusFilter === 'empty' ? 'btn-danger' : 'btn-outline-secondary' }}">
+                    Leer <span class="badge bg-light text-dark ms-1">{{ $empty }}</span>
                 </a>
                 <a href="{{ route('admin.seo-geo.index', ['type' => $typeFilter, 'status' => 'partial']) }}"
-                   class="btn btn-sm {{ $statusFilter === 'partial' ? 'btn-warning' : 'btn-outline-secondary' }}">
-                    Teilweise
+                   class="btn {{ $statusFilter === 'partial' ? 'btn-warning' : 'btn-outline-secondary' }}">
+                    Teilweise <span class="badge bg-light text-dark ms-1">{{ $partial }}</span>
                 </a>
                 <a href="{{ route('admin.seo-geo.index', ['type' => $typeFilter, 'status' => 'complete']) }}"
-                   class="btn btn-sm {{ $statusFilter === 'complete' ? 'btn-success' : 'btn-outline-secondary' }}">
-                    Vollständig
+                   class="btn {{ $statusFilter === 'complete' ? 'btn-success' : 'btn-outline-secondary' }}">
+                    Vollständig <span class="badge bg-light text-dark ms-1">{{ $complete }}</span>
                 </a>
             </div>
         </form>
