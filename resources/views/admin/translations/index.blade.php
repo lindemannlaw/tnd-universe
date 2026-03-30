@@ -598,12 +598,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 }),
             });
             const data = await res.json();
-            if (data.translations?.[0]) {
+            if (data.error) throw new Error(data.error);
+            const t = data.translations?.[0];
+            if (t) {
                 const ta = document.querySelector(`.translation-input[data-index="${idx}"][data-lang="${lang}"]`);
-                if (ta) { ta.value = data.translations[0].text; autoResize(ta); }
+                if (ta) { ta.value = t.text; autoResize(ta); }
                 if (!item.translations) item.translations = {};
-                item.translations[lang] = data.translations[0].text;
+                item.translations[lang] = t.text;
                 autoCheckItem(idx);
+            } else {
+                showToast('Keine Übersetzung erhalten – bitte DeepL-Konfiguration prüfen.', 'bg-warning');
             }
         } catch (e) {
             showToast('Fehler: ' + e.message, 'bg-danger');
