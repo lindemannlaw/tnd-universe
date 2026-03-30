@@ -22,12 +22,10 @@
     ];
     @endphp
 
-    <x-admin.container>
-        <div class="row g-4 align-items-start">
+    <div id="twoPanelLayout" class="d-flex px-3 px-sm-4" style="overflow:hidden; gap:1.25rem;">
 
             {{-- ── Sidebar ───────────────────────────────────────────────────── --}}
-            <div class="col-md-3 col-xl-2">
-                <div style="position:sticky; top:64px; max-height:calc(100vh - 80px); overflow-y:auto; padding-right:2px;">
+            <div style="width:220px; flex-shrink:0; overflow-y:auto; padding-right:2px;">
 
                     {{-- Status --}}
                     <div class="border rounded mb-2">
@@ -38,21 +36,33 @@
                             <svg class="bi sidebar-chevron" width="11" height="11" fill="currentColor" style="transition:transform .2s;flex-shrink:0;"><use xlink:href="/img/icons/bootstrap-icons.svg#chevron-up"/></svg>
                         </div>
                         <div class="collapse show" id="sidebarStatus">
-                            <div class="d-flex flex-column px-2 py-2" style="gap:2px;">
-                                @foreach($statusConfig as $key => $cfg)
-                                    @php $active = $statusFilter === $key; @endphp
-                                    <a href="{{ route('admin.seo-geo.index', array_merge(request()->only(['type', 'id']), $key === 'all' ? [] : ['status' => $key])) }}"
-                                       class="d-flex align-items-center gap-2 px-2 py-1 rounded text-decoration-none small {{ $active ? 'fw-semibold' : 'text-body' }}"
-                                       style="{{ $active ? 'background:rgba(0,0,0,.06);' : '' }}">
-                                        <svg class="bi flex-shrink-0 {{ $active ? ($cfg['badgeText'] ?? 'text-body') : 'invisible' }}"
-                                             width="13" height="13" fill="currentColor">
-                                            <use xlink:href="/img/icons/bootstrap-icons.svg#check2"/>
-                                        </svg>
-                                        <span class="flex-grow-1">{{ $cfg['label'] }}</span>
-                                        <span class="badge {{ $active ? $cfg['badge'] : 'bg-secondary bg-opacity-50 text-body' }} ms-auto"
-                                              style="font-size:.7em;">{{ $cfg['count'] }}</span>
-                                    </a>
-                                @endforeach
+                            <div class="px-2 py-2">
+                                <div class="d-flex justify-content-between align-items-center mb-1 px-1" style="font-size:.8rem;">
+                                    <span class="text-muted">Filter:</span>
+                                    <div class="d-flex gap-2">
+                                        <a href="#" class="text-primary text-decoration-none" id="selectAllStatus">Alle</a>
+                                        <span class="text-muted">/</span>
+                                        <a href="#" class="text-secondary text-decoration-none" id="deselectAllStatus">Keine</a>
+                                    </div>
+                                </div>
+                                <div class="d-flex flex-column" style="gap:2px;">
+                                    @foreach($statusConfig as $key => $cfg)
+                                        @php $active = in_array($key, $statusFilter); @endphp
+                                        <label class="d-flex align-items-center gap-2 px-2 py-1 rounded small status-filter-label"
+                                               style="cursor:pointer;{{ $active ? 'background:rgba(0,0,0,.06);' : '' }}">
+                                            <input type="checkbox"
+                                                   class="form-check-input flex-shrink-0 status-check"
+                                                   data-status="{{ $key }}"
+                                                   style="cursor:pointer;margin-top:0;"
+                                                   {{ $active ? 'checked' : '' }}>
+                                            <span class="flex-grow-1 {{ $active ? 'fw-semibold ' . ($cfg['badgeText'] ?? '') : 'text-body' }}">
+                                                {{ $cfg['label'] }}
+                                            </span>
+                                            <span class="badge {{ $cfg['badge'] }} ms-auto"
+                                                  style="font-size:.7em;">{{ $cfg['count'] }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -78,11 +88,10 @@
                         </div>
                     </div>
 
-                </div>
-            </div>
+            </div>{{-- /sidebar --}}
 
             {{-- ── Main content ───────────────────────────────────────────────── --}}
-            <div class="col-md-9 col-xl-10">
+            <div style="flex:1; overflow-y:auto; min-width:0;">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
                         <thead>
@@ -128,10 +137,8 @@
                         </tbody>
                     </table>
                 </div>
-            </div>{{-- /col --}}
-
-        </div>{{-- /row --}}
-    </x-admin.container>
+            </div>{{-- /content --}}
+        </div>{{-- /twoPanelLayout --}}
 @endsection
 
 @push('modals')
@@ -179,6 +186,15 @@ document.addEventListener('DOMContentLoaded', function () {
     const CSRF         = document.querySelector('meta[name="csrf-token"]')?.content;
     const ALL_FIELDS   = ['seo_title', 'seo_description', 'seo_keywords', 'geo_text'];
 
+    // ── Two-panel layout height ───────────────────────────────────────────
+    const layout = document.getElementById('twoPanelLayout');
+    function resizeLayout() {
+        if (!layout) return;
+        layout.style.height = (window.innerHeight - layout.getBoundingClientRect().top - 8) + 'px';
+    }
+    resizeLayout();
+    window.addEventListener('resize', resizeLayout);
+
     // ── Sidebar collapse chevron rotation ─────────────────────────────────
     document.querySelectorAll('.sidebar-section-toggle').forEach(toggle => {
         const targetEl = document.querySelector(toggle.dataset.bsTarget);
@@ -186,6 +202,44 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!targetEl || !chevron) return;
         targetEl.addEventListener('hide.bs.collapse', () => chevron.style.transform = 'rotate(180deg)');
         targetEl.addEventListener('show.bs.collapse', () => chevron.style.transform = 'rotate(0deg)');
+    });
+
+    // ── Status checkboxes → URL navigation ───────────────────────────────
+    function navigateWithStatus(statuses) {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('status');
+        url.searchParams.delete('status[]');
+        if (statuses.length === 0 || statuses.includes('all')) {
+            url.searchParams.set('status', 'all');
+        } else {
+            statuses.forEach(s => url.searchParams.append('status[]', s));
+        }
+        window.location.href = url.toString();
+    }
+
+    document.getElementById('selectAllStatus')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        navigateWithStatus(['all']);
+    });
+    document.getElementById('deselectAllStatus')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.querySelectorAll('.status-check:not([data-status="all"])').forEach(c => c.checked = false);
+        const allCb = document.querySelector('.status-check[data-status="all"]');
+        if (allCb) allCb.checked = true;
+    });
+
+    document.querySelectorAll('.status-check').forEach(cb => {
+        cb.addEventListener('change', () => {
+            const allCb = document.querySelector('.status-check[data-status="all"]');
+            if (cb.dataset.status === 'all' && cb.checked) {
+                document.querySelectorAll('.status-check:not([data-status="all"])').forEach(c => c.checked = false);
+            } else if (cb.dataset.status !== 'all') {
+                if (allCb) allCb.checked = false;
+            }
+            const now = Array.from(document.querySelectorAll('.status-check:not([data-status="all"]):checked'))
+                             .map(c => c.dataset.status);
+            navigateWithStatus(now.length === 0 ? ['all'] : now);
+        });
     });
 
     const btn          = document.getElementById('btnBulkGenerate');

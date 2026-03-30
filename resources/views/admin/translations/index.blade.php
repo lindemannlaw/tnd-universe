@@ -4,7 +4,11 @@
 
 @section('panel')
     <x-admin.main-panel :title="__('admin.translation_check')">
-        <button type="button" class="btn btn-sm btn-outline-primary me-2" id="btnTranslateSelected" disabled>
+        <div class="form-check mb-0 me-auto">
+            <input class="form-check-input" type="checkbox" id="selectAll">
+            <label class="form-check-label small" for="selectAll">Alle auswählen</label>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-primary" id="btnTranslateSelected" disabled>
             <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#translate"/></svg>
             Mit DeepL übersetzen (<span id="selectedCount">0</span>)
         </button>
@@ -154,15 +158,9 @@
             {{-- ── Main content ───────────────────────────────────────────────── --}}
             <div style="flex:1; overflow-y:auto; min-width:0;">
 
-                {{-- Sub-header: select-all checkbox + record sub-filter --}}
-                <div class="d-flex align-items-center gap-3 mb-3 bg-white py-2 border-bottom"
-                     style="position:sticky; top:0; z-index:5;">
-                    <div class="form-check mb-0">
-                        <input class="form-check-input" type="checkbox" id="selectAll">
-                        <label class="form-check-label small" for="selectAll">Alle auswählen</label>
-                    </div>
-
-                    @if($typeFilter !== 'all' && count($typeRecords) > 0)
+                {{-- Record sub-filter --}}
+                @if($typeFilter !== 'all' && count($typeRecords) > 0)
+                    <div class="mb-3">
                         <form method="GET" action="{{ route('admin.translations.index') }}" class="d-flex gap-2 align-items-center">
                             <input type="hidden" name="type" value="{{ $typeFilter }}">
                             <input type="hidden" name="lang" value="{{ $targetLang }}">
@@ -176,8 +174,8 @@
                                 @endforeach
                             </select>
                         </form>
-                    @endif
-                </div>
+                    </div>
+                @endif
 
                 {{-- Items --}}
                 <div id="translationItems">
@@ -459,7 +457,10 @@ document.addEventListener('DOMContentLoaded', function () {
     });
     document.getElementById('deselectAllStatus')?.addEventListener('click', (e) => {
         e.preventDefault();
-        navigateWithStatus([]);
+        // Uncheck all without navigating so user can pick fresh
+        document.querySelectorAll('.status-check:not([data-status="all"])').forEach(c => c.checked = false);
+        const allCb = document.querySelector('.status-check[data-status="all"]');
+        if (allCb) allCb.checked = true;
     });
 
     // ── Status multi-select (checkbox → URL navigation) ──────────────────

@@ -27,7 +27,8 @@ class SeoGeoController extends Controller
         $totalSlots = count($seoFields) * count($locales);
 
         $typeFilter   = $request->get('type', 'all');
-        $statusFilter = $request->get('status', 'all');
+        $rawStatus    = $request->get('status', 'all');
+        $statusFilter = is_array($rawStatus) ? array_values($rawStatus) : [$rawStatus];
         $idFilter     = $request->get('id', null);
 
         $allItems = $this->registry->allSeoItems();
@@ -65,8 +66,8 @@ class SeoGeoController extends Controller
         if ($idFilter) {
             $items = array_filter($items, fn ($i) => $i['id'] == $idFilter);
         }
-        if ($statusFilter !== 'all') {
-            $items = array_filter($items, fn ($i) => $i['status'] === $statusFilter);
+        if (!in_array('all', $statusFilter)) {
+            $items = array_values(array_filter($items, fn ($i) => in_array($i['status'], $statusFilter)));
         }
 
         // Summary counts (before type/status filter for global overview)
