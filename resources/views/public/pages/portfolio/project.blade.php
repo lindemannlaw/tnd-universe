@@ -95,8 +95,14 @@ $galleryImageSizes = [
                 @endif
 
                 @php
-                    $descriptionBlocks = $project->getTranslation('description_blocks', app()->getLocale()) ?: [];
+                    $descriptionBlocks = $project->getTranslation('description_blocks', app()->getLocale(), false) ?: [];
 
+                    // Fallback 1: use EN (master) blocks if current locale has none
+                    if (empty($descriptionBlocks)) {
+                        $descriptionBlocks = $project->getTranslation('description_blocks', config('app.fallback_locale', 'en'), false) ?: [];
+                    }
+
+                    // Fallback 2: plain description text as a single text block
                     if (empty($descriptionBlocks)) {
                         $descriptionBlocks = [[
                             'type' => 'text',

@@ -43,7 +43,7 @@ class TranslationCheckController extends Controller
                 ->all();
         }
 
-        $items = [];
+        $allItems = []; // all items before status filter (used for counts)
 
         foreach ($allModels as $type => $meta) {
             if ($typeFilter !== 'all' && $typeFilter !== $type) continue;
@@ -91,7 +91,6 @@ class TranslationCheckController extends Controller
                             $subSource = $sourceArr[$subKey] ?? '';
                             $subTarget = $targetArr[$subKey] ?? '';
                             $subStatus = $this->fieldStatus($subSource, $subTarget);
-                            if ($statusFilter !== 'all' && $statusFilter !== $subStatus) continue;
 
                             // All locale values for multi-lang display
                             $allSubTranslations = [];
@@ -102,7 +101,7 @@ class TranslationCheckController extends Controller
                                 $allSubTranslations[$tLocale] = (string) ($tArr[$subKey] ?? '');
                             }
 
-                            $items[] = [
+                            $allItems[] = [
                                 'type'         => $type,
                                 'typeLabel'    => $meta['labelDe'],
                                 'id'           => $record->id,
@@ -126,8 +125,6 @@ class TranslationCheckController extends Controller
                     // Determine status
                     $status = $this->fieldStatus($sourceVal, $targetVal);
 
-                    if ($statusFilter !== 'all' && $statusFilter !== $status) continue;
-
                     // Flatten arrays/objects for display
                     $sourceDisplay = is_array($sourceVal) ? json_encode($sourceVal, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) : (string) ($sourceVal ?? '');
                     $targetDisplay = is_array($targetVal) ? json_encode($targetVal, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) : (string) ($targetVal ?? '');
@@ -145,7 +142,7 @@ class TranslationCheckController extends Controller
                         $allTranslations[$tLocale] = is_array($tVal) ? json_encode($tVal, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) : (string) ($tVal ?? '');
                     }
 
-                    $items[] = [
+                    $allItems[] = [
                         'type'          => $type,
                         'typeLabel'     => $meta['labelDe'],
                         'id'            => $record->id,
@@ -163,13 +160,18 @@ class TranslationCheckController extends Controller
             }
         }
 
-        // Summary counts
+        // Summary counts always from ALL items (independent of status filter)
         $counts = [
-            'ok'           => count(array_filter($items, fn ($i) => $i['status'] === 'ok')),
-            'untranslated' => count(array_filter($items, fn ($i) => $i['status'] === 'untranslated')),
-            'inherited'    => count(array_filter($items, fn ($i) => $i['status'] === 'inherited')),
-            'missing'      => count(array_filter($items, fn ($i) => $i['status'] === 'missing')),
+            'ok'           => count(array_filter($allItems, fn ($i) => $i['status'] === 'ok')),
+            'untranslated' => count(array_filter($allItems, fn ($i) => $i['status'] === 'untranslated')),
+            'inherited'    => count(array_filter($allItems, fn ($i) => $i['status'] === 'inherited')),
+            'missing'      => count(array_filter($allItems, fn ($i) => $i['status'] === 'missing')),
         ];
+
+        // Apply status filter for display only
+        $items = $statusFilter === 'all'
+            ? $allItems
+            : array_values(array_filter($allItems, fn ($i) => $i['status'] === $statusFilter));
 
         // Available types
         $types = collect($this->registry->all())->map(fn ($m, $k) => ['key' => $k, 'label' => $m['labelDe']])->values()->all();
