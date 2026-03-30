@@ -23,6 +23,13 @@
             :btn="'btn-danger'"
         />
 
+        <a href="{{ route('admin.seo-geo.show', ['type' => 'service_category', 'id' => $category->id]) }}"
+           target="_blank"
+           class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1">
+            <svg class="bi" width="13" height="13" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#stars"/></svg>
+            SEO / GEO
+        </a>
+
         <x-admin.button
             :type="'submit'"
             :form="'edit-category-control-form'"

@@ -8,6 +8,12 @@
             :title="__('admin.cancel')"
             :btn="'btn-outline-danger btn-sm'"
         />
+        <a href="{{ route('admin.seo-geo.show', ['type' => 'project', 'id' => $project->id]) }}"
+           target="_blank"
+           class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1">
+            <svg class="bi" width="13" height="13" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#stars"/></svg>
+            SEO / GEO
+        </a>
         <x-admin.button
             data-generate-seo
             data-generate-seo-url="{{ route('admin.generate-seo') }}"

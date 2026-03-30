@@ -6,6 +6,11 @@
     <x-admin.main-panel
         :title="__('admin.home')"
     >
+        <a href="{{ route('admin.seo-geo.show', ['type' => 'page', 'id' => $page->id]) }}"
+           class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1 me-2">
+            <svg class="bi" width="13" height="13" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#stars"/></svg>
+            SEO / GEO
+        </a>
         <x-admin.button
             data-submit-loader
             :type="'submit'"
