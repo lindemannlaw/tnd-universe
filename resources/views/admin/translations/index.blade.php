@@ -84,13 +84,22 @@
             <input type="hidden" name="lang" value="{{ $targetLang }}">
 
             {{-- Status filter --}}
+            @php
+            $statusConfig = [
+                'all'          => ['label' => 'Alle',             'active' => 'btn-primary',   'inactive' => 'btn-outline-secondary', 'badge' => 'bg-secondary'],
+                'untranslated' => ['label' => 'Nicht übersetzt',  'active' => 'btn-danger',    'inactive' => 'btn-outline-secondary', 'badge' => 'bg-danger'],
+                'inherited'    => ['label' => 'Geerbt',           'active' => 'btn-secondary', 'inactive' => 'btn-outline-secondary', 'badge' => 'bg-secondary'],
+                'ok'           => ['label' => 'OK',               'active' => 'btn-success',   'inactive' => 'btn-outline-secondary', 'badge' => 'bg-success'],
+                'missing'      => ['label' => 'Fehlend',          'active' => 'btn-warning',   'inactive' => 'btn-outline-secondary', 'badge' => 'bg-warning text-dark'],
+            ];
+            @endphp
             <div class="btn-group btn-group-sm">
-                @foreach(['all' => 'Alle', 'untranslated' => 'Nicht übersetzt', 'inherited' => 'Geerbt', 'ok' => 'OK', 'missing' => 'Fehlend'] as $key => $label)
+                @foreach($statusConfig as $key => $cfg)
                     <a href="{{ route('admin.translations.index', array_merge(request()->only(['type', 'lang', 'id']), ['status' => $key])) }}"
-                       class="btn {{ $statusFilter === $key ? 'btn-primary' : 'btn-outline-secondary' }}">
-                        {{ $label }}
+                       class="btn {{ $statusFilter === $key ? $cfg['active'] : $cfg['inactive'] }}">
+                        {{ $cfg['label'] }}
                         @if($key !== 'all' && isset($counts[$key]))
-                            <span class="badge bg-light text-dark ms-1">{{ $counts[$key] }}</span>
+                            <span class="badge {{ $cfg['badge'] }} ms-1">{{ $counts[$key] }}</span>
                         @endif
                     </a>
                 @endforeach
