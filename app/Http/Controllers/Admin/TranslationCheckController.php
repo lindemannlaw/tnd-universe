@@ -56,7 +56,20 @@ class TranslationCheckController extends Controller
                 $translatableFields = $record->translatable ?? [];
                 $title = $record->getTranslation($meta['titleField'], $sourceLang, false) ?: '(ohne Titel)';
 
+                // Fields that contain structured/fixed data and should not appear
+                // in the free-text translation interface (JSON objects, enums, etc.)
+                $skipFields = [
+                    'property_details',   // JSON: property_type, status, year_built – fixed labels
+                    'description_blocks', // complex nested block editor content
+                    'content_data',       // page-builder JSON
+                    'details',            // service details JSON
+                    'tags',               // structured tags array
+                    'info',               // structured info JSON
+                ];
+
                 foreach ($translatableFields as $field) {
+                    if (in_array($field, $skipFields, true)) continue;
+
                     $sourceVal = $record->getTranslation($field, $sourceLang, false);
                     $targetVal = $record->getTranslation($field, $targetLang, false);
 
@@ -69,7 +82,7 @@ class TranslationCheckController extends Controller
                     $sourceDisplay = is_array($sourceVal) ? json_encode($sourceVal, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) : (string) ($sourceVal ?? '');
                     $targetDisplay = is_array($targetVal) ? json_encode($targetVal, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) : (string) ($targetVal ?? '');
 
-                    // Skip complex nested structures (description_blocks, content_data, details, property_details)
+                    // Skip any remaining complex nested structures
                     if (is_array($sourceVal) && !empty($sourceVal) && !is_string(array_values($sourceVal)[0] ?? null)) {
                         continue;
                     }

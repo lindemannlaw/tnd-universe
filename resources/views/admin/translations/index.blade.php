@@ -169,19 +169,20 @@
             @endforelse
         </div>
 
-        {{-- Toast --}}
-        <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100;">
-            <div id="transToast" class="toast align-items-center text-white bg-success border-0" role="alert">
-                <div class="d-flex">
-                    <div class="toast-body" id="transToastMsg"></div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-                </div>
-            </div>
-        </div>
     </x-admin.container>
 @endsection
 
 @push('modals')
+    {{-- Toast --}}
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+        <div id="transToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive">
+            <div class="d-flex">
+                <div class="toast-body fw-semibold" id="transToastMsg"></div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+
     {{-- Language publish confirm modal --}}
     <div class="modal fade" id="langPublishModal" tabindex="-1" aria-labelledby="langPublishModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
