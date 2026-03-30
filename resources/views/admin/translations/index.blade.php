@@ -87,22 +87,6 @@
             <input type="hidden" name="status" value="{{ $statusFilter }}">
         </form>
 
-        {{-- Summary --}}
-        <div class="d-flex gap-3 mb-3">
-            <span class="small">
-                <span class="badge bg-danger">{{ $counts['untranslated'] }}</span> nicht übersetzt
-            </span>
-            <span class="small">
-                <span class="badge bg-info">{{ $counts['inherited'] }}</span> geerbt
-            </span>
-            <span class="small">
-                <span class="badge bg-success">{{ $counts['ok'] }}</span> OK
-            </span>
-            <span class="small">
-                <span class="badge bg-warning text-dark">{{ $counts['missing'] }}</span> fehlend
-            </span>
-        </div>
-
         {{-- Select all --}}
         <div class="mb-3">
             <div class="form-check">
