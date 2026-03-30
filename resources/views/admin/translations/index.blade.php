@@ -28,6 +28,18 @@
                 @endforeach
             </select>
 
+            {{-- Record sub-filter (only when a specific type is selected) --}}
+            @if($typeFilter !== 'all' && count($typeRecords) > 0)
+                <select name="id" class="form-select form-select-sm" style="width: auto; max-width: 220px;" onchange="this.form.submit()">
+                    <option value="">— Alle {{ collect($types)->firstWhere('key', $typeFilter)['label'] ?? '' }} —</option>
+                    @foreach($typeRecords as $rec)
+                        <option value="{{ $rec['id'] }}" {{ (string)$idFilter === (string)$rec['id'] ? 'selected' : '' }}>
+                            {{ \Illuminate\Support\Str::limit($rec['title'], 35) }}
+                        </option>
+                    @endforeach
+                </select>
+            @endif
+
             {{-- Target language --}}
             @php
                 $localeFlags = [
@@ -52,7 +64,7 @@
                             @php $isPublished = $langSettings[$locale] ?? true; @endphp
                             <li class="d-flex align-items-center px-2 py-1 gap-2 {{ $targetLang === $locale ? 'bg-light' : '' }}">
                                 <a class="dropdown-item flex-grow-1 py-0 px-1 {{ $targetLang === $locale ? 'fw-semibold' : '' }}"
-                                   href="{{ route('admin.translations.index', array_merge(request()->only(['type', 'status']), ['lang' => $locale])) }}">
+                                   href="{{ route('admin.translations.index', array_merge(request()->only(['type', 'status', 'id']), ['lang' => $locale])) }}">
                                     {{ $localeFlags[$locale] ?? '' }} {{ strtoupper($locale) }}
                                 </a>
                                 <button type="button"
@@ -74,7 +86,7 @@
             {{-- Status filter --}}
             <div class="btn-group btn-group-sm">
                 @foreach(['all' => 'Alle', 'untranslated' => 'Nicht übersetzt', 'inherited' => 'Geerbt', 'ok' => 'OK', 'missing' => 'Fehlend'] as $key => $label)
-                    <a href="{{ route('admin.translations.index', array_merge(request()->only(['type', 'lang']), ['status' => $key])) }}"
+                    <a href="{{ route('admin.translations.index', array_merge(request()->only(['type', 'lang', 'id']), ['status' => $key])) }}"
                        class="btn {{ $statusFilter === $key ? 'btn-primary' : 'btn-outline-secondary' }}">
                         {{ $label }}
                         @if($key !== 'all' && isset($counts[$key]))
