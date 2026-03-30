@@ -4,6 +4,10 @@
 
 @section('panel')
     <x-admin.main-panel :title="__('admin.translation_check')">
+        <button type="button" class="btn btn-sm btn-outline-secondary me-2" id="btnSelectAll">
+            <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#check2-all"/></svg>
+            Alles auswählen
+        </button>
         <button type="button" class="btn btn-sm btn-outline-primary me-2" id="btnTranslateSelected" disabled>
             <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#translate"/></svg>
             Mit DeepL übersetzen (<span id="selectedCount">0</span>)
@@ -434,6 +438,17 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // ── Select all (items + languages) ───────────────────────────────────
+    document.getElementById('btnSelectAll')?.addEventListener('click', () => {
+        document.querySelectorAll('.lang-translate-check').forEach(cb => cb.checked = true);
+        updateExtraLangsIndicator();
+        updateColumns();
+        document.querySelectorAll('.item-checkbox').forEach(cb => cb.checked = true);
+        const selectAllCb = document.getElementById('selectAll');
+        if (selectAllCb) selectAllCb.checked = true;
+        updateSelectedCount();
+    });
+
     // ── Translate selected (multi-lang) ───────────────────────────────────
     document.getElementById('btnTranslateSelected')?.addEventListener('click', async () => {
         const checked = getCheckedItems();
@@ -509,6 +524,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (ta) { ta.value = data.translations[0].text; autoResize(ta); }
                 if (!item.translations) item.translations = {};
                 item.translations[lang] = data.translations[0].text;
+                autoCheckItem(idx);
             }
         } catch (e) {
             showToast('Fehler: ' + e.message, 'bg-danger');

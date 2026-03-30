@@ -63,6 +63,11 @@ class DeepLTranslationService
             }
         }
 
+        // Swiss German: replace ß → ss for DE target
+        if (strtolower($targetLang) === 'de') {
+            $results = array_map(fn ($t) => str_replace('ß', 'ss', $t), $results);
+        }
+
         return $results;
     }
 
