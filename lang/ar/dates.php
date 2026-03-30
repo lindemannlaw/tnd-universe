@@ -1,14 +1,14 @@
 <?php
 
 return [
-    'today' => 'today',
-    'day_ago' => ':count day ago',
-    'day_ago_plural' => ':count days ago',
-    'day_ago_many' => ':count days ago',
-    'month_ago' => ':count month ago',
-    'month_ago_plural' => ':count months ago',
-    'month_ago_many' => ':count months ago',
-    'year_ago' => ':count year ago',
-    'year_ago_plural' => ':count years ago',
-    'year_ago_many' => ':count years ago',
+    'today' => 'اليوم',
+    'day_ago' => ':عدد الأيام التي مرت',
+    'day_ago_plural' => ':عدد الأيام الماضية',
+    'day_ago_many' => ':عدد الأيام الماضية',
+    'month_ago' => 'قبل شهر',
+    'month_ago_plural' => 'قبل عدد من الأشهر',
+    'month_ago_many' => 'قبل عدد من الأشهر',
+    'year_ago' => 'قبل عام',
+    'year_ago_plural' => 'قبل عدد من السنوات',
+    'year_ago_many' => 'قبل عدد من السنوات',
 ];

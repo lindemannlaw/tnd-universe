@@ -1,32 +1,25 @@
 <?php
 
 return [
-    'throttle_emails' => 'You can only send an email once every minute.',
-
-    'general' => 'An internal error has occurred. Please contact a specialist to resolve it',
-    'upload_image_failed' => 'Upload image failed',
-
-    'category_store_failed' => 'Category store failed',
-    'category_update_failed' => 'Category update failed',
-    'category_delete_failed' => 'Category delete failed',
-
-    'article_store_failed' => 'Article store failed',
-    'article_update_failed' => 'Article update failed',
-    'article_delete_failed' => 'Article delete failed',
-
-    'service_store_failed' => 'Service store failed',
-    'service_update_failed' => 'Service update failed',
-    'service_delete_failed' => 'Service delete failed',
-
-    'project_store_failed' => 'Project store failed',
-    'project_update_failed' => 'Project update failed',
-    'project_delete_failed' => 'Project delete failed',
-
-    'file_store_failed' => 'File store failed',
-    'file_update_failed' => 'File update failed',
-    'file_delete_failed' => 'File delete failed',
-
-    'leader_store_failed' => 'Leader store failed',
-    'leader_update_failed' => 'Leader update failed',
-    'leader_delete_failed' => 'Leader delete failed',
+    'throttle_emails' => '您每分钟只能发送一封电子邮件。',
+    'general' => '发生内部错误。请联系专业人员进行处理',
+    'upload_image_failed' => '上传图片失败',
+    'category_store_failed' => '分类商店操作失败',
+    'category_update_failed' => '分类更新失败',
+    'category_delete_failed' => '删除分类失败',
+    'article_store_failed' => '文章存储失败',
+    'article_update_failed' => '文章更新失败',
+    'article_delete_failed' => '文章删除失败',
+    'service_store_failed' => '服务商店操作失败',
+    'service_update_failed' => '服务更新失败',
+    'service_delete_failed' => '服务删除失败',
+    'project_store_failed' => '项目存储失败',
+    'project_update_failed' => '项目更新失败',
+    'project_delete_failed' => '项目删除失败',
+    'file_store_failed' => '文件存储失败',
+    'file_update_failed' => '文件更新失败',
+    'file_delete_failed' => '文件删除失败',
+    'leader_store_failed' => '主存储器操作失败',
+    'leader_update_failed' => '领导者更新失败',
+    'leader_delete_failed' => '删除首节失败',
 ];

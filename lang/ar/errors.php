@@ -1,32 +1,25 @@
 <?php
 
 return [
-    'throttle_emails' => 'You can only send an email once every minute.',
-
-    'general' => 'An internal error has occurred. Please contact a specialist to resolve it',
-    'upload_image_failed' => 'Upload image failed',
-
-    'category_store_failed' => 'Category store failed',
-    'category_update_failed' => 'Category update failed',
-    'category_delete_failed' => 'Category delete failed',
-
-    'article_store_failed' => 'Article store failed',
-    'article_update_failed' => 'Article update failed',
-    'article_delete_failed' => 'Article delete failed',
-
-    'service_store_failed' => 'Service store failed',
-    'service_update_failed' => 'Service update failed',
-    'service_delete_failed' => 'Service delete failed',
-
-    'project_store_failed' => 'Project store failed',
-    'project_update_failed' => 'Project update failed',
-    'project_delete_failed' => 'Project delete failed',
-
-    'file_store_failed' => 'File store failed',
-    'file_update_failed' => 'File update failed',
-    'file_delete_failed' => 'File delete failed',
-
-    'leader_store_failed' => 'Leader store failed',
-    'leader_update_failed' => 'Leader update failed',
-    'leader_delete_failed' => 'Leader delete failed',
+    'throttle_emails' => 'لا يمكنك إرسال بريد إلكتروني إلا مرة واحدة كل دقيقة.',
+    'general' => 'حدث خطأ داخلي. يرجى الاتصال بأحد المتخصصين لحل المشكلة',
+    'upload_image_failed' => 'فشل تحميل الصورة',
+    'category_store_failed' => 'فشل تخزين الفئة',
+    'category_update_failed' => 'فشل تحديث الفئة',
+    'category_delete_failed' => 'فشل حذف الفئة',
+    'article_store_failed' => 'فشل تخزين المقالة',
+    'article_update_failed' => 'فشل تحديث المقالة',
+    'article_delete_failed' => 'فشل حذف المقالة',
+    'service_store_failed' => 'فشل متجر الخدمة',
+    'service_update_failed' => 'فشل تحديث الخدمة',
+    'service_delete_failed' => 'فشل حذف الخدمة',
+    'project_store_failed' => 'فشل تخزين المشروع',
+    'project_update_failed' => 'فشل تحديث المشروع',
+    'project_delete_failed' => 'فشل حذف المشروع',
+    'file_store_failed' => 'فشل تخزين الملفات',
+    'file_update_failed' => 'فشل تحديث الملف',
+    'file_delete_failed' => 'فشل حذف الملف',
+    'leader_store_failed' => 'فشل متجر Leader',
+    'leader_update_failed' => 'فشل تحديث القائد',
+    'leader_delete_failed' => 'فشل حذف القائد',
 ];

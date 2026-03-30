@@ -1,8 +1,8 @@
 <?php
 
 return [
-    'super-admin' => 'Super admin',
-    'admin' => 'Admin',
-    'manager' => 'Manager',
-    'product-manager' => 'Store manager',
+    'super-admin' => 'المسؤول الأعلى',
+    'admin' => 'المسؤول',
+    'manager' => 'مدير',
+    'product-manager' => 'مدير المتجر',
 ];

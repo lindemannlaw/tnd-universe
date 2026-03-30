@@ -1,20 +1,7 @@
 <?php
 
 return [
-
-    /*
-    |--------------------------------------------------------------------------
-    | Authentication Language Lines
-    |--------------------------------------------------------------------------
-    |
-    | The following language lines are used during authentication for various
-    | messages that we need to display to the user. You are free to modify
-    | these language lines according to your application's requirements.
-    |
-    */
-
-    'failed' => 'These credentials do not match our records.',
-    'password' => 'The provided password is incorrect.',
-    'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
-
+    'failed' => 'Ces identifiants ne correspondent pas à ceux figurant dans nos dossiers.',
+    'password' => 'Le mot de passe saisi est incorrect.',
+    'throttle' => 'Nombre de tentatives de connexion dépassé. Veuillez réessayer dans :seconds secondes.',
 ];

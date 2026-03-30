@@ -1,14 +1,14 @@
 <?php
 
 return [
-    'today' => 'today',
-    'day_ago' => ':count day ago',
-    'day_ago_plural' => ':count days ago',
-    'day_ago_many' => ':count days ago',
-    'month_ago' => ':count month ago',
-    'month_ago_plural' => ':count months ago',
-    'month_ago_many' => ':count months ago',
-    'year_ago' => ':count year ago',
-    'year_ago_plural' => ':count years ago',
-    'year_ago_many' => ':count years ago',
+    'today' => 'σήμερα',
+    'day_ago' => ':πριν από X ημέρες',
+    'day_ago_plural' => ':πριν από X ημέρες',
+    'day_ago_many' => ':πριν από X ημέρες',
+    'month_ago' => ':πριν από ένα μήνα',
+    'month_ago_plural' => ':πριν από X μήνες',
+    'month_ago_many' => ':πριν από X μήνες',
+    'year_ago' => ':πριν από ένα χρόνο',
+    'year_ago_plural' => ':πριν από X χρόνια',
+    'year_ago_many' => ':πριν από X χρόνια',
 ];

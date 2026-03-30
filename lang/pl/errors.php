@@ -1,32 +1,25 @@
 <?php
 
 return [
-    'throttle_emails' => 'You can only send an email once every minute.',
-
-    'general' => 'An internal error has occurred. Please contact a specialist to resolve it',
-    'upload_image_failed' => 'Upload image failed',
-
-    'category_store_failed' => 'Category store failed',
-    'category_update_failed' => 'Category update failed',
-    'category_delete_failed' => 'Category delete failed',
-
-    'article_store_failed' => 'Article store failed',
-    'article_update_failed' => 'Article update failed',
-    'article_delete_failed' => 'Article delete failed',
-
-    'service_store_failed' => 'Service store failed',
-    'service_update_failed' => 'Service update failed',
-    'service_delete_failed' => 'Service delete failed',
-
-    'project_store_failed' => 'Project store failed',
-    'project_update_failed' => 'Project update failed',
-    'project_delete_failed' => 'Project delete failed',
-
-    'file_store_failed' => 'File store failed',
-    'file_update_failed' => 'File update failed',
-    'file_delete_failed' => 'File delete failed',
-
-    'leader_store_failed' => 'Leader store failed',
-    'leader_update_failed' => 'Leader update failed',
-    'leader_delete_failed' => 'Leader delete failed',
+    'throttle_emails' => 'Możesz wysłać wiadomość e-mail tylko raz na minutę.',
+    'general' => 'Wystąpił błąd wewnętrzny. Aby go usunąć, skontaktuj się ze specjalistą',
+    'upload_image_failed' => 'Nie udało się przesłać zdjęcia',
+    'category_store_failed' => 'Nie udało się załadować kategorii sklepu',
+    'category_update_failed' => 'Nie udało się zaktualizować kategorii',
+    'category_delete_failed' => 'Nie udało się usunąć kategorii',
+    'article_store_failed' => 'Nie udało się załadować artykułów',
+    'article_update_failed' => 'Nie udało się zaktualizować artykułu',
+    'article_delete_failed' => 'Nie udało się usunąć artykułu',
+    'service_store_failed' => 'Wystąpił błąd podczas korzystania ze sklepu usług',
+    'service_update_failed' => 'Nie udało się zaktualizować usługi',
+    'service_delete_failed' => 'Nie udało się usunąć usługi',
+    'project_store_failed' => 'Nie udało się załadować sklepu projektu',
+    'project_update_failed' => 'Nie udało się zaktualizować projektu',
+    'project_delete_failed' => 'Usunięcie projektu nie powiodło się',
+    'file_store_failed' => 'Wystąpił błąd podczas zapisywania pliku',
+    'file_update_failed' => 'Nie udało się zaktualizować pliku',
+    'file_delete_failed' => 'Nie udało się usunąć pliku',
+    'leader_store_failed' => 'Sklep Leader nie działa',
+    'leader_update_failed' => 'Nie udało się zaktualizować lidera',
+    'leader_delete_failed' => 'Nie udało się usunąć lidera',
 ];

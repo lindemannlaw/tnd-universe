@@ -1,32 +1,25 @@
 <?php
 
 return [
-    'throttle_emails' => 'You can only send an email once every minute.',
-
-    'general' => 'An internal error has occurred. Please contact a specialist to resolve it',
-    'upload_image_failed' => 'Upload image failed',
-
-    'category_store_failed' => 'Category store failed',
-    'category_update_failed' => 'Category update failed',
-    'category_delete_failed' => 'Category delete failed',
-
-    'article_store_failed' => 'Article store failed',
-    'article_update_failed' => 'Article update failed',
-    'article_delete_failed' => 'Article delete failed',
-
-    'service_store_failed' => 'Service store failed',
-    'service_update_failed' => 'Service update failed',
-    'service_delete_failed' => 'Service delete failed',
-
-    'project_store_failed' => 'Project store failed',
-    'project_update_failed' => 'Project update failed',
-    'project_delete_failed' => 'Project delete failed',
-
-    'file_store_failed' => 'File store failed',
-    'file_update_failed' => 'File update failed',
-    'file_delete_failed' => 'File delete failed',
-
-    'leader_store_failed' => 'Leader store failed',
-    'leader_update_failed' => 'Leader update failed',
-    'leader_delete_failed' => 'Leader delete failed',
+    'throttle_emails' => 'Μπορείτε να στείλετε ένα email μόνο μία φορά κάθε λεπτό.',
+    'general' => 'Παρουσιάστηκε εσωτερικό σφάλμα. Παρακαλούμε επικοινωνήστε με έναν ειδικό για την επίλυσή του',
+    'upload_image_failed' => 'Η μεταφόρτωση της εικόνας απέτυχε',
+    'category_store_failed' => 'Αποτυχία καταχώρισης κατηγορίας',
+    'category_update_failed' => 'Η ενημέρωση της κατηγορίας απέτυχε',
+    'category_delete_failed' => 'Η διαγραφή της κατηγορίας απέτυχε',
+    'article_store_failed' => 'Αποτυχία αποθήκευσης άρθρου',
+    'article_update_failed' => 'Η ενημέρωση του άρθρου απέτυχε',
+    'article_delete_failed' => 'Η διαγραφή του άρθρου απέτυχε',
+    'service_store_failed' => 'Αποτυχία στο κατάστημα υπηρεσιών',
+    'service_update_failed' => 'Η ενημέρωση της υπηρεσίας απέτυχε',
+    'service_delete_failed' => 'Η διαγραφή της υπηρεσίας απέτυχε',
+    'project_store_failed' => 'Η αποθήκευση του έργου απέτυχε',
+    'project_update_failed' => 'Η ενημέρωση του έργου απέτυχε',
+    'project_delete_failed' => 'Η διαγραφή του έργου απέτυχε',
+    'file_store_failed' => 'Αποτυχία αποθήκευσης αρχείου',
+    'file_update_failed' => 'Η ενημέρωση του αρχείου απέτυχε',
+    'file_delete_failed' => 'Η διαγραφή του αρχείου απέτυχε',
+    'leader_store_failed' => 'Αποτυχία του κεντρικού καταστήματος',
+    'leader_update_failed' => 'Η ενημέρωση του Leader απέτυχε',
+    'leader_delete_failed' => 'Η διαγραφή του Leader απέτυχε',
 ];

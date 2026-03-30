@@ -1,14 +1,14 @@
 <?php
 
 return [
-    'today' => 'today',
-    'day_ago' => ':count day ago',
-    'day_ago_plural' => ':count days ago',
-    'day_ago_many' => ':count days ago',
-    'month_ago' => ':count month ago',
-    'month_ago_plural' => ':count months ago',
-    'month_ago_many' => ':count months ago',
-    'year_ago' => ':count year ago',
-    'year_ago_plural' => ':count years ago',
-    'year_ago_many' => ':count years ago',
+    'today' => '今天',
+    'day_ago' => ':X天前',
+    'day_ago_plural' => ':X天前',
+    'day_ago_many' => ':X天前',
+    'month_ago' => ':X个月前',
+    'month_ago_plural' => ':X个月前',
+    'month_ago_many' => ':X个月前',
+    'year_ago' => ':一年前',
+    'year_ago_plural' => '：X年前',
+    'year_ago_many' => '：X年前',
 ];
