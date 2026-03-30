@@ -56,19 +56,59 @@ class TranslationCheckController extends Controller
                 $translatableFields = $record->translatable ?? [];
                 $title = $record->getTranslation($meta['titleField'], $sourceLang, false) ?: '(ohne Titel)';
 
-                // Fields that contain structured/fixed data and should not appear
-                // in the free-text translation interface (JSON objects, enums, etc.)
+                // Fields skipped entirely (complex/nested, not translatable as free text)
                 $skipFields = [
-                    'property_details',   // JSON: property_type, status, year_built – fixed labels
-                    'description_blocks', // complex nested block editor content
+                    'description_blocks', // block editor JSON
                     'content_data',       // page-builder JSON
                     'details',            // service details JSON
                     'tags',               // structured tags array
                     'info',               // structured info JSON
                 ];
 
+                // Structured JSON fields that are expanded into individual translatable sub-keys.
+                // Keys mapped to null are skipped (e.g. numeric fields like year_built).
+                $expandFields = [
+                    'property_details' => [
+                        'property_type'       => 'Property Details – Immobilien-Typ',
+                        'status'              => 'Property Details – Status',
+                        'year_built'          => null, // numeric, skip
+                        'inquiry_button_text' => 'Property Details – Anfrage-Button',
+                    ],
+                ];
+
                 foreach ($translatableFields as $field) {
                     if (in_array($field, $skipFields, true)) continue;
+
+                    // Expand structured JSON fields into individual sub-field rows
+                    if (array_key_exists($field, $expandFields)) {
+                        $sourceArr = $record->getTranslation($field, $sourceLang, false) ?? [];
+                        $targetArr = $record->getTranslation($field, $targetLang, false) ?? [];
+                        if (!is_array($sourceArr)) $sourceArr = [];
+                        if (!is_array($targetArr)) $targetArr = [];
+
+                        foreach ($expandFields[$field] as $subKey => $subLabel) {
+                            if ($subLabel === null) continue; // skip numeric/irrelevant keys
+                            $subSource = $sourceArr[$subKey] ?? '';
+                            $subTarget = $targetArr[$subKey] ?? '';
+                            $subStatus = $this->fieldStatus($subSource, $subTarget);
+                            if ($statusFilter !== 'all' && $statusFilter !== $subStatus) continue;
+
+                            $items[] = [
+                                'type'        => $type,
+                                'typeLabel'   => $meta['labelDe'],
+                                'id'          => $record->id,
+                                'title'       => $title,
+                                'field'       => $field . '.' . $subKey,
+                                'fieldLabel'  => $subLabel,
+                                'source'      => (string) $subSource,
+                                'target'      => (string) $subTarget,
+                                'status'      => $subStatus,
+                                'statusLabel' => $this->statusLabel($subStatus),
+                                'statusClass' => $this->statusClass($subStatus),
+                            ];
+                        }
+                        continue; // done with this field
+                    }
 
                     $sourceVal = $record->getTranslation($field, $sourceLang, false);
                     $targetVal = $record->getTranslation($field, $targetLang, false);
@@ -154,8 +194,15 @@ class TranslationCheckController extends Controller
             $model = $this->registry->resolveModel($item['type'], $item['id']);
             if (!$model) continue;
 
-            $val = $model->getTranslation($item['field'], $request->source_lang, false);
-            $text = is_string($val) ? $val : '';
+            // Support dot-notation for sub-fields (e.g. property_details.property_type)
+            if (str_contains($item['field'], '.')) {
+                [$parentField, $subKey] = explode('.', $item['field'], 2);
+                $parentVal = $model->getTranslation($parentField, $request->source_lang, false);
+                $text = is_array($parentVal) ? (string) ($parentVal[$subKey] ?? '') : '';
+            } else {
+                $val = $model->getTranslation($item['field'], $request->source_lang, false);
+                $text = is_string($val) ? $val : '';
+            }
 
             $texts[] = ['text' => $text, 'isHtml' => (bool) preg_match('/<[^>]+>/', $text)];
             $meta[] = $item;
@@ -197,7 +244,16 @@ class TranslationCheckController extends Controller
                 $model = $this->registry->resolveModel($item['type'], $item['id']);
                 if (!$model) continue;
 
-                $model->setTranslation($item['field'], $request->target_lang, $item['text'] ?? '');
+                // Support dot-notation for sub-fields (e.g. property_details.property_type)
+                if (str_contains($item['field'], '.')) {
+                    [$parentField, $subKey] = explode('.', $item['field'], 2);
+                    $existing = $model->getTranslation($parentField, $request->target_lang, false) ?? [];
+                    if (!is_array($existing)) $existing = [];
+                    $existing[$subKey] = $item['text'] ?? '';
+                    $model->setTranslation($parentField, $request->target_lang, $existing);
+                } else {
+                    $model->setTranslation($item['field'], $request->target_lang, $item['text'] ?? '');
+                }
                 $model->save();
             }
 
