@@ -1,16 +1,17 @@
+@php $sourceLangOnly = [config('app.fallback_locale', 'en')]; @endphp
 <x-admin.tabs.wrapper>
     <x-slot:nav>
-        @foreach(supported_languages_keys() as $lang)
+        @foreach($sourceLangOnly as $lang)
             <x-admin.tabs.nav-item
                 :is-active="$loop->first"
                 :target="'description-locale-' . $lang"
-                :title="$lang"
+                :title="strtoupper($lang)"
             />
         @endforeach
     </x-slot:nav>
 
     <x-slot:content>
-        @foreach(supported_languages_keys() as $lang)
+        @foreach($sourceLangOnly as $lang)
             <x-admin.tabs.pane :is-active="$loop->first" :id="'description-locale-' . $lang">
                 @php
                     $fallbackTextBlock = [

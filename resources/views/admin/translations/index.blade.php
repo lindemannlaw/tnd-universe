@@ -311,7 +311,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 row.appendChild(div);
 
                 const ta = div.querySelector('textarea');
-                if (ta) { autoResize(ta); ta.addEventListener('input', () => autoResize(ta)); }
+                if (ta) {
+                    autoResize(ta);
+                    ta.addEventListener('input', () => { autoResize(ta); autoCheckItem(idx); });
+                }
             });
         });
 
@@ -330,8 +333,14 @@ document.addEventListener('DOMContentLoaded', function () {
         ta.addEventListener('input', () => {
             autoResize(ta);
             if (saveBtn) saveBtn.style.display = ta.value !== originalValue ? '' : 'none';
+            autoCheckItem(idx);
         });
     });
+
+    function autoCheckItem(idx) {
+        const cb = document.querySelector(`.item-checkbox[data-index="${idx}"]`);
+        if (cb && !cb.checked) { cb.checked = true; updateSelectedCount(); }
+    }
 
     document.querySelectorAll('.btn-save-source').forEach(btn => {
         btn.addEventListener('click', async () => {
