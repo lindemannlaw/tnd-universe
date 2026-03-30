@@ -40,15 +40,30 @@
             <div class="dropdown">
                 <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
                     {{ $localeFlags[$targetLang] ?? '' }} {{ strtoupper($targetLang) }}
+                    @if(isset($langSettings[$targetLang]))
+                        <span class="badge ms-1 {{ $langSettings[$targetLang] ? 'bg-success' : 'bg-secondary' }}" style="font-size:.65em;">
+                            {{ $langSettings[$targetLang] ? 'Live' : 'Draft' }}
+                        </span>
+                    @endif
                 </button>
-                <ul class="dropdown-menu">
+                <ul class="dropdown-menu" style="min-width: 180px;">
                     @foreach($locales as $locale)
                         @if($locale !== $sourceLang)
-                            <li>
-                                <a class="dropdown-item {{ $targetLang === $locale ? 'active' : '' }}"
+                            @php $isPublished = $langSettings[$locale] ?? true; @endphp
+                            <li class="d-flex align-items-center px-2 py-1 gap-2 {{ $targetLang === $locale ? 'bg-light' : '' }}">
+                                <a class="dropdown-item flex-grow-1 py-0 px-1 {{ $targetLang === $locale ? 'fw-semibold' : '' }}"
                                    href="{{ route('admin.translations.index', array_merge(request()->only(['type', 'status']), ['lang' => $locale])) }}">
                                     {{ $localeFlags[$locale] ?? '' }} {{ strtoupper($locale) }}
                                 </a>
+                                <button type="button"
+                                    class="btn btn-sm p-0 border-0 bg-transparent lang-publish-toggle"
+                                    data-locale="{{ $locale }}"
+                                    data-published="{{ $isPublished ? '1' : '0' }}"
+                                    title="{{ $isPublished ? 'Live – klicken für Draft' : 'Draft – klicken für Live' }}">
+                                    <span class="badge {{ $isPublished ? 'bg-success' : 'bg-secondary' }}" style="font-size:.7em; cursor:pointer;">
+                                        {{ $isPublished ? 'Live' : 'Draft' }}
+                                    </span>
+                                </button>
                             </li>
                         @endif
                     @endforeach
@@ -335,6 +350,43 @@ document.addEventListener('DOMContentLoaded', function () {
         toast.className = 'toast align-items-center text-white border-0 ' + bgClass;
         new bootstrap.Toast(toast, { delay: 3000 }).show();
     }
+
+    // Language publish/draft toggles
+    const TOGGLE_BASE = @json(route('admin.language-settings.toggle', ['locale' => '__LOCALE__']));
+    document.querySelectorAll('.lang-publish-toggle').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const locale = btn.dataset.locale;
+            const url = TOGGLE_BASE.replace('__LOCALE__', locale);
+            try {
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' },
+                });
+                const data = await res.json();
+                if (data.error) throw new Error(data.error);
+
+                const isPublished = data.is_published;
+                btn.dataset.published = isPublished ? '1' : '0';
+                const badge = btn.querySelector('.badge');
+                badge.textContent = isPublished ? 'Live' : 'Draft';
+                badge.className = 'badge ' + (isPublished ? 'bg-success' : 'bg-secondary');
+                btn.title = isPublished ? 'Live – klicken für Draft' : 'Draft – klicken für Live';
+
+                // Update the dropdown button badge too
+                const dropBtn = btn.closest('.dropdown')?.querySelector('.dropdown-toggle .badge');
+                if (dropBtn && locale === TARGET_LANG) {
+                    dropBtn.textContent = isPublished ? 'Live' : 'Draft';
+                    dropBtn.className = 'badge ms-1 ' + (isPublished ? 'bg-success' : 'bg-secondary');
+                }
+
+                showToast(`${locale.toUpperCase()} ist jetzt ${isPublished ? 'Live' : 'Draft'}`, isPublished ? 'bg-success' : 'bg-secondary');
+            } catch (e) {
+                showToast('Fehler: ' + e.message, 'bg-danger');
+            }
+        });
+    });
 });
 </script>
 @endpush

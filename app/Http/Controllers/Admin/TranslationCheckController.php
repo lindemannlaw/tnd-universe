@@ -95,6 +95,7 @@ class TranslationCheckController extends Controller
             'locales'      => $locales,
             'sourceLang'   => $sourceLang,
             'counts'       => $counts,
+            'langSettings' => \App\Models\LanguageSetting::allWithStatus($sourceLang),
         ]);
     }
 

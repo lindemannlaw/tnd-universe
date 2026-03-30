@@ -30,6 +30,13 @@ if (!function_exists('localized_url')) {
     }
 }
 
+if (!function_exists('published_languages_keys')) {
+    function published_languages_keys(): array
+    {
+        return \App\Models\LanguageSetting::publishedKeys();
+    }
+}
+
 if (!function_exists('get_only_numbers')) {
     function get_only_numbers($string) {
         return preg_replace('/[^0-9]/', '', $string);

@@ -237,4 +237,8 @@ Route::group([
         Route::post('/apply', [\App\Http\Controllers\Admin\TranslationCheckController::class, 'apply'])->name('admin.translations.apply');
     });
 
+    /* LANGUAGE SETTINGS */
+    Route::post('/language-settings/{locale}/toggle', [\App\Http\Controllers\Admin\LanguageSettingController::class, 'toggle'])
+        ->name('admin.language-settings.toggle');
+
 });
