@@ -8,6 +8,7 @@ use App\Models\Page;
 use App\Models\Project;
 use App\Models\Service;
 use App\Models\ServiceCategory;
+use App\Models\SiteSection;
 
 class TranslatableModelRegistry
 {
@@ -53,6 +54,13 @@ class TranslatableModelRegistry
             'labelDe'    => 'Seiten',
             'titleField' => 'title',
             'hasSeo'     => true,
+        ],
+        'site_section' => [
+            'class'      => SiteSection::class,
+            'label'      => 'Site Sections',
+            'labelDe'    => 'Seitenabschnitte',
+            'titleField' => 'title',
+            'hasSeo'     => false,
         ],
     ];
 

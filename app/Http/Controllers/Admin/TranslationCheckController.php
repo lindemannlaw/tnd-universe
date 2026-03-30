@@ -58,7 +58,6 @@ class TranslationCheckController extends Controller
 
                 // Fields skipped entirely (complex/nested, not translatable as free text)
                 $skipFields = [
-                    'content_data',       // page-builder JSON
                     'details',            // service details JSON
                     'tags',               // structured tags array
                     'info',               // structured info JSON
@@ -109,6 +108,45 @@ class TranslationCheckController extends Controller
                                 'fieldLabel'   => $subLabel,
                                 'source'       => (string) $subSource,
                                 'target'       => (string) $subTarget,
+                                'status'       => $subStatus,
+                                'statusLabel'  => $this->statusLabel($subStatus),
+                                'statusClass'  => $this->statusClass($subStatus),
+                                'translations' => $allSubTranslations,
+                            ];
+                        }
+                        continue; // done with this field
+                    }
+
+                    // Expand content_data JSON into individual translatable string leaf paths
+                    if ($field === 'content_data') {
+                        $sourceData = $record->getTranslation($field, $sourceLang, false) ?? [];
+                        $targetData = $record->getTranslation($field, $targetLang, false) ?? [];
+                        if (!is_array($sourceData)) $sourceData = [];
+                        if (!is_array($targetData)) $targetData = [];
+
+                        $paths = $this->extractJsonStringPaths($sourceData);
+                        foreach ($paths as [$dotPath, $pathLabel]) {
+                            $sourceText = (string) (data_get($sourceData, $dotPath) ?? '');
+                            $targetText = (string) (data_get($targetData, $dotPath) ?? '');
+                            $subStatus  = $this->fieldStatus($sourceText, $targetText);
+
+                            $allSubTranslations = [];
+                            foreach ($locales as $tLocale) {
+                                if ($tLocale === $sourceLang) continue;
+                                $tData = $record->getTranslation($field, $tLocale, false) ?? [];
+                                if (!is_array($tData)) $tData = [];
+                                $allSubTranslations[$tLocale] = (string) (data_get($tData, $dotPath) ?? '');
+                            }
+
+                            $allItems[] = [
+                                'type'         => $type,
+                                'typeLabel'    => $meta['labelDe'],
+                                'id'           => $record->id,
+                                'title'        => $title,
+                                'field'        => $field . '.' . $dotPath,
+                                'fieldLabel'   => $pathLabel,
+                                'source'       => $sourceText,
+                                'target'       => $targetText,
                                 'status'       => $subStatus,
                                 'statusLabel'  => $this->statusLabel($subStatus),
                                 'statusClass'  => $this->statusClass($subStatus),
@@ -309,9 +347,9 @@ class TranslationCheckController extends Controller
                     $existing = $model->getTranslation($parentField, $request->target_lang, false) ?? [];
                     if (!is_array($existing)) $existing = [];
 
-                    // description_blocks: initialise target structure from EN source if target is empty,
-                    // so non-text fields (image URLs, types, etc.) are preserved as single source of truth.
-                    if ($parentField === 'description_blocks' && empty($existing)) {
+                    // For JSON fields with nested structure: initialise target from EN source if empty,
+                    // so non-text nodes (image URLs, types, numeric values, etc.) are preserved.
+                    if (in_array($parentField, ['description_blocks', 'content_data'], true) && empty($existing)) {
                         $sourceLang = config('app.fallback_locale', 'en');
                         $sourceBlocks = $model->getTranslation($parentField, $sourceLang, false) ?? [];
                         $existing = is_array($sourceBlocks) ? json_decode(json_encode($sourceBlocks), true) : [];
@@ -332,6 +370,42 @@ class TranslationCheckController extends Controller
             Log::error('[TranslationCheck] Apply failed', ['message' => $e->getMessage()]);
             return response()->json(['error' => $e->getMessage()], 500);
         }
+    }
+
+    /**
+     * Recursively extract all string leaf paths from an arbitrary JSON array.
+     * Numeric-indexed arrays (e.g. phone/email lists) are skipped entirely,
+     * keeping only editorially meaningful string values.
+     *
+     * @param  array  $data       The decoded JSON array (for the source locale)
+     * @param  string $prefix     Dot-notation prefix accumulated during recursion
+     * @return array<int, array{0: string, 1: string}>  [dotPath, label]
+     */
+    private function extractJsonStringPaths(array $data, string $prefix = ''): array
+    {
+        $paths = [];
+
+        foreach ($data as $key => $value) {
+            // Skip numeric-indexed arrays (phone lists, email lists, etc.)
+            if (is_int($key)) {
+                return [];
+            }
+
+            $dotPath = $prefix === '' ? (string) $key : "{$prefix}.{$key}";
+
+            if (is_string($value) && $value !== '') {
+                // Readable label: replace dots with " / " and title-case
+                $label = 'Content – ' . str_replace('.', ' / ', $dotPath);
+                $paths[] = [$dotPath, $label];
+            } elseif (is_array($value)) {
+                // Recurse only into associative arrays
+                $nested = $this->extractJsonStringPaths($value, $dotPath);
+                $paths  = array_merge($paths, $nested);
+            }
+            // booleans, integers, null → skip
+        }
+
+        return $paths;
     }
 
     /**
