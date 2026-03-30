@@ -24,9 +24,24 @@ class TranslationCheckController extends Controller
         $locales = supported_languages_keys();
         $sourceLang = config('app.fallback_locale', 'en');
 
-        $typeFilter = $request->get('type', 'all');
-        $targetLang = $request->get('lang', $locales[1] ?? 'de');
+        $typeFilter   = $request->get('type', 'all');
+        $targetLang   = $request->get('lang', $locales[1] ?? 'de');
         $statusFilter = $request->get('status', 'all');
+        $idFilter     = $request->get('id', null);
+
+        // Records list for the sub-filter dropdown (only when a specific type is selected)
+        $typeRecords = [];
+        if ($typeFilter !== 'all' && isset($allModels[$typeFilter])) {
+            $meta = $allModels[$typeFilter];
+            $typeRecords = $meta['class']::all()
+                ->map(fn ($r) => [
+                    'id'    => $r->id,
+                    'title' => $r->getTranslation($meta['titleField'], $sourceLang, false) ?: '(ohne Titel)',
+                ])
+                ->sortBy('title')
+                ->values()
+                ->all();
+        }
 
         $items = [];
 
@@ -37,6 +52,7 @@ class TranslationCheckController extends Controller
             $records = $modelClass::all();
 
             foreach ($records as $record) {
+                if ($idFilter && $record->id != $idFilter) continue;
                 $translatableFields = $record->translatable ?? [];
                 $title = $record->getTranslation($meta['titleField'], $sourceLang, false) ?: '(ohne Titel)';
 
@@ -90,6 +106,8 @@ class TranslationCheckController extends Controller
             'items'        => $items,
             'types'        => $types,
             'typeFilter'   => $typeFilter,
+            'idFilter'     => $idFilter,
+            'typeRecords'  => $typeRecords,
             'targetLang'   => $targetLang,
             'statusFilter' => $statusFilter,
             'locales'      => $locales,
