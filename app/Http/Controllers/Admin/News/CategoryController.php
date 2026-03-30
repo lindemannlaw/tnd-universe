@@ -81,6 +81,7 @@ class CategoryController extends Controller
         try {
             DB::beginTransaction();
 
+            $this->preserveTranslations($newsCategory, $data);
             $newsCategory->updateOrFail($data);
 
             DB::commit();

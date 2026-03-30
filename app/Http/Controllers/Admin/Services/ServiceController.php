@@ -111,6 +111,7 @@ class ServiceController extends Controller
                     ->toMediaCollection($service->mediaInfo);
             }
 
+            $this->preserveTranslations($service, $data);
             $service->updateOrFail($data);
 
             DB::commit();

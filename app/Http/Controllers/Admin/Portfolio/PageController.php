@@ -24,6 +24,7 @@ class PageController extends Controller
         try {
             DB::beginTransaction();
 
+            $this->preserveTranslations($page, $data);
             $page->updateOrFail($data);
 
             DB::commit();

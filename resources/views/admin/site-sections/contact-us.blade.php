@@ -19,6 +19,8 @@
 @endsection
 
 @section('content')
+    @php $lang = config('app.fallback_locale', 'en'); @endphp
+
     <x-admin.container
         :id="'controlForm'"
         :action="route('admin.site-sections.contact-us.update', $section->id)"
@@ -37,39 +39,19 @@
             </div>
 
             <div class="d-flex flex-column gap-4 g-col-12 g-col-md-8">
-                <x-admin.tabs.wrapper>
-                    <x-slot:nav>
-                        @foreach(supported_languages_keys() as $lang)
-                            <x-admin.tabs.nav-item
-                                :is-active="$loop->first"
-                                :target="'locale-' . $lang"
-                                :title="$lang"
-                            />
-                        @endforeach
-                    </x-slot:nav>
+                <!-- title -->
+                <x-admin.field.text
+                    :name="'title['. $lang .']'"
+                    :value="old('title.' . $lang, $section->getTranslation('title', $lang, false) ?? '')"
+                    :placeholder="__('admin.title')"
+                />
 
-                    <x-slot:content>
-                        @foreach(supported_languages_keys() as $lang)
-                            <x-admin.tabs.pane :is-active="$loop->first" :id="'locale-' . $lang">
-                                <div class="d-flex flex-column gap-4">
-                                    <!-- title -->
-                                    <x-admin.field.text
-                                        :name="'title['. $lang .']'"
-                                        :value="old('title.' . $lang, $section->getTranslation('title', $lang) ?? '')"
-                                        :placeholder="__('admin.title')"
-                                    />
-
-                                    <!-- description -->
-                                    <x-admin.field.textarea
-                                        :name="'content_data['. $lang .'][description]'"
-                                        :value="old('content_data.' . $lang . '.description', data_get($section->getTranslation('content_data', $lang), 'description'))"
-                                        :placeholder="__('admin.description')"
-                                    />
-                                </div>
-                            </x-admin.tabs.pane>
-                        @endforeach
-                    </x-slot:content>
-                </x-admin.tabs.wrapper>
+                <!-- description -->
+                <x-admin.field.textarea
+                    :name="'content_data['. $lang .'][description]'"
+                    :value="old('content_data.' . $lang . '.description', data_get($section->getTranslation('content_data', $lang, false), 'description'))"
+                    :placeholder="__('admin.description')"
+                />
 
                 <x-admin.dynamic-fields.wrapper>
                     @foreach(data_get($section->getTranslation('content_data', config('app.fallback_locale')), 'phones', []) as $phone)

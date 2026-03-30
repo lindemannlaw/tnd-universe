@@ -36,6 +36,7 @@ class WhoWeAreSectionController extends Controller
                     ->toMediaCollection('front-image');
             }
 
+            $this->preserveTranslations($siteSection, $data);
             $siteSection->updateOrFail($data);
 
             DB::commit();

@@ -92,6 +92,7 @@ class CategoryController extends Controller
                     ->toMediaCollection($serviceCategory->mediaHero);
             }
 
+            $this->preserveTranslations($serviceCategory, $data);
             $serviceCategory->updateOrFail($data);
 
             DB::commit();

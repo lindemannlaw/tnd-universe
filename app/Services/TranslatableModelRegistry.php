@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Leader;
 use App\Models\NewsArticle;
 use App\Models\NewsCategory;
 use App\Models\Page;
@@ -60,6 +61,13 @@ class TranslatableModelRegistry
             'label'      => 'Site Sections',
             'labelDe'    => 'Seitenabschnitte',
             'titleField' => 'title',
+            'hasSeo'     => false,
+        ],
+        'leader' => [
+            'class'      => Leader::class,
+            'label'      => 'Leaders',
+            'labelDe'    => 'Führungspersonen',
+            'titleField' => 'name',
             'hasSeo'     => false,
         ],
     ];

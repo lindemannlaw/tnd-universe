@@ -30,6 +30,7 @@ class HomePageController extends Controller
                     ->toMediaCollection('hero-image');
             }
 
+            $this->preserveTranslations($page, $data);
             $page->updateOrFail($data);
 
             DB::commit();

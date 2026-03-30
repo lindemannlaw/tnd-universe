@@ -21,6 +21,13 @@ export function ajaxWithUpdateFromView() {
                 if (!form.hasAttribute('data-keep-modal-open')) {
                     hideAllModals();
                     updateSection.innerHTML = response.data?.html;
+
+                    // Fire auto-translate overlay when the server signals a new record
+                    if (response.data?.autoTranslate) {
+                        document.dispatchEvent(new CustomEvent('auto-translate-start', {
+                            detail: response.data.autoTranslate,
+                        }));
+                    }
                     return;
                 }
 

@@ -1,3 +1,8 @@
+@php
+    $lang = config('app.fallback_locale', 'en');
+    $info = isset($leader) ? ($leader->getTranslation('info', $lang, false) ?: []) : [];
+@endphp
+
 <div class="grid gap-4">
     <div class="d-flex flex-column gap-4 g-col-12 g-col-lg-5 g-col-xl-4">
         <!-- hero image -->
@@ -12,85 +17,61 @@
     </div>
 
     <div class="d-flex flex-column gap-4 g-col-12 g-col-lg-7 g-col-xl-8">
-        <x-admin.tabs.wrapper>
-            <x-slot:nav>
-                @foreach(supported_languages_keys() as $lang)
-                    <x-admin.tabs.nav-item
-                        :is-active="$loop->first"
-                        :target="'locale-' . $lang"
-                        :title="$lang"
-                    />
-                @endforeach
-            </x-slot:nav>
+        <!-- name -->
+        <x-admin.field.text
+            :name="'name['. $lang .']'"
+            :value="old('name.' . $lang, isset($leader) ? $leader->getTranslation('name', $lang, false) : null)"
+            :placeholder="__('admin.name')"
+        />
 
-            <x-slot:content>
-                @foreach(supported_languages_keys() as $lang)
-                    <x-admin.tabs.pane :is-active="$loop->first" :id="'locale-' . $lang">
-                        <div class="d-flex flex-column gap-4">
-                            <!-- name -->
-                            <x-admin.field.text
-                                :name="'name['. $lang .']'"
-                                :value="old('name.' . $lang, isset($leader) ? $leader->getTranslation('name', $lang) : null)"
-                                :placeholder="__('admin.name')"
-                            />
+        <!-- position -->
+        <x-admin.field.text
+            :name="'position['. $lang .']'"
+            :value="old('position.' . $lang, isset($leader) ? $leader->getTranslation('position', $lang, false) : null)"
+            :placeholder="__('admin.position')"
+        />
 
-                            <!-- position -->
-                            <x-admin.field.text
-                                :name="'position['. $lang .']'"
-                                :value="old('position.' . $lang, isset($leader) ? $leader->getTranslation('position', $lang) : null)"
-                                :placeholder="__('admin.position')"
-                            />
+        <x-admin.dynamic-fields.wrapper>
+            @foreach($info as $item)
+                <x-admin.dynamic-fields.group>
+                    <div class="d-flex flex-column gap-4">
+                        <!-- info head -->
+                        <x-admin.field.text
+                            :name="'info['. $lang .'][' . $loop->index . '][head]'"
+                            :value="$item['head']"
+                            :placeholder="__('admin.info_head')"
+                            :required="false"
+                        />
 
-                            <x-admin.dynamic-fields.wrapper>
-                                @php
-                                    $info = isset($leader) ? $leader->getTranslation('info', $lang) : [];
-                                @endphp
+                        <!-- info description -->
+                        <x-admin.field.text
+                            :name="'info['. $lang .'][' . $loop->index . '][description]'"
+                            :value="$item['description']"
+                            :placeholder="__('admin.info_description')"
+                        />
+                    </div>
+                </x-admin.dynamic-fields.group>
+            @endforeach
 
-                                @foreach($info ?: [] as $item)
-                                    <x-admin.dynamic-fields.group>
-                                        <div class="d-flex flex-column gap-4">
-                                            <!-- info head -->
-                                            <x-admin.field.text
-                                                :name="'info['. $lang .'][' . $loop->index . '][head]'"
-                                                :value="$item['head']"
-                                                :placeholder="__('admin.info_head')"
-                                                :required="false"
-                                            />
+            <x-slot:template>
+                <x-admin.dynamic-fields.group>
+                    <div class="d-flex flex-column gap-4">
+                        <!-- info head -->
+                        <x-admin.field.text
+                            :name="'info['. $lang .'][0][head]'"
+                            :placeholder="__('admin.info_head')"
+                            :required="false"
+                        />
 
-                                            <!-- info description -->
-                                            <x-admin.field.text
-                                                :name="'info['. $lang .'][' . $loop->index . '][description]'"
-                                                :value="$item['description']"
-                                                :placeholder="__('admin.info_description')"
-                                            />
-                                        </div>
-                                    </x-admin.dynamic-fields.group>
-                                @endforeach
-
-                                <x-slot:template>
-                                    <x-admin.dynamic-fields.group>
-                                        <div class="d-flex flex-column gap-4">
-                                            <!-- info head -->
-                                            <x-admin.field.text
-                                                :name="'info['. $lang .'][0][head]'"
-                                                :placeholder="__('admin.info_head')"
-                                                :required="false"
-                                            />
-
-                                            <!-- info description -->
-                                            <x-admin.field.text
-                                                :name="'info['. $lang .'][0][description]'"
-                                                :placeholder="__('admin.info_description')"
-                                            />
-                                        </div>
-                                    </x-admin.dynamic-fields.group>
-                                </x-slot:template>
-                            </x-admin.dynamic-fields.wrapper>
-                        </div>
-                    </x-admin.tabs.pane>
-                @endforeach
-            </x-slot:content>
-        </x-admin.tabs.wrapper>
+                        <!-- info description -->
+                        <x-admin.field.text
+                            :name="'info['. $lang .'][0][description]'"
+                            :placeholder="__('admin.info_description')"
+                        />
+                    </div>
+                </x-admin.dynamic-fields.group>
+            </x-slot:template>
+        </x-admin.dynamic-fields.wrapper>
 
         <div class="d-flex gap-3">
             <!-- resume -->
@@ -111,7 +92,7 @@
                     :btnInFieldGroup="true"
                     :href="$resume->getUrl()"
                     :icon-name="'download'"
-                    download="{{ isset($leader) ? $leader->getTranslation('name', $lang) . '-' . __('admin.resume') : __('admin.resume') }}"
+                    download="{{ isset($leader) ? $leader->getTranslation('name', $lang, false) . '-' . __('admin.resume') : __('admin.resume') }}"
                 />
             @endif
         </div>

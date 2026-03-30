@@ -90,12 +90,33 @@ class ProjectController extends Controller
         }
 
         if ($request->ajax()) {
+            $sourceLang  = config('app.fallback_locale', 'en');
+            $targetLangs = array_values(array_filter(
+                \App\Models\LanguageSetting::publishedKeys(),
+                fn($l) => $l !== $sourceLang
+            ));
+
             return response()->json([
                 'toast' => [
-                    'type' => 'success',
+                    'type'    => 'success',
                     'message' => __('admin.success_create_data'),
                 ],
-                'html' => $this->getViewProjects(),
+                'html'          => $this->getViewProjects(),
+                'autoTranslate' => [
+                    'type'          => 'project',
+                    'id'            => $project->id,
+                    'translateUrl'  => route('admin.translations.translate'),
+                    'applyUrl'      => route('admin.translations.apply'),
+                    'sourceLang'    => $sourceLang,
+                    'targetLangs'   => $targetLangs,
+                    'contentFields' => [
+                        'title', 'short_description', 'description', 'location',
+                        'property_details.property_type',
+                        'property_details.status',
+                        'property_details.inquiry_button_text',
+                    ],
+                    'seoFields' => ['seo_title', 'seo_description', 'seo_keywords', 'geo_text'],
+                ],
             ]);
         }
 
@@ -119,6 +140,10 @@ class ProjectController extends Controller
     public function update(UpdateRequest $request, Project $project): View|JsonResponse|RedirectResponse|string {
         $data = $request->validated();
         $data = $this->prepareDescriptionBlocksData($request, $data);
+
+        // Preserve DE/FR/PL … translations that exist in the DB but aren't
+        // submitted by the EN-only project form.
+        $this->preserveTranslations($project, $data);
 
         // ── Snapshot old EN text values for timestamp comparison ──
         $oldTexts    = $this->extractEnTextValues($project);

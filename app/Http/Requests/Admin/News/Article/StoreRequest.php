@@ -21,25 +21,30 @@ class StoreRequest extends FormRequest
      */
     public function rules(): array
     {
+        $sourceLang = config('app.fallback_locale', 'en');
+
         $rules['sort'] = ['required', 'integer'];
         $rules['active'] = ['required', 'boolean'];
         $rules['category_id'] = ['required', 'exists:news_categories,id'];
 
-        foreach (supported_languages_keys() as $locale) {
-            $rules['title'] = ['required', 'array'];
-            $rules['title.' . $locale] = ['required', 'string', 'max:255'];
-            $rules['short_description'] = ['nullable', 'array'];
-            $rules['short_description.' . $locale] = ['nullable', 'string', 'max:255'];
-            $rules['description'] = ['required', 'array'];
-            $rules['description.' . $locale] = ['required', 'string'];
+        $rules['title'] = ['required', 'array'];
+        $rules['short_description'] = ['nullable', 'array'];
+        $rules['description'] = ['required', 'array'];
+        $rules['seo_title'] = ['nullable', 'array'];
+        $rules['seo_description'] = ['nullable', 'array'];
+        $rules['seo_keywords'] = ['nullable', 'array'];
+        $rules['geo_text'] = ['nullable', 'array'];
 
-            $rules['seo_title'] = ['nullable', 'array'];
+        foreach (supported_languages_keys() as $locale) {
+            $isSource = $locale === $sourceLang;
+
+            $rules['title.' . $locale] = [$isSource ? 'required' : 'nullable', 'string', 'max:255'];
+            $rules['short_description.' . $locale] = ['nullable', 'string', 'max:255'];
+            $rules['description.' . $locale] = [$isSource ? 'required' : 'nullable', 'string'];
+
             $rules['seo_title.' . $locale] = ['nullable', 'string', 'max:255'];
-            $rules['seo_description'] = ['nullable', 'array'];
             $rules['seo_description.' . $locale] = ['nullable', 'string', 'max:255'];
-            $rules['seo_keywords'] = ['nullable', 'array'];
             $rules['seo_keywords.' . $locale] = ['nullable', 'string', 'max:255'];
-            $rules['geo_text'] = ['nullable', 'array'];
             $rules['geo_text.' . $locale] = ['nullable', 'string', 'max:5000'];
         }
 

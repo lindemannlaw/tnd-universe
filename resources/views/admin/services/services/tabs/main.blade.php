@@ -12,47 +12,31 @@
     </div>
 
     <div class="d-flex flex-column gap-4 g-col-12 g-col-lg-7 g-col-xl-6">
-        <x-admin.tabs.wrapper>
-            <x-slot:nav>
-                @foreach(supported_languages_keys() as $lang)
-                    <x-admin.tabs.nav-item
-                        :is-active="$loop->first"
-                        :target="'main-locale-' . $lang"
-                        :title="$lang"
-                    />
-                @endforeach
-            </x-slot:nav>
+        @php $lang = config('app.fallback_locale', 'en'); @endphp
 
-            <x-slot:content>
-                @foreach(supported_languages_keys() as $lang)
-                    <x-admin.tabs.pane :is-active="$loop->first" :id="'main-locale-' . $lang">
-                        <div class="d-flex flex-column gap-4">
-                            <!-- title -->
-                            <x-admin.field.text
-                                :name="'title['. $lang .']'"
-                                :value="old('title.' . $lang, isset($service) ? $service->getTranslation('title', $lang) : null)"
-                                :placeholder="__('admin.title')"
-                            />
+        <div class="d-flex flex-column gap-4">
+            <!-- title -->
+            <x-admin.field.text
+                :name="'title['. $lang .']'"
+                :value="old('title.' . $lang, isset($service) ? $service->getTranslation('title', $lang, false) : null)"
+                :placeholder="__('admin.title')"
+            />
 
-                            <!-- inner title -->
-                            <x-admin.field.text
-                                :name="'inner_title['. $lang .']'"
-                                :value="old('inner_title.' . $lang, isset($service) ? $service->getTranslation('inner_title', $lang) : null)"
-                                :placeholder="__('admin.inner_title')"
-                                :required="false"
-                            />
+            <!-- inner title -->
+            <x-admin.field.text
+                :name="'inner_title['. $lang .']'"
+                :value="old('inner_title.' . $lang, isset($service) ? $service->getTranslation('inner_title', $lang, false) : null)"
+                :placeholder="__('admin.inner_title')"
+                :required="false"
+            />
 
-                            <!-- description -->
-                            <x-admin.field.textarea
-                                :name="'description['. $lang .']'"
-                                :value="old('description.' . $lang, isset($service) ? $service->getTranslation('description', $lang) : null)"
-                                :placeholder="__('admin.description')"
-                            />
-                        </div>
-                    </x-admin.tabs.pane>
-                @endforeach
-            </x-slot:content>
-        </x-admin.tabs.wrapper>
+            <!-- description -->
+            <x-admin.field.textarea
+                :name="'description['. $lang .']'"
+                :value="old('description.' . $lang, isset($service) ? $service->getTranslation('description', $lang, false) : null)"
+                :placeholder="__('admin.description')"
+            />
+        </div>
 
         <!-- category -->
         <x-admin.field.select

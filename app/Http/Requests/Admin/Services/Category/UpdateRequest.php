@@ -21,23 +21,18 @@ class UpdateRequest extends FormRequest
      */
     public function rules(): array
     {
+        $sourceLang = config('app.fallback_locale', 'en');
+
         $rules['hero_image'] = ['nullable', 'image', 'mimes:jpg,png,webp', 'max:20480'];
 
         $rules['sort'] = ['required', 'integer'];
         $rules['active'] = ['required', 'boolean'];
 
-        foreach (supported_languages_keys() as $locale) {
-            $rules['name'] = ['required', 'array'];
-            $rules['name.' . $locale] = ['required', 'string', 'max:255'];
+        $rules['name'] = ['required', 'array'];
 
-            //$rules['seo_title'] = ['nullable', 'array'];
-            //$rules['seo_title.' . $locale] = ['nullable', 'string', 'max:255'];
-            //$rules['seo_description'] = ['nullable', 'array'];
-            //$rules['seo_description.' . $locale] = ['nullable', 'string', 'max:255'];
-            //$rules['seo_keywords'] = ['nullable', 'array'];
-            //$rules['seo_keywords.' . $locale] = ['nullable', 'string', 'max:255'];
-            //$rules['geo_text'] = ['nullable', 'array'];
-            //$rules['geo_text.' . $locale] = ['nullable', 'string', 'max:5000'];
+        foreach (supported_languages_keys() as $locale) {
+            $isSource = $locale === $sourceLang;
+            $rules['name.' . $locale] = [$isSource ? 'required' : 'nullable', 'string', 'max:255'];
         }
 
         return $rules;

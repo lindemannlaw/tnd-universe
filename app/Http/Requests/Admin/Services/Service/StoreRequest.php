@@ -21,6 +21,8 @@ class StoreRequest extends FormRequest
      */
     public function rules(): array
     {
+        $sourceLang = config('app.fallback_locale', 'en');
+
         $rules['hero_image'] = ['required', 'image', 'mimes:jpg,png,webp', 'max:20480'];
         $rules['info_image'] = ['nullable', 'image', 'mimes:jpg,png,webp', 'max:20480'];
 
@@ -40,21 +42,17 @@ class StoreRequest extends FormRequest
         $rules['geo_text'] = ['nullable', 'array'];
 
         foreach (supported_languages_keys() as $locale) {
-            $rules['title.' . $locale] = ['required', 'string', 'max:255'];
+            $isSource = $locale === $sourceLang;
+
+            $rules['title.' . $locale] = [$isSource ? 'required' : 'nullable', 'string', 'max:255'];
             $rules['inner_title.' . $locale] = ['nullable', 'string', 'max:255'];
 
-            $rules['description.' . $locale] = ['required', 'string'];
+            $rules['description.' . $locale] = [$isSource ? 'required' : 'nullable', 'string'];
 
-            $rules['details.' . $locale . '.title'] = ['required', 'string', 'max:255'];
-            $rules['details.' . $locale . '.list'] = ['required', 'array'];
-            $rules['details.' . $locale . '.list.*.title'] = ['required', 'string', 'max:255'];
-            $rules['details.' . $locale . '.list.*.description'] = ['required', 'string'];
-
-            /*$rules['info'] = ['nullable', 'array'];
-            $rules['info.' . $locale . '.title'] = ['nullable', 'string', 'max:255'];
-            $rules['info.' . $locale . '.list'] = ['nullable', 'array'];
-            $rules['info.' . $locale . '.list.*.title'] = ['nullable', 'string', 'max:255'];
-            $rules['info.' . $locale . '.list.*.description'] = ['nullable', 'string'];*/
+            $rules['details.' . $locale . '.title'] = [$isSource ? 'required' : 'nullable', 'string', 'max:255'];
+            $rules['details.' . $locale . '.list'] = [$isSource ? 'required' : 'nullable', 'array'];
+            $rules['details.' . $locale . '.list.*.title'] = [$isSource ? 'required' : 'nullable', 'string', 'max:255'];
+            $rules['details.' . $locale . '.list.*.description'] = [$isSource ? 'required' : 'nullable', 'string'];
 
             $rules['seo_title.' . $locale] = ['nullable', 'string', 'max:255'];
             $rules['seo_description.' . $locale] = ['nullable', 'string', 'max:255'];

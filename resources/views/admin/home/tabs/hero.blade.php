@@ -1,3 +1,5 @@
+@php $lang = config('app.fallback_locale', 'en'); @endphp
+
 <div class="grid gap-4">
     <div class="g-col-12 g-col-md-4">
         <!-- image -->
@@ -11,40 +13,22 @@
     </div>
 
     <div class="g-col-12 g-col-md-8">
-        <x-admin.tabs.wrapper>
-            <x-slot:nav>
-                @foreach(supported_languages_keys() as $lang)
-                    <x-admin.tabs.nav-item
-                        :is-active="$loop->first"
-                        :target="'hero-locale-' . $lang"
-                        :title="$lang"
-                    />
-                @endforeach
-            </x-slot:nav>
+        <div class="d-flex flex-column gap-4">
+            <!-- title -->
+            <x-admin.field.text
+                :name="'content_data['. $lang .'][hero][title]'"
+                :value="old('content_data.' . $lang . '.hero.title', data_get($page->getTranslation('content_data', $lang, false), 'hero.title'))"
+                :placeholder="__('admin.title')"
+            />
 
-            <x-slot:content>
-                @foreach(supported_languages_keys() as $lang)
-                    <x-admin.tabs.pane :is-active="$loop->first" :id="'hero-locale-' . $lang">
-                        <div class="d-flex flex-column gap-4">
-                            <!-- title -->
-                            <x-admin.field.text
-                                :name="'content_data['. $lang .'][hero][title]'"
-                                :value="old('content_data.' . $lang . '.hero.title', data_get($page->getTranslation('content_data', $lang), 'hero.title'))"
-                                :placeholder="__('admin.title')"
-                            />
-
-                            <!-- description -->
-                            <x-admin.field.wysiwyg
-                                :name="'content_data['. $lang .'][hero][description]'"
-                                :value="old('content_data.' . $lang . '.hero.description', data_get($page->getTranslation('content_data', $lang), 'hero.description'))"
-                                :placeholder="__('admin.description')"
-                                :height="100"
-                                :required="false"
-                            />
-                        </div>
-                    </x-admin.tabs.pane>
-                @endforeach
-            </x-slot:content>
-        </x-admin.tabs.wrapper>
+            <!-- description -->
+            <x-admin.field.wysiwyg
+                :name="'content_data['. $lang .'][hero][description]'"
+                :value="old('content_data.' . $lang . '.hero.description', data_get($page->getTranslation('content_data', $lang, false), 'hero.description'))"
+                :placeholder="__('admin.description')"
+                :height="100"
+                :required="false"
+            />
+        </div>
     </div>
 </div>

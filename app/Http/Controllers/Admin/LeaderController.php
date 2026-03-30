@@ -89,6 +89,7 @@ class LeaderController extends Controller
         try {
             DB::beginTransaction();
 
+            $this->preserveTranslations($leader, $data);
             $leader->updateOrFail($data);
 
             if ($request->hasFile('photo')) {

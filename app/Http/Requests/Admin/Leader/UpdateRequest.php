@@ -21,6 +21,8 @@ class UpdateRequest extends FormRequest
      */
     public function rules(): array
     {
+        $sourceLang = config('app.fallback_locale', 'en');
+
         $rules['photo'] = ['nullable', 'image', 'mimes:jpg,png,webp', 'max:20480'];
         $rules['resume'] = ['nullable', 'file', 'max:20480'];
 
@@ -29,16 +31,17 @@ class UpdateRequest extends FormRequest
 
         $rules['name'] = ['required', 'array'];
         $rules['position'] = ['required', 'array'];
-        $rules['info'] = ['required', 'array'];
+        $rules['info'] = ['nullable', 'array'];
 
         foreach (supported_languages_keys() as $locale) {
-            $rules['name.' . $locale] = ['required', 'string', 'max:255'];
+            $isSource = $locale === $sourceLang;
 
-            $rules['position.' . $locale] = ['required', 'string', 'max:255'];
+            $rules['name.' . $locale] = [$isSource ? 'required' : 'nullable', 'string', 'max:255'];
+            $rules['position.' . $locale] = [$isSource ? 'required' : 'nullable', 'string', 'max:255'];
 
-            $rules['info.' . $locale] = ['required', 'array'];
+            $rules['info.' . $locale] = ['nullable', 'array'];
             $rules['info.' . $locale . '*.head'] = ['nullable', 'string', 'max:255'];
-            $rules['info.' . $locale . '*.description'] = ['required', 'string', 'max:255'];
+            $rules['info.' . $locale . '*.description'] = ['nullable', 'string', 'max:255'];
         }
 
         return $rules;

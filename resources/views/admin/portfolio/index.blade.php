@@ -19,61 +19,44 @@
 @endsection
 
 @section('content')
+    @php $lang = config('app.fallback_locale', 'en'); @endphp
+
     <x-admin.container
         :id="'controlForm'"
         :action="route('admin.portfolio.page.update', $page->id)"
         :method="'PATCH'"
     >
-        <x-admin.tabs.wrapper>
-            <x-slot:nav>
-                @foreach(supported_languages_keys() as $lang)
-                    <x-admin.tabs.nav-item
-                        :is-active="$loop->first"
-                        :target="'locale-' . $lang"
-                        :title="$lang"
-                    />
-                @endforeach
-            </x-slot:nav>
+        <div class="d-flex flex-column gap-4">
+            <!-- title -->
+            <x-admin.field.text
+                :name="'title['. $lang .']'"
+                :value="old('title.' . $lang, $page->getTranslation('title', $lang, false))"
+                :placeholder="__('admin.title')"
+            />
 
-            <x-slot:content>
-                @foreach(supported_languages_keys() as $lang)
-                    <x-admin.tabs.pane :is-active="$loop->first" :id="'locale-' . $lang">
-                        <div class="d-flex flex-column gap-4">
-                            <!-- title -->
-                            <x-admin.field.text
-                                :name="'title['. $lang .']'"
-                                :value="old('title.' . $lang, $page->getTranslation('title', $lang))"
-                                :placeholder="__('admin.title')"
-                            />
+            <!-- seo title -->
+            <x-admin.field.text
+                :name="'seo_title['. $lang .']'"
+                :value="old('seo_title.' . $lang, $page->getTranslation('seo_title', $lang, false))"
+                :placeholder="__('admin.seo_title')"
+                :required="false"
+            />
 
-                            <!-- seo title -->
-                            <x-admin.field.text
-                                :name="'seo_title['. $lang .']'"
-                                :value="old('seo_title.' . $lang, $page->getTranslation('seo_title', $lang))"
-                                :placeholder="__('admin.seo_title')"
-                                :required="false"
-                            />
+            <!-- seo description -->
+            <x-admin.field.text
+                :name="'seo_description['. $lang .']'"
+                :value="old('seo_description.' . $lang, $page->getTranslation('seo_description', $lang, false))"
+                :placeholder="__('admin.seo_description')"
+                :required="false"
+            />
 
-                            <!-- seo description -->
-                            <x-admin.field.text
-                                :name="'seo_description['. $lang .']'"
-                                :value="old('seo_description.' . $lang, $page->getTranslation('seo_description', $lang))"
-                                :placeholder="__('admin.seo_description')"
-                                :required="false"
-                            />
-
-                            <!-- seo keywords -->
-                            <x-admin.field.text
-                                :name="'seo_keywords['. $lang .']'"
-                                :value="old('seo_keywords.' . $lang, $page->getTranslation('seo_keywords', $lang))"
-                                :placeholder="__('admin.seo_keywords')"
-                                :required="false"
-                            />
-                        </div>
-                    </x-admin.tabs.pane>
-                @endforeach
-            </x-slot:content>
-        </x-admin.tabs.wrapper>
-
+            <!-- seo keywords -->
+            <x-admin.field.text
+                :name="'seo_keywords['. $lang .']'"
+                :value="old('seo_keywords.' . $lang, $page->getTranslation('seo_keywords', $lang, false))"
+                :placeholder="__('admin.seo_keywords')"
+                :required="false"
+            />
+        </div>
     </x-admin.container>
 @endsection

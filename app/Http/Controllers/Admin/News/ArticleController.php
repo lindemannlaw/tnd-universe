@@ -92,6 +92,7 @@ class ArticleController extends Controller
         try {
             DB::beginTransaction();
 
+            $this->preserveTranslations($newsArticle, $data);
             $newsArticle->updateOrFail($data);
             $newsArticle->categories()->sync([$data['category_id']]);
 

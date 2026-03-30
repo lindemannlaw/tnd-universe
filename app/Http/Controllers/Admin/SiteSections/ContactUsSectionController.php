@@ -30,6 +30,7 @@ class ContactUsSectionController extends Controller
                     ->toMediaCollection('bg-image');
             }
 
+            $this->preserveTranslations($siteSection, $data);
             $siteSection->updateOrFail($data);
 
             DB::commit();
