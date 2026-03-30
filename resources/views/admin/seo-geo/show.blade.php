@@ -20,7 +20,7 @@
 @endsection
 
 @section('content')
-    <div class="container-fluid py-4">
+    <x-admin.container>
         <div class="small text-muted mb-3">
             {{ $typeLabel }} &rarr; {{ $title }}
         </div>
@@ -105,7 +105,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </x-admin.container>
 @endsection
 
 @push('footer-scripts')

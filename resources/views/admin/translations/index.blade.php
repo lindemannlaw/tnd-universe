@@ -16,7 +16,7 @@
 @endsection
 
 @section('content')
-    <div class="container-fluid py-4">
+    <x-admin.container>
 
         {{-- Filters --}}
         <form method="GET" action="{{ route('admin.translations.index') }}" class="d-flex gap-3 mb-4 flex-wrap align-items-center">
@@ -29,13 +29,32 @@
             </select>
 
             {{-- Target language --}}
-            <select name="lang" class="form-select form-select-sm" style="width: auto;" onchange="this.form.submit()">
-                @foreach($locales as $locale)
-                    @if($locale !== $sourceLang)
-                        <option value="{{ $locale }}" {{ $targetLang === $locale ? 'selected' : '' }}>{{ strtoupper($locale) }}</option>
-                    @endif
-                @endforeach
-            </select>
+            @php
+                $localeFlags = [
+                    'de' => '🇩🇪', 'fr' => '🇫🇷', 'pl' => '🇵🇱', 'el' => '🇬🇷',
+                    'ru' => '🇷🇺', 'ar' => '🇸🇦', 'zh' => '🇨🇳', 'en' => '🇬🇧',
+                    'es' => '🇪🇸', 'it' => '🇮🇹', 'pt' => '🇵🇹', 'ja' => '🇯🇵',
+                    'ko' => '🇰🇷', 'nl' => '🇳🇱', 'tr' => '🇹🇷',
+                ];
+            @endphp
+            <div class="dropdown">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    {{ $localeFlags[$targetLang] ?? '' }} {{ strtoupper($targetLang) }}
+                </button>
+                <ul class="dropdown-menu">
+                    @foreach($locales as $locale)
+                        @if($locale !== $sourceLang)
+                            <li>
+                                <a class="dropdown-item {{ $targetLang === $locale ? 'active' : '' }}"
+                                   href="{{ route('admin.translations.index', array_merge(request()->only(['type', 'status']), ['lang' => $locale])) }}">
+                                    {{ $localeFlags[$locale] ?? '' }} {{ strtoupper($locale) }}
+                                </a>
+                            </li>
+                        @endif
+                    @endforeach
+                </ul>
+            </div>
+            <input type="hidden" name="lang" value="{{ $targetLang }}">
 
             {{-- Status filter --}}
             <div class="btn-group btn-group-sm">
@@ -101,7 +120,7 @@
                                             <span class="badge bg-light text-dark border">{{ strtoupper($sourceLang) }}</span>
                                             Quelltext
                                         </label>
-                                        <div class="form-control form-control-sm bg-light" style="min-height: 60px; white-space: pre-wrap;">{{ \Illuminate\Support\Str::limit($item['source'], 300) }}</div>
+                                        <div class="form-control form-control-sm bg-light" style="white-space: pre-wrap;">{{ \Illuminate\Support\Str::limit($item['source'], 300) }}</div>
                                     </div>
 
                                     {{-- Target (editable) --}}
@@ -113,7 +132,7 @@
                                                 <svg class="bi" width="14" height="14" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#translate"/></svg>
                                             </button>
                                         </label>
-                                        <textarea class="form-control form-control-sm translation-input" rows="2" data-index="{{ $i }}">{{ $item['target'] }}</textarea>
+                                        <textarea class="form-control form-control-sm translation-input" data-index="{{ $i }}" style="overflow: hidden;">{{ $item['target'] }}</textarea>
                                     </div>
                                 </div>
                             </div>
@@ -136,7 +155,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </x-admin.container>
 @endsection
 
 @push('footer-scripts')
@@ -149,6 +168,16 @@ document.addEventListener('DOMContentLoaded', function () {
     const CSRF          = document.querySelector('meta[name="csrf-token"]')?.content;
 
     const ITEMS = @json($items);
+
+    // Auto-resize textareas to fit content
+    function autoResize(textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+    }
+    document.querySelectorAll('.translation-input').forEach(ta => {
+        autoResize(ta);
+        ta.addEventListener('input', () => autoResize(ta));
+    });
 
     // Select all
     document.getElementById('selectAll')?.addEventListener('change', function () {
@@ -199,7 +228,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (idx !== -1) {
                     const cbIdx = document.querySelectorAll('.item-checkbox:checked')[idx]?.dataset.index;
                     const textarea = document.querySelector(`.translation-input[data-index="${cbIdx}"]`);
-                    if (textarea) textarea.value = t.text;
+                    if (textarea) { textarea.value = t.text; autoResize(textarea); }
                 }
             });
 
@@ -234,7 +263,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 if (data.translations?.[0]) {
                     const textarea = document.querySelector(`.translation-input[data-index="${idx}"]`);
-                    if (textarea) textarea.value = data.translations[0].text;
+                    if (textarea) { textarea.value = data.translations[0].text; autoResize(textarea); }
                 }
             } catch (e) {
                 showToast('Fehler: ' + e.message, 'bg-danger');

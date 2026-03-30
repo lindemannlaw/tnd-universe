@@ -9,7 +9,7 @@
 @endsection
 
 @section('content')
-    <div class="container-fluid py-4">
+    <x-admin.container>
 
         {{-- Summary cards --}}
         <div class="row g-3 mb-4">
@@ -130,5 +130,5 @@
                 </tbody>
             </table>
         </div>
-    </div>
+    </x-admin.container>
 @endsection
