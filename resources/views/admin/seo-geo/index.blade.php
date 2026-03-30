@@ -13,62 +13,76 @@
 @endsection
 
 @section('content')
-    <x-admin.container>
-        <div class="row g-4">
+    @php
+    $statusConfig = [
+        'all'      => ['label' => 'Alle',        'badge' => 'bg-secondary',         'badgeText' => 'text-secondary', 'count' => $total],
+        'empty'    => ['label' => 'Leer',         'badge' => 'bg-danger',            'badgeText' => 'text-danger',    'count' => $empty],
+        'partial'  => ['label' => 'Teilweise',    'badge' => 'bg-warning text-dark', 'badgeText' => 'text-warning',   'count' => $partial],
+        'complete' => ['label' => 'Vollständig',  'badge' => 'bg-success',           'badgeText' => 'text-success',   'count' => $complete],
+    ];
+    @endphp
 
-            {{-- Sidebar nav --}}
+    <x-admin.container>
+        <div class="row g-4 align-items-start">
+
+            {{-- ── Sidebar ───────────────────────────────────────────────────── --}}
             <div class="col-md-3 col-xl-2">
-                @include('admin.partials.content-nav', [
-                    'dashboard'   => 'seo-geo',
-                    'typeFilter'  => $typeFilter,
-                    'idFilter'    => $idFilter,
-                    'navPages'    => $navPages,
-                    'navSections' => $navSections,
-                    'extraParams' => ['status' => $statusFilter],
-                ])
+                <div style="position:sticky; top:64px; max-height:calc(100vh - 80px); overflow-y:auto; padding-right:2px;">
+
+                    {{-- Status --}}
+                    <div class="border rounded mb-2">
+                        <div class="d-flex align-items-center justify-content-between px-3 py-2 user-select-none sidebar-section-toggle"
+                             style="cursor:pointer; background:var(--bs-light); border-radius:inherit;"
+                             data-bs-toggle="collapse" data-bs-target="#sidebarStatus" aria-expanded="true">
+                            <span class="text-uppercase fw-semibold text-muted" style="font-size:.7rem;letter-spacing:.05em;">Status</span>
+                            <svg class="bi sidebar-chevron" width="11" height="11" fill="currentColor" style="transition:transform .2s;flex-shrink:0;"><use xlink:href="/img/icons/bootstrap-icons.svg#chevron-up"/></svg>
+                        </div>
+                        <div class="collapse show" id="sidebarStatus">
+                            <div class="d-flex flex-column px-2 py-2" style="gap:2px;">
+                                @foreach($statusConfig as $key => $cfg)
+                                    @php $active = $statusFilter === $key; @endphp
+                                    <a href="{{ route('admin.seo-geo.index', array_merge(request()->only(['type', 'id']), $key === 'all' ? [] : ['status' => $key])) }}"
+                                       class="d-flex align-items-center gap-2 px-2 py-1 rounded text-decoration-none small {{ $active ? 'fw-semibold' : 'text-body' }}"
+                                       style="{{ $active ? 'background:rgba(0,0,0,.06);' : '' }}">
+                                        <svg class="bi flex-shrink-0 {{ $active ? ($cfg['badgeText'] ?? 'text-body') : 'invisible' }}"
+                                             width="13" height="13" fill="currentColor">
+                                            <use xlink:href="/img/icons/bootstrap-icons.svg#check2"/>
+                                        </svg>
+                                        <span class="flex-grow-1">{{ $cfg['label'] }}</span>
+                                        <span class="badge {{ $active ? $cfg['badge'] : 'bg-secondary bg-opacity-50 text-body' }} ms-auto"
+                                              style="font-size:.7em;">{{ $cfg['count'] }}</span>
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Inhalt --}}
+                    <div class="border rounded mb-2">
+                        <div class="d-flex align-items-center justify-content-between px-3 py-2 user-select-none sidebar-section-toggle"
+                             style="cursor:pointer; background:var(--bs-light); border-radius:inherit;"
+                             data-bs-toggle="collapse" data-bs-target="#sidebarContent" aria-expanded="true">
+                            <span class="text-uppercase fw-semibold text-muted" style="font-size:.7rem;letter-spacing:.05em;">Inhalt</span>
+                            <svg class="bi sidebar-chevron" width="11" height="11" fill="currentColor" style="transition:transform .2s;flex-shrink:0;"><use xlink:href="/img/icons/bootstrap-icons.svg#chevron-up"/></svg>
+                        </div>
+                        <div class="collapse show" id="sidebarContent">
+                            @include('admin.partials.content-nav', [
+                                'dashboard'   => 'seo-geo',
+                                'typeFilter'  => $typeFilter,
+                                'idFilter'    => $idFilter,
+                                'navPages'    => $navPages,
+                                'navSections' => $navSections,
+                                'extraParams' => ['status' => $statusFilter],
+                                'inner'       => true,
+                            ])
+                        </div>
+                    </div>
+
+                </div>
             </div>
 
-            {{-- Main content --}}
+            {{-- ── Main content ───────────────────────────────────────────────── --}}
             <div class="col-md-9 col-xl-10">
-
-                {{-- Status filter --}}
-                <div class="d-flex gap-2 mb-4 flex-wrap align-items-center">
-                    <div class="btn-group btn-group-sm">
-                        <a href="{{ route('admin.seo-geo.index', array_merge(request()->only(['type', 'id']), [])) }}"
-                           class="btn {{ $statusFilter === 'all' ? 'btn-primary' : 'btn-outline-secondary' }}">
-                            Alle <span class="badge bg-secondary ms-1">{{ $total }}</span>
-                        </a>
-                        <a href="{{ route('admin.seo-geo.index', array_merge(request()->only(['type', 'id']), ['status' => 'empty'])) }}"
-                           class="btn {{ $statusFilter === 'empty' ? 'btn-danger' : 'btn-outline-secondary' }}">
-                            Leer
-                            @if($empty === 0)
-                                <span class="ms-1 text-danger" style="font-size:.75em; font-weight:600;">0</span>
-                            @else
-                                <span class="badge bg-danger ms-1">{{ $empty }}</span>
-                            @endif
-                        </a>
-                        <a href="{{ route('admin.seo-geo.index', array_merge(request()->only(['type', 'id']), ['status' => 'partial'])) }}"
-                           class="btn {{ $statusFilter === 'partial' ? 'btn-warning' : 'btn-outline-secondary' }}">
-                            Teilweise
-                            @if($partial === 0)
-                                <span class="ms-1 text-warning" style="font-size:.75em; font-weight:600;">0</span>
-                            @else
-                                <span class="badge bg-warning text-dark ms-1">{{ $partial }}</span>
-                            @endif
-                        </a>
-                        <a href="{{ route('admin.seo-geo.index', array_merge(request()->only(['type', 'id']), ['status' => 'complete'])) }}"
-                           class="btn {{ $statusFilter === 'complete' ? 'btn-success' : 'btn-outline-secondary' }}">
-                            Vollständig
-                            @if($complete === 0)
-                                <span class="ms-1 text-success" style="font-size:.75em; font-weight:600;">0</span>
-                            @else
-                                <span class="badge bg-success ms-1">{{ $complete }}</span>
-                            @endif
-                        </a>
-                    </div>
-                </div>
-
-                {{-- Table --}}
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
                         <thead>
@@ -114,8 +128,8 @@
                         </tbody>
                     </table>
                 </div>
-
             </div>{{-- /col --}}
+
         </div>{{-- /row --}}
     </x-admin.container>
 @endsection
@@ -165,6 +179,15 @@ document.addEventListener('DOMContentLoaded', function () {
     const CSRF         = document.querySelector('meta[name="csrf-token"]')?.content;
     const ALL_FIELDS   = ['seo_title', 'seo_description', 'seo_keywords', 'geo_text'];
 
+    // ── Sidebar collapse chevron rotation ─────────────────────────────────
+    document.querySelectorAll('.sidebar-section-toggle').forEach(toggle => {
+        const targetEl = document.querySelector(toggle.dataset.bsTarget);
+        const chevron  = toggle.querySelector('.sidebar-chevron');
+        if (!targetEl || !chevron) return;
+        targetEl.addEventListener('hide.bs.collapse', () => chevron.style.transform = 'rotate(180deg)');
+        targetEl.addEventListener('show.bs.collapse', () => chevron.style.transform = 'rotate(0deg)');
+    });
+
     const btn          = document.getElementById('btnBulkGenerate');
     const modal        = new bootstrap.Modal(document.getElementById('bulkGenerateModal'));
     const statusEl     = document.getElementById('bulkGenStatus');
@@ -178,7 +201,6 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        // Reset modal state
         statusEl.textContent      = 'Starte…';
         progressBar.style.width   = '0%';
         progressBar.className     = 'progress-bar progress-bar-striped progress-bar-animated bg-primary';
@@ -198,7 +220,6 @@ document.addEventListener('DOMContentLoaded', function () {
             itemStatusEl.textContent = 'Generiere EN via KI…';
 
             try {
-                // 1. Generate EN
                 const genRes = await fetch(GENERATE_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
@@ -207,7 +228,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 const genData = await genRes.json();
                 if (genData.error) throw new Error(genData.error);
 
-                // 2. Save each field with translate=true
                 for (let fi = 0; fi < ALL_FIELDS.length; fi++) {
                     const field = ALL_FIELDS[fi];
                     const value = genData[field];
@@ -232,7 +252,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
-        // Done
         progressBar.style.width = '100%';
         progressBar.classList.remove('progress-bar-animated');
         if (errors > 0) {
