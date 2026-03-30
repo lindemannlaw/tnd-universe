@@ -127,6 +127,10 @@ section:has(.target-anchor-section) {
         margin-top: 0.5em;
     }
 
+    li + li {
+        margin-top: 0.3em;
+    }
+
     h1,
     .h1,
     h2,
