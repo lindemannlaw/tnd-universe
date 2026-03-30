@@ -135,10 +135,23 @@ class SeoGeoController extends Controller
         $meta = $this->registry->resolve($request->type);
         $locale = $request->locale;
 
+        $translatables = method_exists($model, 'getTranslatableAttributes')
+            ? $model->getTranslatableAttributes()
+            : (property_exists($model, 'translatable') ? $model->translatable : []);
+
+        $getT = function (string $attr) use ($model, $locale): string {
+            try {
+                return $model->getTranslation($attr, $locale, false) ?: '';
+            } catch (\Throwable) {
+                return '';
+            }
+        };
+
         $context = [
-            'title'             => $model->getTranslation($meta['titleField'], $locale, false) ?: $model->getTranslation($meta['titleField'], 'en', false),
-            'short_description' => method_exists($model, 'getTranslation') ? ($model->getTranslation('short_description', $locale, false) ?: '') : '',
-            'location'          => method_exists($model, 'getTranslation') ? ($model->getTranslation('location', $locale, false) ?: '') : '',
+            'title'             => $model->getTranslation($meta['titleField'], $locale, false)
+                                   ?: $model->getTranslation($meta['titleField'], 'en', false),
+            'short_description' => in_array('short_description', $translatables) ? $getT('short_description') : '',
+            'location'          => in_array('location', $translatables)          ? $getT('location')          : '',
         ];
 
         // Add property details for projects
