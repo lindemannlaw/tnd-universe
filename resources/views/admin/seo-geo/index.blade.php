@@ -31,19 +31,19 @@
             <div class="btn-group btn-group-sm">
                 <a href="{{ route('admin.seo-geo.index', ['type' => $typeFilter]) }}"
                    class="btn {{ $statusFilter === 'all' ? 'btn-primary' : 'btn-outline-secondary' }}">
-                    Alle <span class="badge bg-light text-dark ms-1">{{ $total }}</span>
+                    Alle <span class="badge bg-secondary ms-1">{{ $total }}</span>
                 </a>
                 <a href="{{ route('admin.seo-geo.index', ['type' => $typeFilter, 'status' => 'empty']) }}"
                    class="btn {{ $statusFilter === 'empty' ? 'btn-danger' : 'btn-outline-secondary' }}">
-                    Leer <span class="badge bg-light text-dark ms-1">{{ $empty }}</span>
+                    Leer <span class="badge bg-danger ms-1">{{ $empty }}</span>
                 </a>
                 <a href="{{ route('admin.seo-geo.index', ['type' => $typeFilter, 'status' => 'partial']) }}"
                    class="btn {{ $statusFilter === 'partial' ? 'btn-warning' : 'btn-outline-secondary' }}">
-                    Teilweise <span class="badge bg-light text-dark ms-1">{{ $partial }}</span>
+                    Teilweise <span class="badge bg-warning text-dark ms-1">{{ $partial }}</span>
                 </a>
                 <a href="{{ route('admin.seo-geo.index', ['type' => $typeFilter, 'status' => 'complete']) }}"
                    class="btn {{ $statusFilter === 'complete' ? 'btn-success' : 'btn-outline-secondary' }}">
-                    Vollständig <span class="badge bg-light text-dark ms-1">{{ $complete }}</span>
+                    Vollständig <span class="badge bg-success ms-1">{{ $complete }}</span>
                 </a>
             </div>
         </form>
