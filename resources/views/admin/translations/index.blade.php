@@ -171,7 +171,9 @@
             </div>
         </div>
     </x-admin.container>
+@endsection
 
+@push('modals')
     {{-- Language publish confirm modal --}}
     <div class="modal fade" id="langPublishModal" tabindex="-1" aria-labelledby="langPublishModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -190,7 +192,7 @@
             </div>
         </div>
     </div>
-@endsection
+@endpush
 
 @push('footer-scripts')
 <script>
