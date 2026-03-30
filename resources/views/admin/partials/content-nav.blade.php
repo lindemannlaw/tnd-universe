@@ -31,12 +31,21 @@ $show   = fn (string $type) => $dashboard === 'translations' || $hasSeo($type);
 $cls = fn (bool $active): string => 'list-group-item list-group-item-action border-0 py-1 small'
     . ($active ? ' active' : '')
     . ' ps-4';
+
+$sectionIdx = 0;
+$hdrClass = 'list-group-item border-0 py-1 px-3 text-uppercase fw-semibold text-muted';
+$hdrStyle = function () use (&$sectionIdx): string {
+    $style = 'font-size:.7rem; letter-spacing:.05em; background: var(--bs-light);'
+           . ($sectionIdx > 0 ? ' border-top: 1px solid rgba(0,0,0,.125);' : '');
+    $sectionIdx++;
+    return $style;
+};
 @endphp
 
 <div class="list-group list-group-flush border rounded" style="font-size: .85rem;">
 
     {{-- About --}}
-    <div class="list-group-item py-1 px-3 text-uppercase fw-semibold text-muted" style="font-size:.7rem; letter-spacing:.05em; background: var(--bs-light);">
+    <div class="{{ $hdrClass }}" style="{{ $hdrStyle() }}">
         About
     </div>
     @if(isset($navPages['about']))
@@ -53,7 +62,7 @@ $cls = fn (bool $active): string => 'list-group-item list-group-item-action bord
     @endif
 
     {{-- Services --}}
-    <div class="list-group-item py-1 px-3 text-uppercase fw-semibold text-muted" style="font-size:.7rem; letter-spacing:.05em; background: var(--bs-light);">
+    <div class="{{ $hdrClass }}" style="{{ $hdrStyle() }}">
         Services
     </div>
     @if(isset($navPages['services']))
@@ -72,7 +81,7 @@ $cls = fn (bool $active): string => 'list-group-item list-group-item-action bord
     </a>
 
     {{-- Portfolio --}}
-    <div class="list-group-item py-1 px-3 text-uppercase fw-semibold text-muted" style="font-size:.7rem; letter-spacing:.05em; background: var(--bs-light);">
+    <div class="{{ $hdrClass }}" style="{{ $hdrStyle() }}">
         Portfolio
     </div>
     @if(isset($navPages['portfolio']))
@@ -87,7 +96,7 @@ $cls = fn (bool $active): string => 'list-group-item list-group-item-action bord
     </a>
 
     {{-- News --}}
-    <div class="list-group-item py-1 px-3 text-uppercase fw-semibold text-muted" style="font-size:.7rem; letter-spacing:.05em; background: var(--bs-light);">
+    <div class="{{ $hdrClass }}" style="{{ $hdrStyle() }}">
         News
     </div>
     @if(isset($navPages['news']))
@@ -107,7 +116,7 @@ $cls = fn (bool $active): string => 'list-group-item list-group-item-action bord
 
     {{-- Contacts --}}
     @if(isset($navPages['contacts']))
-        <div class="list-group-item py-1 px-3 text-uppercase fw-semibold text-muted" style="font-size:.7rem; letter-spacing:.05em; background: var(--bs-light);">
+        <div class="{{ $hdrClass }}" style="{{ $hdrStyle() }}">
             Contacts
         </div>
         <a href="{{ $link('page', $navPages['contacts']) }}"
@@ -118,7 +127,7 @@ $cls = fn (bool $active): string => 'list-group-item list-group-item-action bord
 
     {{-- Sections (Translations only) --}}
     @if($show('site_section'))
-        <div class="list-group-item py-1 px-3 text-uppercase fw-semibold text-muted" style="font-size:.7rem; letter-spacing:.05em; background: var(--bs-light);">
+        <div class="{{ $hdrClass }}" style="{{ $hdrStyle() }}">
             Sections
         </div>
         @if(isset($navSections['who-we-are']))
@@ -137,7 +146,7 @@ $cls = fn (bool $active): string => 'list-group-item list-group-item-action bord
 
     {{-- Imprint --}}
     @if(isset($navPages['imprint']))
-        <div class="list-group-item py-1 px-3 text-uppercase fw-semibold text-muted" style="font-size:.7rem; letter-spacing:.05em; background: var(--bs-light);">
+        <div class="{{ $hdrClass }}" style="{{ $hdrStyle() }}">
             Imprint
         </div>
         <a href="{{ $link('page', $navPages['imprint']) }}"
@@ -148,7 +157,7 @@ $cls = fn (bool $active): string => 'list-group-item list-group-item-action bord
 
     {{-- Privacy notice --}}
     @if(isset($navPages['privacy-notice']))
-        <div class="list-group-item py-1 px-3 text-uppercase fw-semibold text-muted" style="font-size:.7rem; letter-spacing:.05em; background: var(--bs-light);">
+        <div class="{{ $hdrClass }}" style="{{ $hdrStyle() }}">
             Privacy notice
         </div>
         <a href="{{ $link('page', $navPages['privacy-notice']) }}"
@@ -159,7 +168,7 @@ $cls = fn (bool $active): string => 'list-group-item list-group-item-action bord
 
     {{-- Terms of use --}}
     @if(isset($navPages['terms-of-use']))
-        <div class="list-group-item py-1 px-3 text-uppercase fw-semibold text-muted" style="font-size:.7rem; letter-spacing:.05em; background: var(--bs-light);">
+        <div class="{{ $hdrClass }}" style="{{ $hdrStyle() }}">
             Terms of use
         </div>
         <a href="{{ $link('page', $navPages['terms-of-use']) }}"
