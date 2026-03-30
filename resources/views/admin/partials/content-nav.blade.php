@@ -28,8 +28,9 @@ $isActive = function (string $type, ?int $id = null) use ($typeFilter, $idFilter
 $hasSeo = fn (string $type) => !in_array($type, ['leader', 'site_section'], true);
 $show   = fn (string $type) => $dashboard === 'translations' || $hasSeo($type);
 
-$cls = fn (bool $active): string => 'list-group-item list-group-item-action py-1 px-3 small'
-    . ($active ? ' active' : '');
+$cls = fn (bool $active): string => 'list-group-item list-group-item-action border-0 py-1 small'
+    . ($active ? ' active' : '')
+    . ' ps-4';
 @endphp
 
 <div class="list-group list-group-flush border rounded" style="font-size: .85rem;">
