@@ -155,9 +155,9 @@
                                     <span class="small text-muted">&middot; {{ $item['fieldLabel'] }}</span>
                                 </div>
 
-                                <div class="row g-3">
+                                <div class="row g-2 translation-row">
                                     {{-- Source --}}
-                                    <div class="col-md-6">
+                                    <div class="col-source" data-index="{{ $i }}">
                                         <label class="form-label small text-muted">
                                             <span class="badge bg-light text-dark border">{{ strtoupper($sourceLang) }}</span>
                                             Quelltext
@@ -167,18 +167,7 @@
                                         </label>
                                         <textarea class="form-control form-control-sm source-input" data-index="{{ $i }}" style="overflow:hidden; background: var(--bs-light);">{{ $item['source'] }}</textarea>
                                     </div>
-
-                                    {{-- Target (editable) --}}
-                                    <div class="col-md-6">
-                                        <label class="form-label small text-muted">
-                                            <span class="badge bg-light text-dark border">{{ strtoupper($targetLang) }}</span>
-                                            Vorschlag (editierbar)
-                                            <button type="button" class="btn btn-sm btn-link p-0 ms-2 btn-translate-single" data-index="{{ $i }}" title="Mit DeepL übersetzen">
-                                                <svg class="bi" width="14" height="14" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#translate"/></svg>
-                                            </button>
-                                        </label>
-                                        <textarea class="form-control form-control-sm translation-input" data-index="{{ $i }}" style="overflow: hidden;">{{ $item['target'] }}</textarea>
-                                    </div>
+                                    {{-- Translation columns inserted dynamically by JS --}}
                                 </div>
                             </div>
                         </div>
@@ -228,31 +217,118 @@
 @push('footer-scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const TRANSLATE_URL = @json(route('admin.translations.translate'));
-    const APPLY_URL     = @json(route('admin.translations.apply'));
-    const SOURCE_LANG   = @json($sourceLang);
-    const TARGET_LANG   = @json($targetLang);
-    const CSRF          = document.querySelector('meta[name="csrf-token"]')?.content;
+    const TRANSLATE_URL  = @json(route('admin.translations.translate'));
+    const APPLY_URL      = @json(route('admin.translations.apply'));
+    const SOURCE_LANG    = @json($sourceLang);
+    const TARGET_LANG    = @json($targetLang);
+    const CSRF           = document.querySelector('meta[name="csrf-token"]')?.content;
+    const LOCALE_FLAGS   = @json($localeFlags);
+    const ITEMS          = @json($items);
 
-    const ITEMS = @json($items);
-
-    // Auto-resize textareas to fit content
-    function autoResize(textarea) {
-        textarea.style.height = 'auto';
-        textarea.style.height = textarea.scrollHeight + 'px';
+    // ── Helpers ───────────────────────────────────────────────────────────
+    function autoResize(ta) {
+        ta.style.height = 'auto';
+        ta.style.height = ta.scrollHeight + 'px';
     }
-    document.querySelectorAll('.translation-input, .source-input').forEach(ta => {
-        autoResize(ta);
-        ta.addEventListener('input', () => autoResize(ta));
-    });
+    function escHtml(s) {
+        return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+    function showToast(msg, bgClass) {
+        const toast = document.getElementById('transToast');
+        const msgEl = document.getElementById('transToastMsg');
+        msgEl.textContent = msg;
+        toast.className = 'toast align-items-center text-white border-0 ' + bgClass;
+        new bootstrap.Toast(toast, { delay: 3500 }).show();
+    }
+    function getCheckedItems() {
+        const items = [];
+        document.querySelectorAll('.item-checkbox:checked').forEach(cb => {
+            const idx = cb.dataset.index;
+            const item = ITEMS[idx];
+            if (item) items.push({ type: item.type, id: item.id, field: item.field });
+        });
+        return items;
+    }
 
-    // Source text: show save button on change, save via apply endpoint
+    // ── Multi-language column rendering ───────────────────────────────────
+    function getCheckedLangs() {
+        return Array.from(document.querySelectorAll('.lang-translate-check:checked'))
+            .map(cb => cb.dataset.locale);
+    }
+
+    function colClass(total) {
+        if (total >= 5) return 'col-md-2';
+        if (total === 4) return 'col-md-3';
+        if (total === 3) return 'col-md-4';
+        return 'col-md-6';
+    }
+
+    function buildTranslationCol(idx, lang, val) {
+        const flag = LOCALE_FLAGS[lang] || '';
+        return `<label class="form-label small text-muted">
+            <span class="badge bg-light text-dark border">${flag} ${lang.toUpperCase()}</span>
+            Vorschlag (editierbar)
+            <button type="button" class="btn btn-sm btn-link p-0 ms-2 btn-translate-single"
+                    data-index="${idx}" data-lang="${lang}" title="Mit DeepL übersetzen">
+                <svg class="bi" width="14" height="14" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#translate"></use></svg>
+            </button>
+        </label>
+        <textarea class="form-control form-control-sm translation-input"
+                  data-index="${idx}" data-lang="${lang}"
+                  style="overflow:hidden;">${escHtml(val)}</textarea>`;
+    }
+
+    function updateColumns() {
+        const langs = getCheckedLangs();
+        const total = 1 + langs.length; // 1 for source
+        const cc = colClass(total);
+
+        document.querySelectorAll('.translation-row').forEach(row => {
+            const srcCol = row.querySelector('.col-source');
+            const idx = srcCol?.dataset.index;
+            const item = ITEMS[idx];
+            if (!srcCol || !item) return;
+
+            // Preserve any edited values
+            const currentVals = {};
+            row.querySelectorAll('.translation-input').forEach(ta => {
+                currentVals[ta.dataset.lang] = ta.value;
+            });
+
+            // Update source column width
+            srcCol.className = 'col-source ' + cc;
+
+            // Remove old translation cols
+            row.querySelectorAll('.translation-col').forEach(el => el.remove());
+
+            // Add one column per lang
+            langs.forEach(lang => {
+                const val = currentVals[lang] ?? item.translations?.[lang] ?? '';
+                const div = document.createElement('div');
+                div.className = 'translation-col ' + cc;
+                div.dataset.lang = lang;
+                div.innerHTML = buildTranslationCol(idx, lang, val);
+                row.appendChild(div);
+
+                const ta = div.querySelector('textarea');
+                if (ta) { autoResize(ta); ta.addEventListener('input', () => autoResize(ta)); }
+            });
+        });
+
+        // Auto-resize source textareas
+        document.querySelectorAll('.source-input').forEach(ta => autoResize(ta));
+    }
+
+    // Initial render
+    updateColumns();
+
+    // ── Source textarea auto-resize + save button ────────────────────────
     document.querySelectorAll('.source-input').forEach(ta => {
         const idx = ta.dataset.index;
         const saveBtn = document.querySelector(`.btn-save-source[data-index="${idx}"]`);
         const originalValue = ta.value;
-
         ta.addEventListener('input', () => {
+            autoResize(ta);
             if (saveBtn) saveBtn.style.display = ta.value !== originalValue ? '' : 'none';
         });
     });
@@ -267,7 +343,6 @@ document.addEventListener('DOMContentLoaded', function () {
             btn.disabled = true;
             const origHtml = btn.innerHTML;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-
             try {
                 const res = await fetch(APPLY_URL, {
                     method: 'POST',
@@ -290,18 +365,12 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Select all
+    // ── Item checkboxes ───────────────────────────────────────────────────
     document.getElementById('selectAll')?.addEventListener('change', function () {
-        document.querySelectorAll('.item-checkbox').forEach(cb => {
-            cb.checked = this.checked;
-        });
+        document.querySelectorAll('.item-checkbox').forEach(cb => cb.checked = this.checked);
         updateSelectedCount();
     });
-
-    // Individual checkboxes
-    document.querySelectorAll('.item-checkbox').forEach(cb => {
-        cb.addEventListener('change', updateSelectedCount);
-    });
+    document.querySelectorAll('.item-checkbox').forEach(cb => cb.addEventListener('change', updateSelectedCount));
 
     function updateSelectedCount() {
         const count = document.querySelectorAll('.item-checkbox:checked').length;
@@ -310,20 +379,26 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('btnApplyAll').disabled = count === 0;
     }
 
-    // Language checkbox multi-select: Alle / Keine
+    // ── Language multi-select ─────────────────────────────────────────────
     document.getElementById('selectAllLangs')?.addEventListener('click', (e) => {
         e.preventDefault();
         document.querySelectorAll('.lang-translate-check').forEach(cb => cb.checked = true);
         updateExtraLangsIndicator();
+        updateColumns();
     });
     document.getElementById('deselectAllLangs')?.addEventListener('click', (e) => {
         e.preventDefault();
         document.querySelectorAll('.lang-translate-check').forEach(cb => cb.checked = false);
         updateExtraLangsIndicator();
+        updateColumns();
     });
     document.querySelectorAll('.lang-translate-check').forEach(cb => {
-        cb.addEventListener('change', updateExtraLangsIndicator);
+        cb.addEventListener('change', () => {
+            updateExtraLangsIndicator();
+            updateColumns();
+        });
     });
+
     function updateExtraLangsIndicator() {
         const extra = Array.from(document.querySelectorAll('.lang-translate-check:checked'))
             .filter(cb => cb.dataset.locale !== TARGET_LANG);
@@ -336,28 +411,20 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Translate selected — supports multiple target languages
+    // ── Translate selected (multi-lang) ───────────────────────────────────
     document.getElementById('btnTranslateSelected')?.addEventListener('click', async () => {
         const checked = getCheckedItems();
         if (!checked.length) return;
-
-        const checkedLangs = Array.from(document.querySelectorAll('.lang-translate-check:checked'))
-            .map(cb => cb.dataset.locale);
-
-        if (!checkedLangs.length) {
-            showToast('Bitte mindestens eine Sprache auswählen.', 'bg-warning');
-            return;
-        }
+        const langs = getCheckedLangs();
+        if (!langs.length) { showToast('Bitte mindestens eine Sprache auswählen.', 'bg-warning'); return; }
 
         const btn = document.getElementById('btnTranslateSelected');
         btn.disabled = true;
-        const total = checkedLangs.length;
-        let step = 0;
 
         try {
-            for (const lang of checkedLangs) {
-                step++;
-                btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span> ${lang.toUpperCase()} (${step}/${total})…`;
+            for (let i = 0; i < langs.length; i++) {
+                const lang = langs[i];
+                btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span> ${lang.toUpperCase()} (${i+1}/${langs.length})…`;
 
                 const res = await fetch(TRANSLATE_URL, {
                     method: 'POST',
@@ -367,38 +434,22 @@ document.addEventListener('DOMContentLoaded', function () {
                 const data = await res.json();
                 if (data.error) throw new Error(data.error);
 
-                if (lang === TARGET_LANG) {
-                    // Fill textareas for the currently displayed language
-                    data.translations?.forEach(t => {
-                        const idx = checked.findIndex(c => c.type === t.type && c.id === t.id && c.field === t.field);
-                        if (idx !== -1) {
-                            const cbIdx = document.querySelectorAll('.item-checkbox:checked')[idx]?.dataset.index;
-                            const textarea = document.querySelector(`.translation-input[data-index="${cbIdx}"]`);
-                            if (textarea) { textarea.value = t.text; autoResize(textarea); }
+                // Fill textareas for this lang
+                data.translations?.forEach(t => {
+                    const ci = checked.findIndex(c => c.type===t.type && c.id===t.id && c.field===t.field);
+                    if (ci !== -1) {
+                        const cbIdx = document.querySelectorAll('.item-checkbox:checked')[ci]?.dataset.index;
+                        const ta = document.querySelector(`.translation-input[data-index="${cbIdx}"][data-lang="${lang}"]`);
+                        if (ta) { ta.value = t.text; autoResize(ta); }
+                        // Also update ITEMS cache
+                        if (cbIdx !== undefined && ITEMS[cbIdx]) {
+                            if (!ITEMS[cbIdx].translations) ITEMS[cbIdx].translations = {};
+                            ITEMS[cbIdx].translations[lang] = t.text;
                         }
-                    });
-                } else {
-                    // Auto-apply for other languages immediately
-                    if (data.translations?.length) {
-                        const applyItems = data.translations.map(t => ({
-                            type: t.type, id: t.id, field: t.field, text: t.text,
-                        }));
-                        const applyRes = await fetch(APPLY_URL, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
-                            body: JSON.stringify({ items: applyItems, target_lang: lang }),
-                        });
-                        const applyData = await applyRes.json();
-                        if (applyData.error) throw new Error(applyData.error);
                     }
-                }
+                });
             }
-
-            const extraLangs = checkedLangs.filter(l => l !== TARGET_LANG);
-            const msg = extraLangs.length > 0
-                ? `Übersetzt nach ${checkedLangs.map(l => l.toUpperCase()).join(', ')} — ${extraLangs.length} Sprache(n) automatisch gespeichert`
-                : `${checked.length} Felder übersetzt`;
-            showToast(msg, 'bg-success');
+            showToast(`Übersetzt nach: ${langs.map(l=>l.toUpperCase()).join(', ')}`, 'bg-success');
         } catch (e) {
             showToast('Fehler: ' + e.message, 'bg-danger');
         } finally {
@@ -408,74 +459,74 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Single translate
-    document.querySelectorAll('.btn-translate-single').forEach(btn => {
-        btn.addEventListener('click', async () => {
-            const idx = btn.dataset.index;
-            const item = ITEMS[idx];
-            if (!item) return;
+    // ── Single translate (event delegation — columns are dynamic) ─────────
+    document.addEventListener('click', async (e) => {
+        const btn = e.target.closest('.btn-translate-single');
+        if (!btn) return;
 
-            btn.disabled = true;
-            try {
-                const res = await fetch(TRANSLATE_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
-                    body: JSON.stringify({
-                        items: [{ type: item.type, id: item.id, field: item.field }],
-                        source_lang: SOURCE_LANG,
-                        target_lang: TARGET_LANG,
-                    }),
-                });
-                const data = await res.json();
+        const idx = btn.dataset.index;
+        const lang = btn.dataset.lang || TARGET_LANG;
+        const item = ITEMS[idx];
+        if (!item) return;
 
-                if (data.translations?.[0]) {
-                    const textarea = document.querySelector(`.translation-input[data-index="${idx}"]`);
-                    if (textarea) { textarea.value = data.translations[0].text; autoResize(textarea); }
-                }
-            } catch (e) {
-                showToast('Fehler: ' + e.message, 'bg-danger');
-            } finally {
-                btn.disabled = false;
+        btn.disabled = true;
+        try {
+            const res = await fetch(TRANSLATE_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
+                body: JSON.stringify({
+                    items: [{ type: item.type, id: item.id, field: item.field }],
+                    source_lang: SOURCE_LANG,
+                    target_lang: lang,
+                }),
+            });
+            const data = await res.json();
+            if (data.translations?.[0]) {
+                const ta = document.querySelector(`.translation-input[data-index="${idx}"][data-lang="${lang}"]`);
+                if (ta) { ta.value = data.translations[0].text; autoResize(ta); }
+                if (!item.translations) item.translations = {};
+                item.translations[lang] = data.translations[0].text;
             }
-        });
+        } catch (e) {
+            showToast('Fehler: ' + e.message, 'bg-danger');
+        } finally {
+            btn.disabled = false;
+        }
     });
 
-    // Apply
+    // ── Apply all checked (per lang) ──────────────────────────────────────
     document.getElementById('btnApplyAll')?.addEventListener('click', async () => {
-        const checked = getCheckedItems();
-        if (!checked.length) return;
-
         const btn = document.getElementById('btnApplyAll');
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Speichere...';
 
-        // Collect edited texts
-        const applyItems = [];
+        // Group items by language
+        const byLang = {};
         document.querySelectorAll('.item-checkbox:checked').forEach(cb => {
             const idx = cb.dataset.index;
             const item = ITEMS[idx];
-            const textarea = document.querySelector(`.translation-input[data-index="${idx}"]`);
-            if (item && textarea) {
-                applyItems.push({
-                    type: item.type,
-                    id: item.id,
-                    field: item.field,
-                    text: textarea.value,
-                });
-            }
+            if (!item) return;
+            document.querySelectorAll(`.translation-input[data-index="${idx}"]`).forEach(ta => {
+                const lang = ta.dataset.lang || TARGET_LANG;
+                if (!byLang[lang]) byLang[lang] = [];
+                byLang[lang].push({ type: item.type, id: item.id, field: item.field, text: ta.value });
+            });
         });
 
         try {
-            const res = await fetch(APPLY_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
-                body: JSON.stringify({ items: applyItems, target_lang: TARGET_LANG }),
-            });
-            const data = await res.json();
-
-            if (data.error) throw new Error(data.error);
-
-            showToast(`${applyItems.length} Übersetzungen gespeichert!`, 'bg-success');
+            let total = 0;
+            for (const [lang, applyItems] of Object.entries(byLang)) {
+                const res = await fetch(APPLY_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
+                    body: JSON.stringify({ items: applyItems, target_lang: lang }),
+                });
+                const data = await res.json();
+                if (data.error) throw new Error(data.error);
+                total += applyItems.length;
+            }
+            const langs = Object.keys(byLang).map(l => l.toUpperCase()).join(', ');
+            showToast(`${total} Übersetzungen gespeichert (${langs})!`, 'bg-success');
             setTimeout(() => location.reload(), 1500);
         } catch (e) {
             showToast('Fehler: ' + e.message, 'bg-danger');
@@ -485,30 +536,12 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    function getCheckedItems() {
-        const items = [];
-        document.querySelectorAll('.item-checkbox:checked').forEach(cb => {
-            const idx = cb.dataset.index;
-            const item = ITEMS[idx];
-            if (item) items.push({ type: item.type, id: item.id, field: item.field });
-        });
-        return items;
-    }
-
-    function showToast(msg, bgClass) {
-        const toast = document.getElementById('transToast');
-        const msgEl = document.getElementById('transToastMsg');
-        msgEl.textContent = msg;
-        toast.className = 'toast align-items-center text-white border-0 ' + bgClass;
-        new bootstrap.Toast(toast, { delay: 3000 }).show();
-    }
-
-    // Language publish/draft toggles
-    const TOGGLE_BASE = @json(route('admin.language-settings.toggle', ['locale' => '__LOCALE__']));
-    const langModal = new bootstrap.Modal(document.getElementById('langPublishModal'));
-    const langModalText = document.getElementById('langPublishModalText');
-    const langModalConfirm = document.getElementById('langPublishModalConfirm');
-    let pendingToggleBtn = null;
+    // ── Language publish/draft toggles ────────────────────────────────────
+    const TOGGLE_BASE     = @json(route('admin.language-settings.toggle', ['locale' => '__LOCALE__']));
+    const langModal       = new bootstrap.Modal(document.getElementById('langPublishModal'));
+    const langModalText   = document.getElementById('langPublishModalText');
+    const langModalConfirm= document.getElementById('langPublishModalConfirm');
+    let pendingToggleBtn  = null;
 
     document.querySelectorAll('.lang-publish-toggle').forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -521,11 +554,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 + (currentlyPublished
                     ? '<br><span class="small text-muted mt-1 d-block">Die Sprache wird im Frontend ausgeblendet.</span>'
                     : '<span class="small text-muted mt-1 d-block">Die Sprache erscheint sofort im Frontend.</span>');
-
-            // Update confirm button color based on action
             langModalConfirm.className = 'btn btn-sm ' + (currentlyPublished ? 'btn-danger' : 'btn-success');
             langModalConfirm.textContent = currentlyPublished ? 'Ja, auf Draft setzen' : 'Ja, live stellen';
-
             pendingToggleBtn = btn;
             langModal.show();
         });
@@ -553,13 +583,11 @@ document.addEventListener('DOMContentLoaded', function () {
             badge.className = 'badge ' + (isPublished ? 'bg-success' : 'bg-secondary');
             btn.title = isPublished ? 'Live – klicken für Draft' : 'Draft – klicken für Live';
 
-            // Update the dropdown button badge if it's the active language
             const dropBtnBadge = btn.closest('.dropdown')?.querySelector('.dropdown-toggle .badge');
             if (dropBtnBadge && locale === TARGET_LANG) {
                 dropBtnBadge.textContent = isPublished ? 'Live' : 'Draft';
                 dropBtnBadge.className = 'badge ms-1 ' + (isPublished ? 'bg-success' : 'bg-secondary');
             }
-
             showToast(`${locale.toUpperCase()} ist jetzt ${isPublished ? 'Live' : 'Draft'}`, isPublished ? 'bg-success' : 'bg-secondary');
         } catch (e) {
             showToast('Fehler: ' + e.message, 'bg-danger');
