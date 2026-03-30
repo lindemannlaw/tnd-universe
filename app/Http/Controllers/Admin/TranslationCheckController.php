@@ -93,18 +93,28 @@ class TranslationCheckController extends Controller
                             $subStatus = $this->fieldStatus($subSource, $subTarget);
                             if ($statusFilter !== 'all' && $statusFilter !== $subStatus) continue;
 
+                            // All locale values for multi-lang display
+                            $allSubTranslations = [];
+                            foreach ($locales as $tLocale) {
+                                if ($tLocale === $sourceLang) continue;
+                                $tArr = $record->getTranslation($field, $tLocale, false) ?? [];
+                                if (!is_array($tArr)) $tArr = [];
+                                $allSubTranslations[$tLocale] = (string) ($tArr[$subKey] ?? '');
+                            }
+
                             $items[] = [
-                                'type'        => $type,
-                                'typeLabel'   => $meta['labelDe'],
-                                'id'          => $record->id,
-                                'title'       => $title,
-                                'field'       => $field . '.' . $subKey,
-                                'fieldLabel'  => $subLabel,
-                                'source'      => (string) $subSource,
-                                'target'      => (string) $subTarget,
-                                'status'      => $subStatus,
-                                'statusLabel' => $this->statusLabel($subStatus),
-                                'statusClass' => $this->statusClass($subStatus),
+                                'type'         => $type,
+                                'typeLabel'    => $meta['labelDe'],
+                                'id'           => $record->id,
+                                'title'        => $title,
+                                'field'        => $field . '.' . $subKey,
+                                'fieldLabel'   => $subLabel,
+                                'source'       => (string) $subSource,
+                                'target'       => (string) $subTarget,
+                                'status'       => $subStatus,
+                                'statusLabel'  => $this->statusLabel($subStatus),
+                                'statusClass'  => $this->statusClass($subStatus),
+                                'translations' => $allSubTranslations,
                             ];
                         }
                         continue; // done with this field
@@ -127,6 +137,14 @@ class TranslationCheckController extends Controller
                         continue;
                     }
 
+                    // All locale values for multi-lang display
+                    $allTranslations = [];
+                    foreach ($locales as $tLocale) {
+                        if ($tLocale === $sourceLang) continue;
+                        $tVal = $record->getTranslation($field, $tLocale, false);
+                        $allTranslations[$tLocale] = is_array($tVal) ? json_encode($tVal, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) : (string) ($tVal ?? '');
+                    }
+
                     $items[] = [
                         'type'          => $type,
                         'typeLabel'     => $meta['labelDe'],
@@ -139,6 +157,7 @@ class TranslationCheckController extends Controller
                         'status'        => $status,
                         'statusLabel'   => $this->statusLabel($status),
                         'statusClass'   => $this->statusClass($status),
+                        'translations'  => $allTranslations,
                     ];
                 }
             }
