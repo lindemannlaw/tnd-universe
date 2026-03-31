@@ -90,33 +90,23 @@ class ProjectController extends Controller
         }
 
         if ($request->ajax()) {
-            $sourceLang  = config('app.fallback_locale', 'en');
-            $targetLangs = array_values(array_filter(
-                supported_languages_keys(),
-                fn($l) => $l !== $sourceLang
-            ));
-
             return response()->json([
                 'toast' => [
                     'type'    => 'success',
                     'message' => __('admin.success_create_data'),
                 ],
                 'html'          => $this->getViewProjects(),
-                'autoTranslate' => [
-                    'type'          => 'project',
-                    'id'            => $project->id,
-                    'translateUrl'  => route('admin.translations.translate'),
-                    'applyUrl'      => route('admin.translations.apply'),
-                    'sourceLang'    => $sourceLang,
-                    'targetLangs'   => $targetLangs,
-                    'contentFields' => [
+                'autoTranslate' => $this->buildAutoTranslatePayload(
+                    $project, 'project',
+                    [
                         'title', 'short_description', 'description', 'location',
                         'property_details.property_type',
                         'property_details.status',
                         'property_details.inquiry_button_text',
                     ],
-                    'seoFields' => ['seo_title', 'seo_description', 'seo_keywords', 'geo_text'],
-                ],
+                    true,
+                    'admin.portfolio.project.edit', [$project]
+                ),
             ]);
         }
 
@@ -265,18 +255,23 @@ class ProjectController extends Controller
         }
 
         if ($request->ajax()) {
+            $project->refresh();
+            $allContentFields = [
+                'title', 'short_description', 'description', 'location',
+                'property_details.property_type',
+                'property_details.status',
+                'property_details.inquiry_button_text',
+            ];
+            $payload = $this->buildAutoTranslateUpdatePayload(
+                $project, $oldTexts, 'project', $allContentFields, true,
+                'admin.portfolio.project.edit', [$project]
+            );
             return response()->json([
-                'toast' => [
-                    'type' => 'success',
-                    'message' => __('admin.success_update_data'),
-                ],
-                'html' => $this->getViewProjects(),
+                'toast' => ['type' => 'success', 'message' => __('admin.success_update_data')],
+                'html'  => $this->getViewProjects(),
+                'autoTranslate' => ($payload['changedFields'] || $payload['changedSeoFields']) ? $payload : null,
             ]);
         }
-
-        // return redirect()
-        //     ->back()
-        //     ->with('success', __('admin.success_update_data'));
 
         abort(404);
     }
@@ -978,7 +973,7 @@ class ProjectController extends Controller
         $locale = 'en';
 
         // Simple translatable fields
-        foreach (['title', 'short_description', 'location', 'seo_title', 'seo_description', 'seo_keywords'] as $field) {
+        foreach (['title', 'short_description', 'location', 'seo_title', 'seo_description', 'seo_keywords', 'geo_text'] as $field) {
             $texts[$field] = $this->stripForCompare($project->getTranslation($field, $locale) ?? '');
         }
 

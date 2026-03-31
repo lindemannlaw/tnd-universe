@@ -18,16 +18,20 @@ export function ajaxWithUpdateFromView() {
         ajax(event, {
             form: form,
             successHandler: (response) => {
-                if (!form.hasAttribute('data-keep-modal-open')) {
-                    hideAllModals();
-                    updateSection.innerHTML = response.data?.html;
-
-                    // Fire auto-translate overlay when the server signals a new record
+                // Fire auto-translate overlay whenever the server signals it
+                // (both store and update, with or without modal close)
+                const fireAutoTranslate = () => {
                     if (response.data?.autoTranslate) {
                         document.dispatchEvent(new CustomEvent('auto-translate-start', {
                             detail: response.data.autoTranslate,
                         }));
                     }
+                };
+
+                if (!form.hasAttribute('data-keep-modal-open')) {
+                    hideAllModals();
+                    updateSection.innerHTML = response.data?.html;
+                    fireAutoTranslate();
                     return;
                 }
 
@@ -71,6 +75,9 @@ export function ajaxWithUpdateFromView() {
                                 console.log('[debug-fb4a59 POST-RELOAD DOM] col values after reloadModal+syncLibs:', JSON.stringify(domColEntries));
                                 // #endregion
                             }
+
+                            // Fire autoTranslate after modal refreshed (update case)
+                            fireAutoTranslate();
                         })
                         .catch(e => console.error('[ajaxWithUpdateFromView] modal refresh failed', e));
                 }

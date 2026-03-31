@@ -31,6 +31,8 @@ class ArticleController extends Controller
         abort(404);
     }
 
+    private const CONTENT_FIELDS = ['title', 'short_description', 'description'];
+
     public function store(StoreRequest $request): View|JsonResponse|string {
         $data = $request->validated();
 
@@ -61,11 +63,12 @@ class ArticleController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'toast' => [
-                    'type' => 'success',
-                    'message' => __('admin.success_create_data'),
-                ],
-                'html' => $this->getViewArticles(),
+                'toast' => ['type' => 'success', 'message' => __('admin.success_create_data')],
+                'html'  => $this->getViewArticles(),
+                'autoTranslate' => $this->buildAutoTranslatePayload(
+                    $article, 'news_article', self::CONTENT_FIELDS, true,
+                    'admin.news.article.edit', [$article]
+                ),
             ]);
         }
 
@@ -88,6 +91,8 @@ class ArticleController extends Controller
 
     public function update(UpdateRequest $request, NewsArticle $newsArticle): View|JsonResponse|string {
         $data = $request->validated();
+        $sourceLang = config('app.fallback_locale', 'en');
+        $oldValues  = $this->captureSourceValues($newsArticle, array_merge(self::CONTENT_FIELDS, ['seo_title', 'seo_description', 'seo_keywords', 'geo_text']), $sourceLang);
 
         try {
             DB::beginTransaction();
@@ -116,17 +121,19 @@ class ArticleController extends Controller
         }
 
         if ($request->ajax()) {
+            $newsArticle->refresh();
+            $payload = $this->buildAutoTranslateUpdatePayload(
+                $newsArticle, $oldValues, 'news_article', self::CONTENT_FIELDS, true,
+                'admin.news.article.edit', [$newsArticle]
+            );
             return response()->json([
-                'toast' => [
-                    'type' => 'success',
-                    'message' => __('admin.success_update_data'),
-                ],
-                'html' => $this->getViewArticles(),
+                'toast' => ['type' => 'success', 'message' => __('admin.success_update_data')],
+                'html'  => $this->getViewArticles(),
+                'autoTranslate' => ($payload['changedFields'] || $payload['changedSeoFields']) ? $payload : null,
             ]);
         }
 
         abort(404);
-        //return redirect()->back();
     }
 
     public function delete(Request $request, NewsArticle $newsArticle) {

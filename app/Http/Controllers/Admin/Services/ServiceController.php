@@ -33,6 +33,8 @@ class ServiceController extends Controller
         abort(404);
     }
 
+    private const CONTENT_FIELDS = ['title', 'inner_title', 'short_description', 'description'];
+
     public function store(StoreRequest $request): View|JsonResponse|string {
         $data = $request->validated();
 
@@ -69,11 +71,12 @@ class ServiceController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'toast' => [
-                    'type' => 'success',
-                    'message' => __('admin.success_create_data'),
-                ],
-                'html' => $this->getViewServices(),
+                'toast' => ['type' => 'success', 'message' => __('admin.success_create_data')],
+                'html'  => $this->getViewServices(),
+                'autoTranslate' => $this->buildAutoTranslatePayload(
+                    $service, 'service', self::CONTENT_FIELDS, true,
+                    'admin.services.service.edit', [$service]
+                ),
             ]);
         }
 
@@ -95,6 +98,8 @@ class ServiceController extends Controller
 
     public function update(UpdateRequest $request, Service $service): View|JsonResponse|string {
         $data = $request->validated();
+        $sourceLang = config('app.fallback_locale', 'en');
+        $oldValues  = $this->captureSourceValues($service, array_merge(self::CONTENT_FIELDS, ['seo_title', 'seo_description', 'seo_keywords', 'geo_text']), $sourceLang);
 
         try {
             DB::beginTransaction();
@@ -131,12 +136,15 @@ class ServiceController extends Controller
         }
 
         if ($request->ajax()) {
+            $service->refresh();
+            $payload = $this->buildAutoTranslateUpdatePayload(
+                $service, $oldValues, 'service', self::CONTENT_FIELDS, true,
+                'admin.services.service.edit', [$service]
+            );
             return response()->json([
-                'toast' => [
-                    'type' => 'success',
-                    'message' => __('admin.success_update_data'),
-                ],
-                'html' => $this->getViewServices(),
+                'toast' => ['type' => 'success', 'message' => __('admin.success_update_data')],
+                'html'  => $this->getViewServices(),
+                'autoTranslate' => ($payload['changedFields'] || $payload['changedSeoFields']) ? $payload : null,
             ]);
         }
 

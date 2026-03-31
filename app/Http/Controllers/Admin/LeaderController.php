@@ -28,22 +28,24 @@ class LeaderController extends Controller
         abort(404);
     }
 
+    private const CONTENT_FIELDS = ['name', 'position', 'info'];
+
     public function store(StoreRequest $request): View|JsonResponse|string {
         $data = $request->validated();
 
         try {
             DB::beginTransaction();
 
-            $project = Leader::create($data);
+            $leader = Leader::create($data);
 
             if ($request->hasFile('photo')) {
-                $project->addMediaFromRequest('photo')
-                    ->toMediaCollection($project->mediaPhoto);
+                $leader->addMediaFromRequest('photo')
+                    ->toMediaCollection($leader->mediaPhoto);
             }
 
             if ($request->hasFile('resume')) {
-                $project->addMediaFromRequest('resume')
-                    ->toMediaCollection($project->mediaResume);
+                $leader->addMediaFromRequest('resume')
+                    ->toMediaCollection($leader->mediaResume);
             }
 
             DB::commit();
@@ -64,11 +66,12 @@ class LeaderController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'toast' => [
-                    'type' => 'success',
-                    'message' => __('admin.success_create_data'),
-                ],
-                'html' => $this->getViewLeaders(),
+                'toast' => ['type' => 'success', 'message' => __('admin.success_create_data')],
+                'html'  => $this->getViewLeaders(),
+                'autoTranslate' => $this->buildAutoTranslatePayload(
+                    $leader, 'leader', self::CONTENT_FIELDS, false,
+                    'admin.about.leader.edit', [$leader]
+                ),
             ]);
         }
 
@@ -85,6 +88,8 @@ class LeaderController extends Controller
 
     public function update(UpdateRequest $request, Leader $leader): View|JsonResponse|string {
         $data = $request->validated();
+        $sourceLang = config('app.fallback_locale', 'en');
+        $oldValues  = $this->captureSourceValues($leader, self::CONTENT_FIELDS, $sourceLang);
 
         try {
             DB::beginTransaction();
@@ -121,12 +126,15 @@ class LeaderController extends Controller
         }
 
         if ($request->ajax()) {
+            $leader->refresh();
+            $payload = $this->buildAutoTranslateUpdatePayload(
+                $leader, $oldValues, 'leader', self::CONTENT_FIELDS, false,
+                'admin.about.leader.edit', [$leader]
+            );
             return response()->json([
-                'toast' => [
-                    'type' => 'success',
-                    'message' => __('admin.success_update_data'),
-                ],
-                'html' => $this->getViewLeaders(),
+                'toast' => ['type' => 'success', 'message' => __('admin.success_update_data')],
+                'html'  => $this->getViewLeaders(),
+                'autoTranslate' => $payload['changedFields'] ? $payload : null,
             ]);
         }
 

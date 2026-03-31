@@ -28,6 +28,8 @@ class CategoryController extends Controller
         abort(404);
     }
 
+    private const CONTENT_FIELDS = ['name', 'description'];
+
     public function store(StoreRequest $request): View|JsonResponse|string {
         $data = $request->validated();
 
@@ -54,11 +56,12 @@ class CategoryController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'toast' => [
-                    'type' => 'success',
-                    'message' => __('admin.success_create_data'),
-                ],
-                'html' => $this->getViewCategories(),
+                'toast' => ['type' => 'success', 'message' => __('admin.success_create_data')],
+                'html'  => $this->getViewCategories(),
+                'autoTranslate' => $this->buildAutoTranslatePayload(
+                    $category, 'news_category', self::CONTENT_FIELDS, true,
+                    'admin.news.category.edit', [$category]
+                ),
             ]);
         }
 
@@ -77,6 +80,8 @@ class CategoryController extends Controller
 
     public function update(UpdateRequest $request, NewsCategory $newsCategory): View|JsonResponse|string {
         $data = $request->validated();
+        $sourceLang = config('app.fallback_locale', 'en');
+        $oldValues  = $this->captureSourceValues($newsCategory, array_merge(self::CONTENT_FIELDS, ['seo_title', 'seo_description', 'seo_keywords', 'geo_text']), $sourceLang);
 
         try {
             DB::beginTransaction();
@@ -101,12 +106,15 @@ class CategoryController extends Controller
         }
 
         if ($request->ajax()) {
+            $newsCategory->refresh();
+            $payload = $this->buildAutoTranslateUpdatePayload(
+                $newsCategory, $oldValues, 'news_category', self::CONTENT_FIELDS, true,
+                'admin.news.category.edit', [$newsCategory]
+            );
             return response()->json([
-                'toast' => [
-                    'type' => 'success',
-                    'message' => __('admin.success_update_data'),
-                ],
-                'html' => $this->getViewCategories(),
+                'toast' => ['type' => 'success', 'message' => __('admin.success_update_data')],
+                'html'  => $this->getViewCategories(),
+                'autoTranslate' => ($payload['changedFields'] || $payload['changedSeoFields']) ? $payload : null,
             ]);
         }
 
