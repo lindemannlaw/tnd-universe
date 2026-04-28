@@ -16,6 +16,10 @@
             <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#stars"/></svg>
             Alle Felder neu generieren
         </button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" id="btnTranslateFromEn">
+            <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#globe2"/></svg>
+            Alle Felder von EN übersetzen
+        </button>
     </x-admin.main-panel>
 @endsection
 
@@ -64,6 +68,13 @@
                                     title="Diesen Block für alle Sprachen neu generieren">
                                 <svg class="bi" width="13" height="13" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#arrow-clockwise"/></svg>
                                 Block neu generieren
+                            </button>
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-secondary btn-translate-field"
+                                    data-field="{{ $field }}"
+                                    title="Diesen Block auf Basis von EN übersetzen">
+                                <svg class="bi" width="13" height="13" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#globe2"/></svg>
+                                Block von EN übersetzen
                             </button>
                         </div>
 
@@ -282,6 +293,64 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    // ── Block von EN übersetzen (one field, all locales) ──────────────────
+    document.addEventListener('click', async (e) => {
+        const btn = e.target.closest('.btn-translate-field');
+        if (!btn) return;
+
+        const field = btn.dataset.field;
+        const enInput = document.querySelector(`.seo-field-input[data-field="${field}"][data-locale="en"]`);
+        if (!enInput) {
+            showToast('Fehler: EN-Quelle nicht gefunden', 'bg-danger');
+            return;
+        }
+
+        btn.disabled = true;
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+        try {
+            const saveRes = await fetch(SAVE_FIELD_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
+                body: JSON.stringify({
+                    type: TYPE,
+                    id: ID,
+                    field,
+                    locale: 'en',
+                    value: enInput.value,
+                    translate: true
+                }),
+            });
+            const saveData = await saveRes.json();
+            if (saveData.error) throw new Error(saveData.error);
+
+            const translations = saveData.translations || {};
+            Object.entries(translations).forEach(([loc, val]) => {
+                const input = document.querySelector(`.seo-field-input[data-field="${field}"][data-locale="${loc}"]`);
+                if (input) {
+                    input.value = val;
+                    if (input.tagName === 'TEXTAREA') autoResize(input);
+                    const rowCounter = document.querySelector(`.counter-input[data-field="${field}"][data-locale="${loc}"]`);
+                    if (rowCounter) rowCounter.textContent = val.length;
+                }
+                markClean(field, loc, val);
+            });
+
+            if (translations['en']) {
+                const headerCounter = document.getElementById(`counter-${field}-en`);
+                if (headerCounter) headerCounter.textContent = translations['en'].length;
+            }
+
+            showToast(`${field.replace('_', ' ')} von EN übersetzt!`, 'bg-success');
+        } catch (err) {
+            showToast('Fehler: ' + err.message, 'bg-danger');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = orig;
+        }
+    });
+
     // ── Alle Felder neu generieren (EN only, no auto-save) ────────────────
     document.getElementById('btnGenerate')?.addEventListener('click', async () => {
         const btn = document.getElementById('btnGenerate');
@@ -345,6 +414,61 @@ document.addEventListener('DOMContentLoaded', function () {
         } finally {
             btn.disabled = false;
             btn.innerHTML = '<svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#stars"/></svg> Alle Felder neu generieren';
+        }
+    });
+
+    // ── Alle Felder von EN übersetzen ──────────────────────────────────────
+    document.getElementById('btnTranslateFromEn')?.addEventListener('click', async () => {
+        const btn = document.getElementById('btnTranslateFromEn');
+        btn.disabled = true;
+
+        const allFields = ['seo_title', 'seo_description', 'seo_keywords', 'geo_text'];
+        let step = 0;
+        const updateLabel = (msg) => {
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span> ${msg}`;
+        };
+
+        try {
+            for (const field of allFields) {
+                const enInput = document.querySelector(`.seo-field-input[data-field="${field}"][data-locale="en"]`);
+                const value = enInput?.value ?? '';
+                if (!value) continue;
+
+                step++;
+                updateLabel(`Übersetze Feld ${step}/${allFields.length}…`);
+
+                const saveRes = await fetch(SAVE_FIELD_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
+                    body: JSON.stringify({ type: TYPE, id: ID, field, locale: 'en', value, translate: true }),
+                });
+                const saveData = await saveRes.json();
+                if (saveData.error) throw new Error(saveData.error);
+
+                const translations = saveData.translations || {};
+                Object.entries(translations).forEach(([loc, val]) => {
+                    const input = document.querySelector(`.seo-field-input[data-field="${field}"][data-locale="${loc}"]`);
+                    if (input) {
+                        input.value = val;
+                        if (input.tagName === 'TEXTAREA') autoResize(input);
+                        const rowCounter = document.querySelector(`.counter-input[data-field="${field}"][data-locale="${loc}"]`);
+                        if (rowCounter) rowCounter.textContent = val.length;
+                    }
+                    markClean(field, loc, val);
+                });
+
+                if (translations['en']) {
+                    const headerCounter = document.getElementById(`counter-${field}-en`);
+                    if (headerCounter) headerCounter.textContent = translations['en'].length;
+                }
+            }
+
+            showToast('Alle Felder von EN in alle Sprachen übersetzt!', 'bg-success');
+        } catch (err) {
+            showToast('Fehler: ' + err.message, 'bg-danger');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#globe2"/></svg> Alle Felder von EN übersetzen';
         }
     });
 

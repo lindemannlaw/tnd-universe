@@ -143,6 +143,10 @@ section:has(.target-anchor-section) {
     .h5,
     h6,
     .h6 {
+        &:not(:first-child) {
+            margin-top: 0.5em;
+        }
+
         line-height: 1.2;
         margin-bottom: 0.5em;
     }
