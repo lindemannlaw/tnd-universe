@@ -4,8 +4,48 @@ if (($_GET['token'] ?? '') !== 'tnd-pd-2026') {
     die('Forbidden');
 }
 
-// ── Reset PHP Opcache FIRST (otherwise old compiled PHP keeps running) ──
 echo "<pre>\n";
+
+// Optional composer install (recommended for deploys that exclude vendor upload)
+// Usage: ?token=...&composer=1
+$runComposer = (($_GET['composer'] ?? '0') === '1');
+if ($runComposer) {
+    echo "=== Composer install ===\n";
+
+    $composerBinary = null;
+    foreach (['composer', '/usr/local/bin/composer', '/opt/bin/composer'] as $bin) {
+        $checkCmd = sprintf('%s --version >/dev/null 2>&1', escapeshellarg($bin));
+        exec($checkCmd, $out, $exitCode);
+        if ($exitCode === 0) {
+            $composerBinary = $bin;
+            break;
+        }
+    }
+
+    if ($composerBinary === null) {
+        http_response_code(500);
+        echo "✗ Composer binary not found. Aborting.\n";
+        echo "</pre>";
+        exit(1);
+    }
+
+    $composerCmd = sprintf(
+        '%s install --no-dev --optimize-autoloader --no-interaction 2>&1',
+        escapeshellarg($composerBinary)
+    );
+    passthru($composerCmd, $composerExitCode);
+
+    if ($composerExitCode !== 0) {
+        http_response_code(500);
+        echo "✗ Composer install failed with exit code {$composerExitCode}\n";
+        echo "</pre>";
+        exit($composerExitCode);
+    }
+
+    echo "✓ Composer install finished\n";
+}
+
+// ── Reset PHP Opcache FIRST (otherwise old compiled PHP keeps running) ──
 if (function_exists('opcache_reset')) {
     opcache_reset();
     echo "✓ Opcache reset\n";

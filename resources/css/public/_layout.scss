@@ -143,52 +143,12 @@ section:has(.target-anchor-section) {
     .h5,
     h6,
     .h6 {
+        &:not(:first-child) {
+            margin-top: 0.5em;
+        }
+
         line-height: 1.2;
         margin-bottom: 0.5em;
-    }
-
-    // Heading top spacing — pairs with the margin-bottom rule above so each
-    // heading visually belongs to the section it introduces, not to the
-    // paragraph above it.
-    h1,
-    .h1,
-    h2,
-    .h2,
-    h3,
-    .h3,
-    h4,
-    .h4,
-    h5,
-    .h5,
-    h6,
-    .h6 {
-        margin-top: 2em;
-    }
-
-    h3,
-    .h3 {
-        margin-top: 1.75em;
-    }
-
-    h4,
-    .h4,
-    h5,
-    .h5,
-    h6,
-    .h6 {
-        margin-top: 1.5em;
-    }
-
-    > :first-child {
-        margin-top: 0;
-    }
-
-    h1 + h2,
-    h2 + h3,
-    h3 + h4,
-    h4 + h5,
-    h5 + h6 {
-        margin-top: 0.5em;
     }
 
     h2,

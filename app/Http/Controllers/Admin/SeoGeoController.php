@@ -79,7 +79,7 @@ class SeoGeoController extends Controller
         $types = collect($allItems)->pluck('type')->unique()->values()->all();
 
         $navPages = \App\Models\Page::whereIn('slug', [
-            'about', 'services', 'portfolio', 'news', 'contacts', 'imprint', 'privacy-notice', 'terms-of-use',
+            'home', 'about', 'services', 'portfolio', 'news', 'contacts', 'imprint', 'privacy-notice', 'terms-of-use',
         ])->pluck('id', 'slug')->all();
 
         $navSections = \App\Models\SiteSection::whereIn('slug', ['who-we-are', 'contact-us'])

@@ -14,14 +14,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.3'
-
-      - name: Install Composer dependencies
-        run: composer install --no-dev --optimize-autoloader --no-interaction
-
       - name: Build frontend assets
         run: |
           npm install
@@ -46,6 +38,7 @@ jobs:
             **/.git*
             **/.git*/**
             **/node_modules/**
+            **/vendor/**
             **/tests/**
             **/.claude/**
             .env
@@ -75,6 +68,7 @@ jobs:
             **/.git*
             **/.git*/**
             **/node_modules/**
+            **/vendor/**
             **/tests/**
             **/.claude/**
             .env
@@ -88,4 +82,10 @@ jobs:
       - name: Run post-deploy commands
         run: |
           sleep 10
-          curl -s "${{ vars.DEPLOY_POST_URL }}"
+          URL="${{ vars.DEPLOY_POST_URL }}"
+          if [[ "$URL" == *\?* ]]; then
+            URL="${URL}&composer=1"
+          else
+            URL="${URL}?composer=1"
+          fi
+          curl -fsSL "$URL"

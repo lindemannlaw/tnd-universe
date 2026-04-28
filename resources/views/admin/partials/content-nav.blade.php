@@ -31,6 +31,8 @@ $show   = fn (string $type) => $dashboard === 'translations' || $hasSeo($type);
 $cls = fn (bool $active): string => 'list-group-item list-group-item-action border-0 py-1 small'
     . ($active ? ' active' : '')
     . ' ps-4';
+$singleCls = fn (bool $active): string => 'list-group-item list-group-item-action border-0 py-1 px-3 small'
+    . ($active ? ' active' : '');
 
 $sectionIdx = 0;
 $hdrClass = 'list-group-item border-0 py-1 px-3 text-uppercase fw-semibold text-muted';
@@ -51,20 +53,33 @@ $hdrStyle = function () use (&$sectionIdx): string {
         Alle
     </a>
 
-    {{-- About --}}
-    <div class="{{ $hdrClass }}" style="{{ $hdrStyle() }}">
-        About
-    </div>
-    @if(isset($navPages['about']))
-        <a href="{{ $link('page', $navPages['about']) }}"
-           class="{{ $cls($isActive('page', $navPages['about'])) }}">
-            Page
+    {{-- Home --}}
+    @if(isset($navPages['home']))
+        <a href="{{ $link('page', $navPages['home']) }}"
+           class="{{ $singleCls($isActive('page', $navPages['home'])) }}">
+            Home Page
         </a>
     @endif
+
+    {{-- About --}}
     @if($show('leader'))
+        <div class="{{ $hdrClass }}" style="{{ $hdrStyle() }}">
+            About
+        </div>
+        @if(isset($navPages['about']))
+            <a href="{{ $link('page', $navPages['about']) }}"
+               class="{{ $cls($isActive('page', $navPages['about'])) }}">
+                Page
+            </a>
+        @endif
         <a href="{{ $link('leader') }}"
            class="{{ $cls($isActive('leader')) }}">
             Leaders
+        </a>
+    @elseif(isset($navPages['about']))
+        <a href="{{ $link('page', $navPages['about']) }}"
+           class="{{ $singleCls($isActive('page', $navPages['about'])) }}">
+            About Page
         </a>
     @endif
 
@@ -123,12 +138,9 @@ $hdrStyle = function () use (&$sectionIdx): string {
 
     {{-- Contacts --}}
     @if(isset($navPages['contacts']))
-        <div class="{{ $hdrClass }}" style="{{ $hdrStyle() }}">
-            Contacts
-        </div>
         <a href="{{ $link('page', $navPages['contacts']) }}"
-           class="{{ $cls($isActive('page', $navPages['contacts'])) }}">
-            Page
+           class="{{ $singleCls($isActive('page', $navPages['contacts'])) }}">
+            Contacts Page
         </a>
     @endif
 
@@ -153,34 +165,25 @@ $hdrStyle = function () use (&$sectionIdx): string {
 
     {{-- Imprint --}}
     @if(isset($navPages['imprint']))
-        <div class="{{ $hdrClass }}" style="{{ $hdrStyle() }}">
-            Imprint
-        </div>
         <a href="{{ $link('page', $navPages['imprint']) }}"
-           class="{{ $cls($isActive('page', $navPages['imprint'])) }}">
-            Page
+           class="{{ $singleCls($isActive('page', $navPages['imprint'])) }}">
+            Imprint Page
         </a>
     @endif
 
     {{-- Privacy notice --}}
     @if(isset($navPages['privacy-notice']))
-        <div class="{{ $hdrClass }}" style="{{ $hdrStyle() }}">
-            Privacy notice
-        </div>
         <a href="{{ $link('page', $navPages['privacy-notice']) }}"
-           class="{{ $cls($isActive('page', $navPages['privacy-notice'])) }}">
-            Page
+           class="{{ $singleCls($isActive('page', $navPages['privacy-notice'])) }}">
+            Privacy Notice Page
         </a>
     @endif
 
     {{-- Terms of use --}}
     @if(isset($navPages['terms-of-use']))
-        <div class="{{ $hdrClass }}" style="{{ $hdrStyle() }}">
-            Terms of use
-        </div>
         <a href="{{ $link('page', $navPages['terms-of-use']) }}"
-           class="{{ $cls($isActive('page', $navPages['terms-of-use'])) }}">
-            Page
+           class="{{ $singleCls($isActive('page', $navPages['terms-of-use'])) }}">
+            Terms of Use Page
         </a>
     @endif
 
