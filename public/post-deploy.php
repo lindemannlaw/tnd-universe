@@ -12,6 +12,18 @@ $runComposer = (($_GET['composer'] ?? '0') === '1');
 if ($runComposer) {
     echo "=== Composer install ===\n";
 
+    // Ensure composer has writable HOME/COMPOSER_HOME in non-interactive web context
+    $composerHome = sys_get_temp_dir() . '/composer-home';
+    if (!is_dir($composerHome)) {
+        @mkdir($composerHome, 0775, true);
+    }
+    @putenv('HOME=' . $composerHome);
+    @putenv('COMPOSER_HOME=' . $composerHome);
+    @putenv('COMPOSER_ALLOW_SUPERUSER=1');
+    $_SERVER['HOME'] = $composerHome;
+    $_SERVER['COMPOSER_HOME'] = $composerHome;
+    echo "Using COMPOSER_HOME={$composerHome}\n";
+
     $composerBinary = null;
     foreach (['composer', '/usr/local/bin/composer', '/opt/bin/composer'] as $bin) {
         $checkCmd = sprintf('%s --version >/dev/null 2>&1', escapeshellarg($bin));
@@ -30,7 +42,9 @@ if ($runComposer) {
     }
 
     $composerCmd = sprintf(
-        '%s install --no-dev --optimize-autoloader --no-interaction 2>&1',
+        'HOME=%s COMPOSER_HOME=%s COMPOSER_ALLOW_SUPERUSER=1 %s install --no-dev --optimize-autoloader --no-interaction 2>&1',
+        escapeshellarg($composerHome),
+        escapeshellarg($composerHome),
         escapeshellarg($composerBinary)
     );
     passthru($composerCmd, $composerExitCode);
