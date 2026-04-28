@@ -1,14 +1,14 @@
-name: Deploy to Production
+name: Deploy to Prelive
 
 on:
   push:
     branches:
-      - main
+      - develop
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: production
+    environment: prelive
 
     steps:
       - name: Checkout code
@@ -32,7 +32,7 @@ jobs:
           timeout: 300000
           local-dir: ./
           server-dir: ${{ vars.DEPLOY_SERVER_DIR }}
-          state-name: .ftp-deploy-sync-state.json
+          state-name: .ftp-deploy-sync-state-prelive.json
           log-level: verbose
           exclude: |
             **/.git*
@@ -62,7 +62,7 @@ jobs:
           timeout: 300000
           local-dir: ./
           server-dir: ${{ vars.DEPLOY_SERVER_DIR }}
-          state-name: .ftp-deploy-sync-state.json
+          state-name: .ftp-deploy-sync-state-prelive.json
           log-level: verbose
           exclude: |
             **/.git*
