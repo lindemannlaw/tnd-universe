@@ -166,6 +166,9 @@
                 {{-- Record sub-filter --}}
                 @if($typeFilter !== 'all' && count($typeRecords) > 0)
                     <div class="mb-3">
+                        @php
+                            $selectedTypeLabel = collect($types)->firstWhere('key', $typeFilter)['label'] ?? '';
+                        @endphp
                         <form method="GET" action="{{ route('admin.translations.index') }}" class="d-flex gap-2 align-items-center">
                             <input type="hidden" name="type" value="{{ $typeFilter }}">
                             <input type="hidden" name="lang" value="{{ $targetLang }}">
@@ -173,7 +176,7 @@
                                 <input type="hidden" name="status[]" value="{{ $s }}">
                             @endforeach
                             <select name="id" class="form-select form-select-sm" style="width:auto;max-width:240px;" onchange="this.form.submit()">
-                                <option value="">— {{ __('admin.all_of_type', ['type' => collect($types)->firstWhere('key', $typeFilter)['label'] ?? '']) }} —</option>
+                                <option value="">— {{ __('admin.all_of_type', ['type' => $selectedTypeLabel]) }} —</option>
                                 @foreach($typeRecords as $rec)
                                     <option value="{{ $rec['id'] }}" {{ (string)$idFilter === (string)$rec['id'] ? 'selected' : '' }}>
                                         {{ \Illuminate\Support\Str::limit($rec['title'], 35) }}
