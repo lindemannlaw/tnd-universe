@@ -55,6 +55,7 @@ async function runOverlay(cfg) {
     const summary = {
         contentOk: 0, contentErr: 0,
         geoOk: false, geoErr: false, geoSkipped: !hasSeo || !geoGenerateUrl,
+        geoSkippedByUser: false,
         seoOk: 0, seoErr: 0,
     };
 
@@ -80,8 +81,20 @@ async function runOverlay(cfg) {
         setNote(overlay, 'content', isUpdate ? 'Keine geänderten Felder' : 'Keine Felder');
     }
 
+    // ── Phase 2+3: SEO/GEO (for updates only after explicit confirmation) ──
+    let shouldRunSeoGeo = true;
+    if (isUpdate && hasSeo && geoGenerateUrl) {
+        shouldRunSeoGeo = await askSeoGeoConfirmation(overlay);
+        if (!shouldRunSeoGeo) {
+            summary.geoSkippedByUser = true;
+            summary.geoSkipped = true;
+            setNote(overlay, 'geo', 'Übersprungen (bei Dialog mit "Nein" bestätigt)');
+            setNote(overlay, 'seo', 'Übersprungen (bei Dialog mit "Nein" bestätigt)');
+        }
+    }
+
     // ── Phase 2: Generate SEO/GEO (EN first, then all target langs) ─────────
-    if (hasSeo && geoGenerateUrl) {
+    if (shouldRunSeoGeo && hasSeo && geoGenerateUrl) {
         showSection(overlay, 'geo');
         const allGeoLangs = [sourceLang, ...targetLangs];
         let geoAnyOk = false;
@@ -100,7 +113,7 @@ async function runOverlay(cfg) {
     }
 
     // ── Phase 3: Translate SEO/GEO fields ───────────────────────────────────
-    if (hasSeo && seoFields.length) {
+    if (shouldRunSeoGeo && hasSeo && seoFields.length) {
         showSection(overlay, 'seo');
         for (const lang of targetLangs) {
             setStatus(overlay, 'seo', lang, 'running');
@@ -261,7 +274,10 @@ function showSummary(overlay, summary, cfg) {
             ));
         }
     } else {
-        rows.push(summaryRow('–', 'bg-secondary', 'SEO & GEO', 'Nicht verfügbar für diesen Typ'));
+        const detail = summary.geoSkippedByUser
+            ? 'Übersprungen (Benutzer-Auswahl)'
+            : 'Nicht verfügbar für diesen Typ';
+        rows.push(summaryRow('–', 'bg-secondary', 'SEO & GEO', detail));
     }
 
     summaryEl.innerHTML = `
@@ -291,6 +307,51 @@ function summaryRow(icon, badgeClass, label, detail) {
             <span class="small fw-semibold" style="min-width:130px">${label}</span>
             <span class="small text-muted">${detail}</span>
         </div>`;
+}
+
+function askSeoGeoConfirmation(overlay) {
+    return new Promise(resolve => {
+        const dialog = document.createElement('div');
+        dialog.style.cssText = [
+            'position:absolute',
+            'inset:0',
+            'display:flex',
+            'align-items:center',
+            'justify-content:center',
+            'background:rgba(0,0,0,.45)',
+            'z-index:2',
+            'border-radius:.375rem',
+        ].join(';');
+
+        dialog.innerHTML = `
+            <div class="card shadow border-0" style="max-width:420px;width:calc(100% - 2rem)">
+                <div class="card-body">
+                    <div class="fw-semibold mb-2">SEO &amp; GEO neu ausführen?</div>
+                    <div class="small text-muted mb-3">
+                        Inhalt wird wie gewohnt übersetzt. Soll zusätzlich SEO/GEO neu generiert und übersetzt werden?
+                    </div>
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-ato-seo-no>Nein</button>
+                        <button type="button" class="btn btn-sm btn-primary" data-ato-seo-yes>Ja</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const host = overlay.querySelector('.card') || overlay;
+        host.style.position = 'relative';
+        host.appendChild(dialog);
+
+        dialog.querySelector('[data-ato-seo-no]')?.addEventListener('click', () => {
+            dialog.remove();
+            resolve(false);
+        }, { once: true });
+
+        dialog.querySelector('[data-ato-seo-yes]')?.addEventListener('click', () => {
+            dialog.remove();
+            resolve(true);
+        }, { once: true });
+    });
 }
 
 function langBadges(langs, phase) {
