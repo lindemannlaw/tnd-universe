@@ -8,6 +8,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: production
 
     steps:
       - name: Checkout code
@@ -35,7 +36,7 @@ jobs:
           protocol: ftps
           port: 21
           local-dir: ./
-          server-dir: /tnduniverse.com/
+          server-dir: ${{ vars.DEPLOY_SERVER_DIR }}
           exclude: |
             **/.git*
             **/.git*/**
@@ -47,7 +48,7 @@ jobs:
             storage/app/public/**
             storage/logs/**
 
-      - name: Run post-deploy artisan commands
+      - name: Run post-deploy commands
         run: |
           sleep 10
-          curl -s "https://tnduniverse.com/post-deploy.php?token=tnd-pd-2026"
+          curl -s "${{ vars.DEPLOY_POST_URL }}"
