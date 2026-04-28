@@ -1,3 +1,5 @@
+@use '../functions/range';
+
 .base-link {
     color: inherit;
     transition: var(--transition);
@@ -9,6 +11,28 @@
     &:hover {
         color: var(--color-interaction-primary-default);
         text-decoration-color: inherit;
+    }
+}
+
+.arrow-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-secondary);
+    font-weight: var(--font-weight-semibold);
+    font-size: range.build(18, 22);
+    color: var(--color-interaction-primary-default);
+    text-decoration: none;
+    transition: var(--transition);
+    transition-property: gap, opacity;
+
+    &:hover {
+        gap: 16px;
+        opacity: 0.7;
+    }
+
+    svg {
+        flex-shrink: 0;
     }
 }
 

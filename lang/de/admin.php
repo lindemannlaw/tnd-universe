@@ -73,6 +73,18 @@ return [
     'show' => 'Anzeigen',
     'inquiry_button_text' => 'Anfrage-Button Text',
     'inquiry_button_active' => 'Anfrage-Button anzeigen',
+
+    'link_top_section' => 'Oberer Link (im Artikel-Meta)',
+    'link_top_text' => 'Link-Text (oben)',
+    'link_top_url' => 'Link-URL (oben)',
+    'link_top_active' => 'Oberen Link anzeigen',
+    'link_upload_file' => 'Datei hochladen (überschreibt URL)',
+    'link_replace_file' => 'Datei ersetzen',
+
+    'link_bottom_section' => 'Unterer Link (Ende des Artikels)',
+    'link_bottom_text' => 'Link-Text (unten)',
+    'link_bottom_url' => 'Link-URL (unten)',
+    'link_bottom_active' => 'Unteren Link anzeigen',
     'cancel' => 'Abbrechen',
     'short_description' => 'Kurzbeschreibung',
     'description' => 'Beschreibung',

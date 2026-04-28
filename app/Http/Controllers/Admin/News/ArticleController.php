@@ -31,7 +31,7 @@ class ArticleController extends Controller
         abort(404);
     }
 
-    private const CONTENT_FIELDS = ['title', 'short_description', 'description'];
+    private const CONTENT_FIELDS = ['title', 'short_description', 'description', 'link_top_text', 'link_bottom_text'];
 
     public function store(StoreRequest $request): View|JsonResponse|string {
         $data = $request->validated();
@@ -44,6 +44,8 @@ class ArticleController extends Controller
 
             $article->description = $article->processImagesInDescription($article->getAttributes()['description']);
             $article->save();
+
+            $this->handleFileUploads($request, $article);
 
             DB::commit();
         } catch (\Exception $exception) {
@@ -103,6 +105,8 @@ class ArticleController extends Controller
 
             $newsArticle->description = $newsArticle->processImagesInDescription($newsArticle->getAttributes()['description']);
             $newsArticle->save();
+
+            $this->handleFileUploads($request, $newsArticle);
 
             DB::commit();
         } catch (\Exception $exception) {
@@ -175,5 +179,20 @@ class ArticleController extends Controller
         $articles = NewsArticle::all();
 
         return view('admin.news.articles.list', compact('articles'))->render();
+    }
+
+    private function handleFileUploads(Request $request, NewsArticle $article): void
+    {
+        if ($request->hasFile('link_top_file')) {
+            $article->clearMediaCollection($article->mediaLinkTopFile);
+            $article->addMediaFromRequest('link_top_file')
+                ->toMediaCollection($article->mediaLinkTopFile);
+        }
+
+        if ($request->hasFile('link_bottom_file')) {
+            $article->clearMediaCollection($article->mediaLinkBottomFile);
+            $article->addMediaFromRequest('link_bottom_file')
+                ->toMediaCollection($article->mediaLinkBottomFile);
+        }
     }
 }
