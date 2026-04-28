@@ -35,6 +35,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftps
           port: 21
+          timeout: 120000
           local-dir: ./
           server-dir: ${{ vars.DEPLOY_SERVER_DIR }}
           exclude: |
@@ -42,11 +43,15 @@ jobs:
             **/.git*/**
             **/node_modules/**
             **/vendor/**
+            **/tests/**
+            **/.claude/**
             .env
             public/storage
             public/media/**
             storage/app/public/**
             storage/logs/**
+            storage/framework/cache/**
+            storage/framework/views/**
 
       - name: Run post-deploy commands
         run: |
