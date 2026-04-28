@@ -280,9 +280,9 @@ class TranslationCheckController extends Controller
             }
         }
 
-        // UI Strings (lang/*/base.php)
+        // UI + Labels (lang/*/base.php, lang/*/admin.php)
         if ($typeFilter === 'all' || $typeFilter === 'ui_string') {
-            $uiFiles = ['base'];
+            $uiFiles = ['base', 'admin'];
             foreach ($uiFiles as $file) {
                 $sourcePath = lang_path("{$sourceLang}/{$file}.php");
                 $sourceData = file_exists($sourcePath) ? (require $sourcePath) : [];
@@ -307,7 +307,7 @@ class TranslationCheckController extends Controller
 
                     $allItems[] = [
                         'type'        => 'ui_string',
-                        'typeLabel'   => 'UI Strings',
+                        'typeLabel'   => 'UI & Labels',
                         'id'          => 0,
                         'title'       => "{$file}.php",
                         'field'       => "{$file}.{$key}",
@@ -338,10 +338,10 @@ class TranslationCheckController extends Controller
 
         // Available types
         $types = collect($this->registry->all())->map(fn ($m, $k) => ['key' => $k, 'label' => $m['labelDe']])->values()->all();
-        $types[] = ['key' => 'ui_string', 'label' => 'UI Strings'];
+        $types[] = ['key' => 'ui_string', 'label' => 'UI & Labels'];
 
         $navPages = \App\Models\Page::whereIn('slug', [
-            'about', 'services', 'portfolio', 'news', 'contacts', 'imprint', 'privacy-notice', 'terms-of-use',
+            'home', 'about', 'services', 'portfolio', 'news', 'contacts', 'imprint', 'privacy-notice', 'terms-of-use',
         ])->pluck('id', 'slug')->all();
 
         $navSections = \App\Models\SiteSection::whereIn('slug', ['who-we-are', 'contact-us'])

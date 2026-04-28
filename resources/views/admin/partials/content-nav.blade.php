@@ -187,14 +187,14 @@ $hdrStyle = function () use (&$sectionIdx): string {
         </a>
     @endif
 
-    {{-- UI Strings (Translations dashboard only) --}}
+    {{-- UI & Labels (Translations dashboard only) --}}
     @if($dashboard === 'translations')
         <div class="{{ $hdrClass }}" style="{{ $hdrStyle() }}">
-            UI Strings
+            {{ __('admin.ui_and_labels') }}
         </div>
         <a href="{{ $link('ui_string') }}"
            class="{{ $cls($isActive('ui_string')) }}">
-            base.php
+            {{ __('admin.language_files') }}
         </a>
     @endif
 

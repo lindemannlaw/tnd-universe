@@ -9,16 +9,16 @@
              style="width:calc(220px + 1.25rem);">{{ __('admin.translation_check') }}</div>
         <div class="form-check mb-0 py-2 me-auto">
             <input class="form-check-input" type="checkbox" id="selectAll">
-            <label class="form-check-label small" for="selectAll">Alle auswählen</label>
+            <label class="form-check-label small" for="selectAll">{{ __('admin.select_all') }}</label>
         </div>
         <div class="d-flex align-items-center py-2 gap-3">
             <button type="button" class="btn btn-sm btn-outline-primary" id="btnTranslateSelected" disabled>
                 <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#translate"/></svg>
-                Mit DeepL übersetzen (<span id="selectedCount">0</span>)
+                {{ __('admin.translate_with_deepl') }} (<span id="selectedCount">0</span>)
             </button>
             <button type="button" class="btn btn-sm btn-primary" id="btnApplyAll" disabled>
                 <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#check2-all"/></svg>
-                Übernehmen
+                {{ __('admin.apply') }}
             </button>
         </div>
     </div>
@@ -51,13 +51,13 @@
                         <div class="d-flex align-items-center justify-content-between px-3 py-2 user-select-none sidebar-section-toggle"
                              style="cursor:pointer; background:var(--bs-light); border-radius:inherit;"
                              data-bs-toggle="collapse" data-bs-target="#sidebarLangs" aria-expanded="true">
-                            <span class="text-uppercase fw-semibold text-muted" style="font-size:.7rem;letter-spacing:.05em;">Sprachen</span>
+                            <span class="text-uppercase fw-semibold text-muted" style="font-size:.7rem;letter-spacing:.05em;">{{ __('admin.languages') }}</span>
                             <svg class="bi sidebar-chevron" width="11" height="11" fill="currentColor" style="transition:transform .2s;flex-shrink:0;"><use xlink:href="/img/icons/bootstrap-icons.svg#chevron-up"/></svg>
                         </div>
                         <div class="collapse show" id="sidebarLangs">
                             <div class="px-2 py-2">
                                 <div class="d-flex justify-content-between align-items-center mb-1 px-1" style="font-size:.8rem;">
-                                    <span class="text-muted">Für DeepL:</span>
+                                    <span class="text-muted">{{ __('admin.for_deepl') }}:</span>
                                     <div class="d-flex gap-2">
                                         <a href="#" class="text-primary text-decoration-none" id="selectAllLangs">Alle</a>
                                         <span class="text-muted">/</span>
@@ -106,7 +106,7 @@
                         <div class="collapse show" id="sidebarStatus">
                             <div class="px-2 py-2">
                                 <div class="d-flex justify-content-between align-items-center mb-1 px-1" style="font-size:.8rem;">
-                                    <span class="text-muted">Filter:</span>
+                                    <span class="text-muted">{{ __('admin.filter') }}:</span>
                                     <div class="d-flex gap-2">
                                         <a href="#" class="text-primary text-decoration-none" id="selectAllStatus">Alle</a>
                                         <span class="text-muted">/</span>
@@ -142,7 +142,7 @@
                         <div class="d-flex align-items-center justify-content-between px-3 py-2 user-select-none sidebar-section-toggle"
                              style="cursor:pointer; background:var(--bs-light); border-radius:inherit;"
                              data-bs-toggle="collapse" data-bs-target="#sidebarContent" aria-expanded="true">
-                            <span class="text-uppercase fw-semibold text-muted" style="font-size:.7rem;letter-spacing:.05em;">Inhalt</span>
+                            <span class="text-uppercase fw-semibold text-muted" style="font-size:.7rem;letter-spacing:.05em;">{{ __('admin.content') }}</span>
                             <svg class="bi sidebar-chevron" width="11" height="11" fill="currentColor" style="transition:transform .2s;flex-shrink:0;"><use xlink:href="/img/icons/bootstrap-icons.svg#chevron-up"/></svg>
                         </div>
                         <div class="collapse show" id="sidebarContent">
@@ -173,7 +173,7 @@
                                 <input type="hidden" name="status[]" value="{{ $s }}">
                             @endforeach
                             <select name="id" class="form-select form-select-sm" style="width:auto;max-width:240px;" onchange="this.form.submit()">
-                                <option value="">— Alle {{ collect($types)->firstWhere('key', $typeFilter)['label'] ?? '' }} —</option>
+                                <option value="">— {{ __('admin.all_of_type', ['type' => collect($types)->firstWhere('key', $typeFilter)['label'] ?? '']) }} —</option>
                                 @foreach($typeRecords as $rec)
                                     <option value="{{ $rec['id'] }}" {{ (string)$idFilter === (string)$rec['id'] ? 'selected' : '' }}>
                                         {{ \Illuminate\Support\Str::limit($rec['title'], 35) }}
@@ -206,12 +206,13 @@
                                             <div class="col-source" data-index="{{ $i }}">
                                                 <label class="form-label small text-muted">
                                                     <span class="badge bg-light text-dark border">{{ strtoupper($sourceLang) }}</span>
-                                                    Quelltext
-                                                    <button type="button" class="btn btn-sm btn-link p-0 ms-2 btn-save-source" data-index="{{ $i }}" title="Quelltext speichern" style="display:none;">
+                                                    {{ __('admin.source_text') }}
+                                                    <button type="button" class="btn btn-sm btn-link p-0 ms-2 btn-save-source" data-index="{{ $i }}" title="{{ __('admin.save_source_text') }}" style="display:none;">
                                                         <svg class="bi" width="14" height="14" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#floppy"/></svg>
                                                     </button>
                                                 </label>
                                                 <textarea class="form-control form-control-sm source-input" data-index="{{ $i }}" style="overflow:hidden; background: var(--bs-light);">{{ $item['source'] }}</textarea>
+                                                <div class="small mt-1 placeholder-hint-source" data-index="{{ $i }}" style="display:none;"></div>
                                             </div>
                                             {{-- Translation columns inserted dynamically by JS --}}
                                         </div>
@@ -221,7 +222,7 @@
                         </div>
                     @empty
                         <div class="text-center text-muted py-5">
-                            Keine Einträge für den gewählten Filter.
+                            {{ __('admin.no_entries_for_filter') }}
                         </div>
                     @endforelse
                 </div>
@@ -254,7 +255,7 @@
                 </div>
                 <div class="modal-footer border-0 pt-0">
                     <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Abbrechen</button>
-                    <button type="button" class="btn btn-sm btn-primary" id="langPublishModalConfirm">Ja, umschalten</button>
+                    <button type="button" class="btn btn-sm btn-primary" id="langPublishModalConfirm">{{ __('admin.yes_switch') }}</button>
                 </div>
             </div>
         </div>
@@ -271,6 +272,21 @@ document.addEventListener('DOMContentLoaded', function () {
     const CSRF           = document.querySelector('meta[name="csrf-token"]')?.content;
     const LOCALE_FLAGS   = @json($localeFlags);
     const ITEMS          = @json($items);
+    const I18N = @json([
+        'variables' => __('admin.variables'),
+        'missing_in_translation' => __('admin.missing_in_translation'),
+        'suggestion_editable' => __('admin.suggestion_editable'),
+        'source_saved' => __('admin.source_saved'),
+        'please_select_at_least_one_language' => __('admin.please_select_at_least_one_language'),
+        'translated_to' => __('admin.translated_to', ['langs' => ':langs']),
+        'no_translation_received' => __('admin.no_translation_received'),
+        'translated_saved' => __('admin.translated_saved', ['count' => ':count', 'langs' => ':langs']),
+        'apply' => __('admin.apply'),
+        'translate_with_deepl_count' => __('admin.translate_with_deepl_count', ['count' => ':count']),
+        'translate_with_deepl' => __('admin.translate_with_deepl'),
+        'switch_to_draft' => __('admin.switch_to_draft'),
+        'switch_to_live' => __('admin.switch_to_live'),
+    ]);
 
     // ── Two-panel layout height ───────────────────────────────────────────
     const layout = document.getElementById('twoPanelLayout');
@@ -298,6 +314,55 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     function escHtml(s) {
         return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+    function extractPlaceholders(text) {
+        const matches = String(text ?? '').match(/\{[^{}]+\}|:[A-Za-z_][A-Za-z0-9_]*/g) || [];
+        return [...new Set(matches)];
+    }
+    function renderPlaceholderHints(idx) {
+        const sourceTa = document.querySelector(`.source-input[data-index="${idx}"]`);
+        if (!sourceTa) return;
+
+        const sourceVars = extractPlaceholders(sourceTa.value);
+        const sourceHint = document.querySelector(`.placeholder-hint-source[data-index="${idx}"]`);
+        if (sourceHint) {
+            if (!sourceVars.length) {
+                sourceHint.style.display = 'none';
+                sourceHint.innerHTML = '';
+            } else {
+                sourceHint.style.display = '';
+                sourceHint.innerHTML = `<span class="text-muted">${escHtml(I18N.variables)}:</span> ${
+                    sourceVars.map(v => `<span class="badge bg-dark-subtle text-dark border">${escHtml(v)}</span>`).join(' ')
+                }`;
+            }
+        }
+
+        document.querySelectorAll(`.placeholder-hint-target[data-index="${idx}"]`).forEach(hint => {
+            const lang = hint.dataset.lang;
+            const ta = document.querySelector(`.translation-input[data-index="${idx}"][data-lang="${lang}"]`);
+            if (!ta) return;
+
+            const targetVars = extractPlaceholders(ta.value);
+            const missing = sourceVars.filter(v => !targetVars.includes(v));
+            if (!sourceVars.length) {
+                hint.style.display = 'none';
+                hint.innerHTML = '';
+                return;
+            }
+
+            const varBadges = sourceVars.map(v => {
+                const isMissing = missing.includes(v);
+                return `<span class="badge ${isMissing ? 'bg-danger' : 'bg-success'}">${escHtml(v)}</span>`;
+            }).join(' ');
+
+            hint.style.display = '';
+            hint.innerHTML = `
+                <div class="d-flex flex-wrap align-items-center gap-1">
+                    <span class="text-muted">${escHtml(I18N.variables)}:</span> ${varBadges}
+                    ${missing.length ? `<span class="text-danger ms-1">${escHtml(I18N.missing_in_translation)}</span>` : ''}
+                </div>
+            `;
+        });
     }
     function showToast(msg, bgClass) {
         const toast = document.getElementById('transToast');
@@ -333,15 +398,16 @@ document.addEventListener('DOMContentLoaded', function () {
         const flag = LOCALE_FLAGS[lang] || '';
         return `<label class="form-label small text-muted">
             <span class="badge bg-light text-dark border">${flag} ${lang.toUpperCase()}</span>
-            Vorschlag (editierbar)
+            ${escHtml(I18N.suggestion_editable)}
             <button type="button" class="btn btn-sm btn-link p-0 ms-2 btn-translate-single"
-                    data-index="${idx}" data-lang="${lang}" title="Mit DeepL übersetzen">
+                    data-index="${idx}" data-lang="${lang}" title="${escHtml(I18N.translate_with_deepl_count.replace(':count', '1'))}">
                 <svg class="bi" width="14" height="14" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#translate"></use></svg>
             </button>
         </label>
         <textarea class="form-control form-control-sm translation-input"
                   data-index="${idx}" data-lang="${lang}"
-                  style="overflow:hidden;">${escHtml(val)}</textarea>`;
+                  style="overflow:hidden;">${escHtml(val)}</textarea>
+        <div class="small mt-1 placeholder-hint-target" data-index="${idx}" data-lang="${lang}" style="display:none;"></div>`;
     }
 
     function updateColumns() {
@@ -374,9 +440,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 const ta = div.querySelector('textarea');
                 if (ta) {
                     autoResize(ta);
-                    ta.addEventListener('input', () => { autoResize(ta); autoCheckItem(idx); });
+                    ta.addEventListener('input', () => { autoResize(ta); autoCheckItem(idx); renderPlaceholderHints(idx); });
                 }
             });
+
+            renderPlaceholderHints(idx);
         });
 
         document.querySelectorAll('.source-input').forEach(ta => autoResize(ta));
@@ -391,7 +459,9 @@ document.addEventListener('DOMContentLoaded', function () {
             autoResize(ta);
             if (saveBtn) saveBtn.style.display = ta.value !== originalValue ? '' : 'none';
             autoCheckItem(idx);
+            renderPlaceholderHints(idx);
         });
+        renderPlaceholderHints(idx);
     });
 
     function autoCheckItem(idx) {
@@ -421,7 +491,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const data = await res.json();
                 if (data.error) throw new Error(data.error);
                 btn.style.display = 'none';
-                showToast('Quelltext gespeichert', 'bg-success');
+                showToast(I18N.source_saved, 'bg-success');
             } catch (e) {
                 showToast('Fehler: ' + e.message, 'bg-danger');
             } finally {
@@ -535,7 +605,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const checked = getCheckedItems();
         if (!checked.length) return;
         const langs = getCheckedLangs();
-        if (!langs.length) { showToast('Bitte mindestens eine Sprache auswählen.', 'bg-warning'); return; }
+        if (!langs.length) { showToast(I18N.please_select_at_least_one_language, 'bg-warning'); return; }
 
         const btn = document.getElementById('btnTranslateSelected');
         btn.disabled = true;
@@ -566,12 +636,14 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 });
             }
-            showToast(`Übersetzt nach: ${langs.map(l=>l.toUpperCase()).join(', ')}`, 'bg-success');
+            showToast(I18N.translated_to.replace(':langs', langs.map(l=>l.toUpperCase()).join(', ')), 'bg-success');
         } catch (e) {
             showToast('Fehler: ' + e.message, 'bg-danger');
         } finally {
             btn.disabled = false;
-            btn.innerHTML = '<svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#translate"></use></svg> Mit DeepL übersetzen (<span id="selectedCount">' + document.querySelectorAll('.item-checkbox:checked').length + '</span>)';
+            btn.innerHTML = '<svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#translate"></use></svg> '
+                + I18N.translate_with_deepl
+                + ' (<span id="selectedCount">' + document.querySelectorAll('.item-checkbox:checked').length + '</span>)';
             btn.disabled = document.querySelectorAll('.item-checkbox:checked').length === 0;
         }
     });
@@ -607,7 +679,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 item.translations[lang] = t.text;
                 autoCheckItem(idx);
             } else {
-                showToast('Keine Übersetzung erhalten – bitte DeepL-Konfiguration prüfen.', 'bg-warning');
+                showToast(I18N.no_translation_received, 'bg-warning');
             }
         } catch (e) {
             showToast('Fehler: ' + e.message, 'bg-danger');
@@ -647,13 +719,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 total += applyItems.length;
             }
             const langs = Object.keys(byLang).map(l => l.toUpperCase()).join(', ');
-            showToast(`${total} Übersetzungen gespeichert (${langs})!`, 'bg-success');
+            showToast(I18N.translated_saved.replace(':count', total).replace(':langs', langs), 'bg-success');
             setTimeout(() => location.reload(), 1500);
         } catch (e) {
             showToast('Fehler: ' + e.message, 'bg-danger');
         } finally {
             btn.disabled = false;
-            btn.innerHTML = '<svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#check2-all"></use></svg> Übernehmen';
+            btn.innerHTML = '<svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#check2-all"></use></svg> ' + I18N.apply;
         }
     });
 
@@ -676,7 +748,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     ? '<br><span class="small text-muted mt-1 d-block">Die Sprache wird im Frontend ausgeblendet.</span>'
                     : '<span class="small text-muted mt-1 d-block">Die Sprache erscheint sofort im Frontend.</span>');
             langModalConfirm.className = 'btn btn-sm ' + (currentlyPublished ? 'btn-danger' : 'btn-success');
-            langModalConfirm.textContent = currentlyPublished ? 'Ja, auf Draft setzen' : 'Ja, live stellen';
+            langModalConfirm.textContent = currentlyPublished ? I18N.switch_to_draft : I18N.switch_to_live;
             pendingToggleBtn = btn;
             langModal.show();
         });

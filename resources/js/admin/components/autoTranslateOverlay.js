@@ -30,6 +30,46 @@ const LOCALE_NAMES = {
     it: 'IT', pt: 'PT', nl: 'NL', ja: 'JA',
 };
 
+const ATO_I18N = {
+    overlay_changed_fields_processing: 'Geänderte Felder werden verarbeitet…',
+    overlay_auto_translations_generating: 'Automatische Übersetzungen werden generiert…',
+    overlay_translate_content: 'Inhalt übersetzen',
+    overlay_generate_seo_geo: 'SEO & GEO generieren',
+    overlay_translate_seo_geo: 'SEO & GEO übersetzen',
+    overlay_please_wait: 'Bitte warten…',
+    overlay_translations: 'Übersetzungen',
+    overlay_no_fields_to_translate: 'Keine Felder zu übersetzen',
+    overlay_no_changed_fields: 'Keine geänderten Felder',
+    overlay_no_fields: 'Keine Felder',
+    overlay_seo_geo_not_available: 'Nicht verfügbar für diesen Typ',
+    overlay_skipped_user_choice: 'Übersprungen (Benutzer-Auswahl)',
+    overlay_skipped_no_confirm: 'Übersprungen (bei Dialog mit "Nein" bestätigt)',
+    overlay_close_done: 'Schließen ✓',
+    overlay_confirm_seo_geo_rerun: 'SEO & GEO neu ausführen?',
+    overlay_confirm_seo_geo_text: 'Inhalt wird wie gewohnt übersetzt. Soll zusätzlich SEO/GEO neu generiert und übersetzt werden?',
+    overlay_yes: 'Ja',
+    overlay_no: 'Nein',
+    overlay_saved: 'Gespeichert',
+    overlay_saved_detail: 'Eintrag erfolgreich gespeichert',
+    overlay_fields: 'Felder',
+    overlay_changed_unchanged: ':unchanged unverändert · :changed geändert',
+    overlay_translations_detail_ok: ':count Sprachen übersetzt',
+    overlay_translations_detail_mix: ':ok OK · :err Fehler',
+    overlay_seo_geo: 'SEO & GEO',
+    overlay_generated: 'Generiert',
+    overlay_generation_error: 'Fehler bei Generierung',
+    overlay_geo_translations: 'GEO-Übersetzungen',
+    ...(window.ADMIN_I18N || {}),
+};
+
+function tr(key, repl = {}) {
+    let text = ATO_I18N[key] ?? key;
+    Object.entries(repl).forEach(([k, v]) => {
+        text = text.replace(`:${k}`, String(v));
+    });
+    return text;
+}
+
 // ── Entry point ─────────────────────────────────────────────────────────────
 
 export function autoTranslateOverlay() {
@@ -78,7 +118,7 @@ async function runOverlay(cfg) {
         }
     } else {
         showSection(overlay, 'content');
-        setNote(overlay, 'content', isUpdate ? 'Keine geänderten Felder' : 'Keine Felder');
+        setNote(overlay, 'content', isUpdate ? tr('overlay_no_changed_fields') : tr('overlay_no_fields'));
     }
 
     // ── Phase 2+3: SEO/GEO (for updates only after explicit confirmation) ──
@@ -88,8 +128,8 @@ async function runOverlay(cfg) {
         if (!shouldRunSeoGeo) {
             summary.geoSkippedByUser = true;
             summary.geoSkipped = true;
-            setNote(overlay, 'geo', 'Übersprungen (bei Dialog mit "Nein" bestätigt)');
-            setNote(overlay, 'seo', 'Übersprungen (bei Dialog mit "Nein" bestätigt)');
+            setNote(overlay, 'geo', tr('overlay_skipped_no_confirm'));
+            setNote(overlay, 'seo', tr('overlay_skipped_no_confirm'));
         }
     }
 
@@ -227,13 +267,13 @@ function showSummary(overlay, summary, cfg) {
     const rows = [];
 
     // Speichern — always ok (we got here)
-    rows.push(summaryRow('✓', 'bg-success', 'Gespeichert', 'Eintrag erfolgreich gespeichert'));
+    rows.push(summaryRow('✓', 'bg-success', tr('overlay_saved'), tr('overlay_saved_detail')));
 
     // Delta info for updates
     if (isUpdate && unchangedCount > 0) {
         const changedTotal = (changedFields?.length ?? 0) + (changedSeoFields?.length ?? 0);
-        rows.push(summaryRow('ℹ', 'bg-secondary', 'Felder',
-            `${unchangedCount} unverändert · ${changedTotal} geändert`));
+        rows.push(summaryRow('ℹ', 'bg-secondary', tr('overlay_fields'),
+            tr('overlay_changed_unchanged', { unchanged: unchangedCount, changed: changedTotal })));
     }
 
     // Translations
@@ -243,13 +283,13 @@ function showSummary(overlay, summary, cfg) {
         rows.push(summaryRow(
             allOk ? '✓' : '!',
             allOk ? 'bg-success' : 'bg-warning text-dark',
-            'Übersetzungen',
+            tr('overlay_translations'),
             allOk
-                ? `${summary.contentOk} Sprachen übersetzt`
-                : `${summary.contentOk} OK · ${summary.contentErr} Fehler`
+                ? tr('overlay_translations_detail_ok', { count: summary.contentOk })
+                : tr('overlay_translations_detail_mix', { ok: summary.contentOk, err: summary.contentErr })
         ));
     } else {
-        rows.push(summaryRow('–', 'bg-secondary', 'Übersetzungen', 'Keine Felder zu übersetzen'));
+        rows.push(summaryRow('–', 'bg-secondary', tr('overlay_translations'), tr('overlay_no_fields_to_translate')));
     }
 
     // GEO
@@ -257,8 +297,8 @@ function showSummary(overlay, summary, cfg) {
         rows.push(summaryRow(
             summary.geoOk ? '✓' : '✗',
             summary.geoOk ? 'bg-success' : 'bg-danger',
-            'SEO & GEO',
-            summary.geoOk ? 'Generiert' : 'Fehler bei Generierung'
+            tr('overlay_seo_geo'),
+            summary.geoOk ? tr('overlay_generated') : tr('overlay_generation_error')
         ));
         // GEO translations
         const gTotal = summary.seoOk + summary.seoErr;
@@ -267,17 +307,17 @@ function showSummary(overlay, summary, cfg) {
             rows.push(summaryRow(
                 allOk ? '✓' : '!',
                 allOk ? 'bg-success' : 'bg-warning text-dark',
-                'GEO-Übersetzungen',
+                tr('overlay_geo_translations'),
                 allOk
-                    ? `${summary.seoOk} Sprachen übersetzt`
-                    : `${summary.seoOk} OK · ${summary.seoErr} Fehler`
+                    ? tr('overlay_translations_detail_ok', { count: summary.seoOk })
+                    : tr('overlay_translations_detail_mix', { ok: summary.seoOk, err: summary.seoErr })
             ));
         }
     } else {
         const detail = summary.geoSkippedByUser
-            ? 'Übersprungen (Benutzer-Auswahl)'
-            : 'Nicht verfügbar für diesen Typ';
-        rows.push(summaryRow('–', 'bg-secondary', 'SEO & GEO', detail));
+            ? tr('overlay_skipped_user_choice')
+            : tr('overlay_seo_geo_not_available');
+        rows.push(summaryRow('–', 'bg-secondary', tr('overlay_seo_geo'), detail));
     }
 
     summaryEl.innerHTML = `
@@ -286,7 +326,7 @@ function showSummary(overlay, summary, cfg) {
         </div>
         <div class="d-flex flex-wrap gap-2 mt-2">
             ${editUrl ? `<a href="${editUrl}" class="btn btn-sm btn-outline-secondary">← Zurück zum Eintrag</a>` : ''}
-            ${translationsUrl ? `<a href="${translationsUrl}" class="btn btn-sm btn-outline-primary">Übersetzungen</a>` : ''}
+            ${translationsUrl ? `<a href="${translationsUrl}" class="btn btn-sm btn-outline-primary">${tr('overlay_translations')}</a>` : ''}
             ${seoGeoUrl ? `<a href="${seoGeoUrl}" class="btn btn-sm btn-outline-info">SEO / GEO</a>` : ''}
         </div>
     `;
@@ -294,7 +334,7 @@ function showSummary(overlay, summary, cfg) {
 
     const closeBtn = overlay.querySelector('[data-ato-close]');
     closeBtn.disabled = false;
-    closeBtn.textContent = 'Schließen ✓';
+    closeBtn.textContent = tr('overlay_close_done');
     closeBtn.classList.replace('btn-secondary', 'btn-success');
     closeBtn.addEventListener('click', () => overlay.remove(), { once: true });
 }
@@ -326,13 +366,13 @@ function askSeoGeoConfirmation(overlay) {
         dialog.innerHTML = `
             <div class="card shadow border-0" style="max-width:420px;width:calc(100% - 2rem)">
                 <div class="card-body">
-                    <div class="fw-semibold mb-2">SEO &amp; GEO neu ausführen?</div>
+                    <div class="fw-semibold mb-2">${tr('overlay_confirm_seo_geo_rerun')}</div>
                     <div class="small text-muted mb-3">
-                        Inhalt wird wie gewohnt übersetzt. Soll zusätzlich SEO/GEO neu generiert und übersetzt werden?
+                        ${tr('overlay_confirm_seo_geo_text')}
                     </div>
                     <div class="d-flex justify-content-end gap-2">
-                        <button type="button" class="btn btn-sm btn-outline-secondary" data-ato-seo-no>Nein</button>
-                        <button type="button" class="btn btn-sm btn-primary" data-ato-seo-yes>Ja</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-ato-seo-no>${tr('overlay_no')}</button>
+                        <button type="button" class="btn btn-sm btn-primary" data-ato-seo-yes>${tr('overlay_yes')}</button>
                     </div>
                 </div>
             </div>
@@ -397,7 +437,7 @@ function buildOverlay(cfg) {
         <div class="card border-0 shadow-lg" style="min-width:460px;max-width:560px;max-height:90vh;overflow-y:auto">
             <div class="card-header bg-dark text-white d-flex align-items-center gap-2 border-0 py-3">
                 <span data-ato-spinner class="spinner-border spinner-border-sm text-light flex-shrink-0"></span>
-                <span class="fw-semibold">${isUpdate ? 'Geänderte Felder werden verarbeitet…' : 'Automatische Übersetzungen werden generiert…'}</span>
+                <span class="fw-semibold">${isUpdate ? tr('overlay_changed_fields_processing') : tr('overlay_auto_translations_generating')}</span>
             </div>
 
             <div class="card-body py-3 d-flex flex-column gap-3">
@@ -406,7 +446,7 @@ function buildOverlay(cfg) {
 
                 <div data-ato-section="content">
                     <div class="small fw-bold text-uppercase text-muted mb-2" style="letter-spacing:.05em">
-                        Inhalt übersetzen
+                        ${tr('overlay_translate_content')}
                     </div>
                     <div class="d-flex flex-wrap gap-2">
                         ${langBadges(targetLangs, 'content')}
@@ -418,7 +458,7 @@ function buildOverlay(cfg) {
                 <div data-ato-section="geo" style="display:none">
                     <div class="d-flex align-items-center gap-2 text-muted mb-2" style="font-size:.8rem">
                         <div class="flex-grow-1 border-top"></div>
-                        <span class="fw-semibold text-uppercase" style="letter-spacing:.05em">SEO &amp; GEO generieren</span>
+                        <span class="fw-semibold text-uppercase" style="letter-spacing:.05em">${tr('overlay_generate_seo_geo')}</span>
                         <div class="flex-grow-1 border-top"></div>
                     </div>
                     <div class="d-flex flex-wrap gap-2">
@@ -429,7 +469,7 @@ function buildOverlay(cfg) {
                 <div data-ato-section="seo" style="display:none">
                     <div class="d-flex align-items-center gap-2 text-muted mb-2" style="font-size:.8rem">
                         <div class="flex-grow-1 border-top"></div>
-                        <span class="fw-semibold text-uppercase" style="letter-spacing:.05em">SEO &amp; GEO übersetzen</span>
+                        <span class="fw-semibold text-uppercase" style="letter-spacing:.05em">${tr('overlay_translate_seo_geo')}</span>
                         <div class="flex-grow-1 border-top"></div>
                     </div>
                     <div class="d-flex flex-wrap gap-2">
@@ -443,7 +483,7 @@ function buildOverlay(cfg) {
             </div>
 
             <div class="card-footer bg-transparent border-0 text-end pb-3 pe-3">
-                <button data-ato-close class="btn btn-secondary btn-sm" disabled>Bitte warten…</button>
+                <button data-ato-close class="btn btn-secondary btn-sm" disabled>${tr('overlay_please_wait')}</button>
             </div>
         </div>
     `;
