@@ -40,7 +40,7 @@ jobs:
           local-dir: ./
           server-dir: ${{ vars.DEPLOY_SERVER_DIR }}
           timeout: 300000
-          state-name: .ftp-deploy-sync-state-production.json
+          state-name: .ftp-deploy-sync-state.json
           log-level: verbose
           exclude: |
             **/.git*
@@ -69,7 +69,7 @@ jobs:
           local-dir: ./
           server-dir: ${{ vars.DEPLOY_SERVER_DIR }}
           timeout: 300000
-          state-name: .ftp-deploy-sync-state-production.json
+          state-name: .ftp-deploy-sync-state.json
           log-level: verbose
           exclude: |
             **/.git*
