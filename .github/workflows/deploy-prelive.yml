@@ -1,14 +1,14 @@
-name: Deploy to Production
+name: Deploy to Prelive
 
 on:
   push:
     branches:
-      - main
+      - develop
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: production
+    environment: prelive
 
     steps:
       - name: Checkout code

@@ -35,6 +35,16 @@ class StoreRequest extends FormRequest
         $rules['seo_keywords'] = ['nullable', 'array'];
         $rules['geo_text'] = ['nullable', 'array'];
 
+        $rules['link_top_active'] = ['required', 'boolean'];
+        $rules['link_top_text'] = ['nullable', 'array'];
+        $rules['link_top_url'] = ['nullable', 'string', 'max:2048'];
+        $rules['link_top_file'] = ['nullable', 'file', 'max:51200'];
+
+        $rules['link_bottom_active'] = ['required', 'boolean'];
+        $rules['link_bottom_text'] = ['nullable', 'array'];
+        $rules['link_bottom_url'] = ['nullable', 'string', 'max:2048'];
+        $rules['link_bottom_file'] = ['nullable', 'file', 'max:51200'];
+
         foreach (supported_languages_keys() as $locale) {
             $isSource = $locale === $sourceLang;
 
@@ -46,6 +56,9 @@ class StoreRequest extends FormRequest
             $rules['seo_description.' . $locale] = ['nullable', 'string', 'max:255'];
             $rules['seo_keywords.' . $locale] = ['nullable', 'string', 'max:255'];
             $rules['geo_text.' . $locale] = ['nullable', 'string', 'max:5000'];
+
+            $rules['link_top_text.' . $locale] = ['nullable', 'string', 'max:255'];
+            $rules['link_bottom_text.' . $locale] = ['nullable', 'string', 'max:255'];
         }
 
         return $rules;
