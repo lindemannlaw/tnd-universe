@@ -17,12 +17,23 @@
         />
         <x-admin.button
             data-translate-blocks
+            data-translate-mode="regenerate"
             data-target-locale="de"
             data-translate-url="{{ route('admin.translate') }}"
             :btn="'btn-outline-info btn-sm'"
             :iconName="'globe'"
-            :shortTitle="'Übersetze…'"
-            :longTitle="'Auf Deutsch übersetzen'"
+            :shortTitle="'Neu generieren…'"
+            :longTitle="'Block neu generieren'"
+        />
+        <x-admin.button
+            data-translate-blocks
+            data-translate-mode="delta"
+            data-target-locale="de"
+            data-translate-url="{{ route('admin.translate') }}"
+            :btn="'btn-outline-secondary btn-sm'"
+            :iconName="'globe'"
+            :shortTitle="'Von EN…'"
+            :longTitle="'Block von EN übersetzen'"
         />
         <x-admin.button
             :type="'submit'"

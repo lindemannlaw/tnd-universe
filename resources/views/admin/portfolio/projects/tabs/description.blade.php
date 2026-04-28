@@ -703,12 +703,23 @@
                         <hr class="my-1">
                         <x-admin.button
                             data-translate-blocks
+                            data-translate-mode="regenerate"
                             data-target-locale="de"
                             data-translate-url="{{ route('admin.translate') }}"
                             class="ms-auto btn-sm"
                             :btn="'btn-outline-info'"
                             :iconName="'globe'"
-                            :title="'Auf Deutsch übersetzen'"
+                            :title="'Block neu generieren'"
+                        />
+                        <x-admin.button
+                            data-translate-blocks
+                            data-translate-mode="delta"
+                            data-target-locale="de"
+                            data-translate-url="{{ route('admin.translate') }}"
+                            class="btn-sm"
+                            :btn="'btn-outline-secondary'"
+                            :iconName="'globe'"
+                            :title="'Block von EN übersetzen'"
                         />
                     @endif
                 </div>

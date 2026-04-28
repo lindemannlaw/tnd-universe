@@ -111,6 +111,7 @@ async function handleTranslate(button) {
     const sourceLocale = 'en';
     const targetLocale = button.dataset.targetLocale || 'de';
     const translateUrl = button.dataset.translateUrl;
+    const mode = button.dataset.translateMode || 'delta';
     const timestamps   = getTimestamps(button);
 
     const form = getForm(button);
@@ -166,6 +167,44 @@ async function handleTranslate(button) {
     if (changedKeys.size === 0) {
         emptyDeKeys.forEach(key => changedKeys.add(key));
         deEqualsEnKeys.forEach(key => changedKeys.add(key));
+    }
+
+    // Full regenerate mode: always use current EN as source and fetch DeepL
+    // suggestions for ALL fields with content.
+    if (mode === 'regenerate' && translateUrl) {
+        try {
+            const resp = await fetch(translateUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken(),
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify({
+                    source_lang: sourceLocale,
+                    target_lang: targetLocale,
+                    items: itemsWithContent.map(({ key, text, isHtml }) => ({ key, text, isHtml })),
+                }),
+            });
+
+            if (!resp.ok) {
+                const errData = await resp.json().catch(() => ({}));
+                throw new Error(errData.error || `HTTP ${resp.status}`);
+            }
+
+            const data = await resp.json();
+            const deepLTranslations = data.translations ?? {};
+
+            itemsWithContent.forEach(({ key }) => {
+                if (deepLTranslations[key] !== undefined) {
+                    translations[key] = deepLTranslations[key];
+                }
+                changedKeys.add(key);
+            });
+        } catch (err) {
+            console.error('[translateBlocks] Full regenerate failed:', err);
+            showToast('error', 'Neu generieren fehlgeschlagen: ' + err.message);
+        }
     }
 
     if (titleSpan) titleSpan.textContent = originalTitle;
