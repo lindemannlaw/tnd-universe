@@ -253,3 +253,19 @@
 .related-news-articles-list {
     margin-top: range.build(30, 50);
 }
+
+// ── Article link (top, uses shared .arrow-link from _links.scss) ────────────
+.news-article-link-top {
+    margin-top: range.build(16, 30);
+}
+
+// ── Article file link (bottom, uses shared .file-download from _file-download.scss)
+.news-article-files {
+    max-width: 65%;
+    margin-inline: auto;
+    margin-top: range.build(40, 60);
+
+    @media (max-width: 767px) {
+        max-width: 100%;
+    }
+}

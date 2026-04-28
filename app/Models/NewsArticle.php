@@ -30,6 +30,13 @@ class NewsArticle extends Model implements HasMedia
         'seo_keywords',
         'geo_text',
 
+        'link_top_active',
+        'link_top_text',
+        'link_top_url',
+        'link_bottom_active',
+        'link_bottom_text',
+        'link_bottom_url',
+
         'active',
         'sort',
     ];
@@ -43,6 +50,9 @@ class NewsArticle extends Model implements HasMedia
         'seo_description',
         'seo_keywords',
         'geo_text',
+
+        'link_top_text',
+        'link_bottom_text',
     ];
 
     protected function casts(): array
@@ -55,11 +65,17 @@ class NewsArticle extends Model implements HasMedia
             'seo_description' => 'json',
             'seo_keywords' => 'json',
             'geo_text' => 'json',
+            'link_top_text' => 'json',
+            'link_top_active' => 'boolean',
+            'link_bottom_text' => 'json',
+            'link_bottom_active' => 'boolean',
             'active' => 'boolean',
         ];
     }
 
     public string $mediaDescription = 'description';
+    public string $mediaLinkTopFile = 'link_top_file';
+    public string $mediaLinkBottomFile = 'link_bottom_file';
 
     public array $mediaSizes = [
         'xl' => 3840,

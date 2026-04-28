@@ -73,6 +73,18 @@ return [
     'show' => 'Show',
     'inquiry_button_text' => 'Inquiry Button Text',
     'inquiry_button_active' => 'Show Inquiry Button',
+
+    'link_top_section' => 'Top Link (in article meta)',
+    'link_top_text' => 'Link Text (top)',
+    'link_top_url' => 'Link URL (top)',
+    'link_top_active' => 'Show Top Link',
+    'link_upload_file' => 'Upload File (overrides URL)',
+    'link_replace_file' => 'Replace File',
+
+    'link_bottom_section' => 'Bottom Link (end of article)',
+    'link_bottom_text' => 'Link Text (bottom)',
+    'link_bottom_url' => 'Link URL (bottom)',
+    'link_bottom_active' => 'Show Bottom Link',
     'cancel' => 'Cancel',
     'short_description' => 'Short Description',
     'description' => 'Description',
