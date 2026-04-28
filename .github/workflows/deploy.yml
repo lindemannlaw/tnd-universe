@@ -42,7 +42,6 @@ jobs:
             **/.git*
             **/.git*/**
             **/node_modules/**
-            **/vendor/**
             **/tests/**
             **/.claude/**
             .env
