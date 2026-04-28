@@ -47,6 +47,7 @@
                 data-clone-project
                 data-clone-url="{{ route('admin.portfolio.project.clone', $project->id) }}"
                 data-update-id-section="projects-list"
+                data-clone-confirm="Projekt duplizieren?"
                 title="Duplizieren"
             />
 

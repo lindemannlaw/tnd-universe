@@ -2,10 +2,10 @@ import { ajax } from '../../ajax.js';
 
 export function ajaxCloneButton() {
     document.addEventListener('click', event => {
-        const button = event?.target?.closest('[data-clone-project]');
+        const button = event?.target?.closest('[data-clone-item], [data-clone-project]');
         if (!button) return;
 
-        if (!confirm('Projekt duplizieren?')) return;
+        if (!confirm(button.dataset.cloneConfirm || 'Eintrag duplizieren?')) return;
 
         const url = button.dataset.cloneUrl;
         const updateSection = button.dataset.updateIdSection;
