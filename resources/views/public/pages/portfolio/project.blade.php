@@ -419,15 +419,15 @@ $galleryImageSizes = [
             </article>
 
             @if ($project->hasMedia($project->mediaFiles))
-                <div class="project-files file-download-list">
+                <div class="project-files">
                     @foreach ($project->getMedia($project->mediaFiles) as $file)
                         <a
                             href="{{ $file->getUrl() }}"
-                            class="file-download"
+                            class="project-file"
                             download="{{ $file->custom_properties['name'] }}"
                         >
-                            <span class="file-download-name">{{ $file->custom_properties['name'] }}</span>
-                            <span class="file-download-size">{{ number_format($file->size / (1024 * 1024), 2) }}
+                            <span class="project-file-name">{{ $file->custom_properties['name'] }}</span>
+                            <span class="project-file-size">{{ number_format($file->size / (1024 * 1024), 2) }}
                                 Mb</span>
                         </a>
                     @endforeach

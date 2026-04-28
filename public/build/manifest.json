@@ -1,42 +1,40 @@
 {
-  "_ajax-BtXorv6r.js": {
-    "file": "assets/js/ajax-BtXorv6r.js",
+  "_ajax-CamzppoW.js": {
+    "file": "assets/js/ajax-CamzppoW.js",
     "name": "ajax"
   },
   "resources/css/admin/admin.scss": {
-    "file": "assets/css/admin-Cbvg1Je-.css",
+    "file": "assets/css/admin-CY6bf_yC.css",
     "src": "resources/css/admin/admin.scss",
     "isEntry": true,
-    "name": "admin",
     "names": [
       "admin.css"
     ]
   },
   "resources/css/public/public.scss": {
-    "file": "assets/css/public-DwJT6_EQ.css",
+    "file": "assets/css/public-DdNOLYD0.css",
     "src": "resources/css/public/public.scss",
     "isEntry": true,
-    "name": "public",
     "names": [
       "public.css"
     ]
   },
   "resources/js/admin/admin.js": {
-    "file": "assets/js/admin-C0r3o0Jn.js",
+    "file": "assets/js/admin-Cvmj82Gu.js",
     "name": "admin",
     "src": "resources/js/admin/admin.js",
     "isEntry": true,
     "imports": [
-      "_ajax-BtXorv6r.js"
+      "_ajax-CamzppoW.js"
     ]
   },
   "resources/js/public/public.js": {
-    "file": "assets/js/public-DaCLc1ja.js",
+    "file": "assets/js/public-C0eyNnVb.js",
     "name": "public",
     "src": "resources/js/public/public.js",
     "isEntry": true,
     "imports": [
-      "_ajax-BtXorv6r.js"
+      "_ajax-CamzppoW.js"
     ]
   }
 }
