@@ -27,7 +27,9 @@ jobs:
           npm install
           npm run build
 
-      - name: Deploy via FTP
+      - name: Deploy via FTP (attempt 1)
+        id: ftp_deploy_1
+        continue-on-error: true
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -37,7 +39,38 @@ jobs:
           port: 21
           local-dir: ./
           server-dir: ${{ vars.DEPLOY_SERVER_DIR }}
-          timeout: 120000
+          timeout: 300000
+          state-name: .ftp-deploy-sync-state-production.json
+          log-level: verbose
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/tests/**
+            **/.claude/**
+            .env
+            public/storage
+            public/media/**
+            storage/app/public/**
+            storage/logs/**
+            storage/framework/cache/**
+            storage/framework/views/**
+
+      - name: Deploy via FTP (attempt 2)
+        if: steps.ftp_deploy_1.outcome == 'failure'
+        id: ftp_deploy_2
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          local-dir: ./
+          server-dir: ${{ vars.DEPLOY_SERVER_DIR }}
+          timeout: 300000
+          state-name: .ftp-deploy-sync-state-production.json
+          log-level: verbose
           exclude: |
             **/.git*
             **/.git*/**
