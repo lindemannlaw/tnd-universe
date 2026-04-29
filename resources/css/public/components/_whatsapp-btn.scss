@@ -50,10 +50,18 @@
 
     &--footer,
     &--contacts {
+        --wa-color: var(--color-white);
+        --wa-bg: var(--color-interaction-primary-default);
+        --wa-border: var(--color-interaction-primary-default);
+        --wa-hover-color: var(--color-white);
+        --wa-hover-bg: var(--color-interaction-primary-hover);
+        --wa-hover-border: var(--color-interaction-primary-hover);
+
         width: auto;
         height: 48px;
         padding: 0 1.25em;
         border-radius: 100px;
+        align-self: flex-start;
 
         .whatsapp-btn-label {
             display: inline;

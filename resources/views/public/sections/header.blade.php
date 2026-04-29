@@ -16,9 +16,10 @@
             </ul>
         </nav>
 
-        <button data-fancybox data-src="#contact-modal" type="button" class="btn header-contact-btn">{{ __('base.get_in_touch') }}</button>
-
-        @include('public.fragments.whatsapp-button', ['variant' => 'header'])
+        <div class="header-cta-group">
+            <button data-fancybox data-src="#contact-modal" type="button" class="btn header-contact-btn">{{ __('base.get_in_touch') }}</button>
+            @include('public.fragments.whatsapp-button', ['variant' => 'header'])
+        </div>
 
         <div class="lang">
             <p>{{ current_locale() }}</p>
