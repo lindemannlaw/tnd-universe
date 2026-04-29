@@ -25,3 +25,9 @@ Thumbs.db
 /doc.txt
 /public/media/
 /public/media.zip
+
+# Repo hygiene
+composer.phar
+.env.save
+.ftp-deploy-sync-state.json
+.ftp-deploy-sync-state-prelive.json
