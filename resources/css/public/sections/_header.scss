@@ -27,6 +27,16 @@
         display: flex;
         align-items: center;
         gap: 2px;
+        margin: 0 1.5em;
+
+        @media (max-width: 1439px) {
+            margin: 0 .5em;
+        }
+
+        // Children inherit the wrapper's outer breathing room — drop their own.
+        .header-contact-btn {
+            margin: 0;
+        }
     }
 
     a {
