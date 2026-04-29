@@ -6,7 +6,7 @@
  *     type, id, isUpdate, translateUrl, applyUrl, geoGenerateUrl,
  *     hasSeo, sourceLang, targetLangs, contentFields,
  *     editUrl, translationsUrl, seoGeoUrl,
- *     unchangedCount, changedFields, changedSeoFields
+ *     unchangedCount, changedFields
  *   }
  *
  * Two-phase flow (store):
@@ -46,7 +46,7 @@ async function runOverlay(cfg) {
         hasSeo = false, sourceLang, targetLangs,
         contentFields = [],
         editUrl, translationsUrl, seoGeoUrl,
-        unchangedCount = 0, changedFields = [], changedSeoFields = [],
+        unchangedCount = 0, changedFields = [],
     } = cfg;
 
     if (!targetLangs?.length) return;
@@ -197,7 +197,7 @@ function setStatus(overlay, phase, lang, status) {
 }
 
 function showSummary(overlay, summary, cfg) {
-    const { isUpdate, unchangedCount, changedFields, changedSeoFields,
+    const { isUpdate, unchangedCount, changedFields,
             hasSeo, editUrl, translationsUrl, seoGeoUrl } = cfg;
 
     overlay.querySelector('[data-ato-spinner]').style.display = 'none';
@@ -212,7 +212,7 @@ function showSummary(overlay, summary, cfg) {
 
     // Delta info for updates
     if (isUpdate && unchangedCount > 0) {
-        const changedTotal = (changedFields?.length ?? 0) + (changedSeoFields?.length ?? 0);
+        const changedTotal = changedFields?.length ?? 0;
         rows.push(summaryRow('ℹ', 'bg-secondary', 'Felder',
             `${unchangedCount} unverändert · ${changedTotal} geändert`));
     }
@@ -339,11 +339,11 @@ function langBadges(langs, phase) {
 function buildOverlay(cfg) {
     const {
         isUpdate, targetLangs, sourceLang, hasSeo,
-        unchangedCount, changedFields, changedSeoFields,
+        unchangedCount, changedFields,
     } = cfg;
 
     const allGeoLangs  = hasSeo ? [sourceLang, ...targetLangs] : [];
-    const changedTotal = (changedFields?.length ?? 0) + (changedSeoFields?.length ?? 0);
+    const changedTotal = changedFields?.length ?? 0;
 
     let deltaNote = '';
     if (isUpdate) {

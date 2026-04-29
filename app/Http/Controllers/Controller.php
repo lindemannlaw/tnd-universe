@@ -20,7 +20,8 @@ abstract class Controller
 
     /**
      * Build the autoTranslate payload for a freshly created record (store).
-     * All content & SEO fields are included.
+     * All content fields are included; SEO/GEO is regenerated natively per
+     * locale in phase 2 and does not need to be listed in the payload.
      */
     protected function buildAutoTranslatePayload(
         \Illuminate\Database\Eloquent\Model $model,
@@ -47,13 +48,11 @@ abstract class Controller
             'sourceLang'     => $sourceLang,
             'targetLangs'    => $targetLangs,
             'contentFields'  => $contentFields,
-            'seoFields'      => $hasSeo ? ['seo_title', 'seo_description', 'seo_keywords', 'geo_text'] : [],
             'editUrl'        => route($editRoute, $editRouteParams),
             'translationsUrl' => route('admin.translations.index', ['type' => $type, 'id' => $model->id]),
             'seoGeoUrl'      => $hasSeo ? route('admin.seo-geo.index', ['type' => $type, 'id' => $model->id]) : null,
             'unchangedCount' => 0,
             'changedFields'  => $contentFields,
-            'changedSeoFields' => $hasSeo ? ['seo_title', 'seo_description', 'seo_keywords', 'geo_text'] : [],
         ];
     }
 
@@ -88,18 +87,6 @@ abstract class Controller
             }
         }
 
-        // SEO fields: include if any changed
-        $changedSeo = [];
-        if ($hasSeo) {
-            foreach (['seo_title', 'seo_description', 'seo_keywords', 'geo_text'] as $sf) {
-                $newVal = (string) ($freshModel->getTranslation($sf, $sourceLang, false) ?? '');
-                $oldVal = $oldValues[$sf] ?? '';
-                if (filled($newVal) && $newVal !== $oldVal) {
-                    $changedSeo[] = $sf;
-                }
-            }
-        }
-
         return [
             'type'            => $type,
             'id'              => $freshModel->id,
@@ -111,13 +98,11 @@ abstract class Controller
             'sourceLang'      => $sourceLang,
             'targetLangs'     => $targetLangs,
             'contentFields'   => $changedContent,
-            'seoFields'       => $changedSeo,
             'editUrl'         => route($editRoute, $editRouteParams),
             'translationsUrl' => route('admin.translations.index', ['type' => $type, 'id' => $freshModel->id]),
             'seoGeoUrl'       => $hasSeo ? route('admin.seo-geo.index', ['type' => $type, 'id' => $freshModel->id]) : null,
             'unchangedCount'  => $unchangedCount,
             'changedFields'   => $changedContent,
-            'changedSeoFields' => $changedSeo,
         ];
     }
 
