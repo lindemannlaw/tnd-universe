@@ -36,7 +36,7 @@ class AboutPageController extends Controller
             DB::commit();
         } catch (\Exception $exception) {
             DB::rollBack();
-            if(app()->environment('local')) dd($exception);
+            report($exception);
             return redirect()->back()->with('error', __('errors.general'));
         }
 

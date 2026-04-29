@@ -48,8 +48,8 @@ class ManagerController extends Controller
             DB::commit();
         } catch (\Exception $exception) {
             DB::rollBack();
-
-            dd($exception);
+            report($exception);
+            return redirect()->back()->with('error', __('errors.general'));
         }
 
         return redirect()->route('admin.manager')->with('success', __('texts.successCreateManager', ['name' => $manager->first_name . ' ' . $manager->last_name]));
@@ -89,8 +89,8 @@ class ManagerController extends Controller
             DB::commit();
         } catch (\Exception $exception) {
             DB::rollBack();
-
-            dd($exception);
+            report($exception);
+            return redirect()->back()->with('error', __('errors.general'));
         }
 
         return redirect()->route('admin.manager')->with('success', __('texts.successUpdatedManager', ['name' => $manager->first_name . ' ' . $manager->last_name]));
@@ -107,8 +107,8 @@ class ManagerController extends Controller
             DB::commit();
         } catch (\Exception $exception) {
             DB::rollBack();
-
-            dd($exception);
+            report($exception);
+            return redirect()->back()->with('error', __('errors.general'));
         }
 
         return redirect()->back()->with('success', __('texts.successDeleteManager', ['name' => $manager->first_name . ' ' . $manager->last_name]));

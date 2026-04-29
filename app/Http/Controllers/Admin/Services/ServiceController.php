@@ -65,7 +65,7 @@ class ServiceController extends Controller
                 ], 500);
             }
 
-            if(app()->environment('local')) dd($exception);
+            report($exception);
             return redirect()->back()->with('error', __('errors.general'));
         }
 
@@ -131,7 +131,7 @@ class ServiceController extends Controller
                 ], 500);
             }
 
-            if(app()->environment('local')) dd($exception);
+            report($exception);
             return redirect()->back()->with('error', __('errors.general'));
         }
 
@@ -169,7 +169,7 @@ class ServiceController extends Controller
                 ], 500);
             }
 
-            if(app()->environment('local')) dd($exception);
+            report($exception);
             return redirect()->back()->with('error', __('errors.general'));
         }
 
