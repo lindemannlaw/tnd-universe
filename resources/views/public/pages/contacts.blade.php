@@ -26,13 +26,25 @@
         >
 
         <div class="container contacts-container">
+            @php
+                $whatsappText = data_get($contacts->getTranslation('content_data', config('app.fallback_locale')), 'whatsapp_text');
+            @endphp
+
+            @if(!empty(trim(strip_tags((string) $whatsappText))))
+                <div class="contacts-whatsapp-intro">
+                    {!! $whatsappText !!}
+                </div>
+            @endif
+
+            @include('public.fragments.whatsapp-button', ['variant' => 'contacts', 'label' => 'WhatsApp'])
+
             <div class="contacts-links">
                 @foreach(data_get($contacts->getTranslation('content_data', config('app.fallback_locale')), 'phones', []) as $phone)
                     <p>
                         <a href="tel:{{ get_only_numbers($phone) }}" class="base-link">{{ $phone }}</a>
                     </p>
                 @endforeach
-                
+
                 @foreach(data_get($contacts->getTranslation('content_data', config('app.fallback_locale')), 'emails', []) as $email)
                     <p>
                         <a href="mailto:{{ $email }}" class="base-link">{{ $email }}</a>

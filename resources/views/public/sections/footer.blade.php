@@ -22,6 +22,8 @@
                             >{{ $email }}</a>
                         </p>
                     @endforeach
+
+                    @include('public.fragments.whatsapp-button', ['variant' => 'footer', 'label' => 'WhatsApp'])
                 </div>
 
                 <address>

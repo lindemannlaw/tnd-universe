@@ -86,6 +86,8 @@ return [
     'files' => 'الملفات',
     'file_name' => 'اسم الملف',
     'phone_number' => 'رقم الهاتف',
+    'whatsapp_number' => 'رقم واتساب',
+    'whatsapp_intro_text' => 'نص تعريفي لواتساب (صفحة الاتصال، اختياري)',
     'address' => 'العنوان',
     'back_image' => 'الصورة الخلفية',
     'front_image' => 'الصورة الأمامية',

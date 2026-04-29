@@ -86,6 +86,8 @@ return [
     'files' => '文件',
     'file_name' => '文件名',
     'phone_number' => '电话号码',
+    'whatsapp_number' => 'WhatsApp 号码',
+    'whatsapp_intro_text' => 'WhatsApp 介绍文本（联系页面，可选）',
     'address' => '地址',
     'back_image' => '背面图片',
     'front_image' => '封面图片',

@@ -59,4 +59,22 @@
             </x-admin.dynamic-fields.group>
         </x-slot:template>
     </x-admin.dynamic-fields.wrapper>
+
+    <!-- whatsapp number -->
+    <x-admin.field.tel
+        :name="'content_data['. config('app.fallback_locale') .'][whatsapp]'"
+        :value="old('content_data.'. config('app.fallback_locale') . '.whatsapp', data_get($page->getTranslation('content_data', config('app.fallback_locale')), 'whatsapp'))"
+        :placeholder="__('admin.whatsapp_number')"
+        :required="false"
+    />
+
+    @php $lang = config('app.fallback_locale'); @endphp
+    <!-- whatsapp intro text (Contacts page) -->
+    <x-admin.field.wysiwyg
+        :name="'content_data['. $lang .'][whatsapp_text]'"
+        :value="old('content_data.' . $lang . '.whatsapp_text', data_get($page->getTranslation('content_data', $lang, false), 'whatsapp_text'))"
+        :placeholder="__('admin.whatsapp_intro_text')"
+        :buttons="'list|fontColor'"
+        :required="false"
+    />
 </div>

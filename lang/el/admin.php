@@ -86,6 +86,8 @@ return [
     'files' => 'Αρχεία',
     'file_name' => 'Όνομα αρχείου',
     'phone_number' => 'Αριθμός τηλεφώνου',
+    'whatsapp_number' => 'Αριθμός WhatsApp',
+    'whatsapp_intro_text' => 'Εισαγωγικό κείμενο WhatsApp (σελίδα Επαφών, προαιρετικό)',
     'address' => 'Διεύθυνση',
     'back_image' => 'Εικόνα πίσω',
     'front_image' => 'Εικόνα μπροστά',

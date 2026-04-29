@@ -99,6 +99,8 @@ return [
     'files' => 'Files',
     'file_name' => 'File Name',
     'phone_number' => 'Phone Number',
+    'whatsapp_number' => 'WhatsApp Number',
+    'whatsapp_intro_text' => 'WhatsApp Intro Text (Contacts page, optional)',
     'address' => 'Address',
     'back_image' => 'Back Image',
     'front_image' => 'Front Image',

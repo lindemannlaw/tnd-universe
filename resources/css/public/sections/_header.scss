@@ -85,6 +85,15 @@
         }
     }
 
+    .whatsapp-btn--header {
+        --wa-color: var(--color-white);
+        --wa-border: var(--color-white);
+        --wa-bg: transparent;
+        --wa-hover-color: var(--color-font-highlight-darker);
+        --wa-hover-bg: var(--color-white);
+        --wa-hover-border: var(--color-white);
+    }
+
     .main-menu-toggle-button {
         --btn-color: var(--color-white);
 
@@ -208,6 +217,15 @@
         // &::after {
         //     background: var(--color-dark);
         // }
+    }
+
+    .whatsapp-btn--header {
+        --wa-color: var(--color-interaction-primary-default);
+        --wa-border: var(--color-interaction-primary-default);
+        --wa-bg: transparent;
+        --wa-hover-color: var(--color-white);
+        --wa-hover-bg: var(--color-interaction-primary-hover);
+        --wa-hover-border: var(--color-interaction-primary-hover);
     }
 
     .lang {

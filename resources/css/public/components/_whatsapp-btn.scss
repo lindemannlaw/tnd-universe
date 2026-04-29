@@ -1,0 +1,81 @@
+@use '../functions/range';
+
+.whatsapp-btn {
+    --wa-size: 48px;
+    --wa-icon-size: 22px;
+    --wa-color: var(--color-interaction-primary-default);
+    --wa-bg: transparent;
+    --wa-border: var(--color-interaction-primary-default);
+    --wa-hover-color: var(--color-white);
+    --wa-hover-bg: var(--color-interaction-primary-hover);
+    --wa-hover-border: var(--color-interaction-primary-hover);
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5em;
+    width: var(--wa-size);
+    height: var(--wa-size);
+    border: 2px solid var(--wa-border);
+    background-color: var(--wa-bg);
+    color: var(--wa-color);
+    border-radius: 50%;
+    transition: var(--transition);
+    transition-property: background-color, border-color, color;
+    text-decoration: none;
+    position: relative;
+    flex: 0 0 auto;
+
+    &::before {
+        content: '';
+        width: var(--wa-icon-size);
+        height: var(--wa-icon-size);
+        background-color: currentColor;
+        mask-image: var(--icon-whatsapp);
+        mask-repeat: no-repeat;
+        mask-position: center;
+        mask-size: contain;
+        flex: 0 0 auto;
+    }
+
+    &:hover {
+        color: var(--wa-hover-color);
+        background-color: var(--wa-hover-bg);
+        border-color: var(--wa-hover-border);
+    }
+
+    .whatsapp-btn-label {
+        display: none;
+    }
+
+    &--footer,
+    &--contacts {
+        width: auto;
+        height: 48px;
+        padding: 0 1.25em;
+        border-radius: 100px;
+
+        .whatsapp-btn-label {
+            display: inline;
+            text-transform: uppercase;
+            font-size: range.build(14, 16);
+            line-height: 1;
+        }
+    }
+
+    &--header {
+        --wa-size: 36px;
+        --wa-icon-size: 18px;
+
+        z-index: 20;
+
+        @media (max-width: 1439px) {
+            --wa-size: 26px;
+            --wa-icon-size: 14px;
+        }
+
+        @media (max-width: 767px) {
+            display: none;
+        }
+    }
+}

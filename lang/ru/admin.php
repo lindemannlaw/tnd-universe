@@ -86,6 +86,8 @@ return [
     'files' => 'Файлы',
     'file_name' => 'Имя файла',
     'phone_number' => 'Номер телефона',
+    'whatsapp_number' => 'Номер WhatsApp',
+    'whatsapp_intro_text' => 'Вступительный текст WhatsApp (страница Контакты, необязательно)',
     'address' => 'Адрес',
     'back_image' => 'Изображение на задней стороне',
     'front_image' => 'Изображение на лицевой стороне',
