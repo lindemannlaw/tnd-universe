@@ -4,6 +4,12 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 
+Route::get('/sitemap.xml', [App\Http\Controllers\Public\SitemapController::class, 'index'])
+    ->name('public.sitemap');
+Route::get('/sitemap-{type}.xml', [App\Http\Controllers\Public\SitemapController::class, 'type'])
+    ->where('type', '[a-z_]+')
+    ->name('public.sitemap.type');
+
 Route::group([
     'prefix' => LaravelLocalization::setLocale(),
     'middleware' => [ 'localizationRedirect', 'localeViewPath']

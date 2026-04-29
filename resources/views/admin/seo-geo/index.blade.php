@@ -5,9 +5,13 @@
 @section('panel')
     <x-admin.main-panel :title="__('admin.seo_geo_overview')">
         <span class="text-muted small me-3">{{ $total }} Einträge</span>
-        <button type="button" class="btn btn-sm btn-outline-primary" id="btnBulkGenerate">
+        <button type="button" class="btn btn-sm btn-outline-primary me-2" id="btnBulkGenerate">
             <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#stars"/></svg>
             Alle Felder neu generieren
+        </button>
+        <button type="button" class="btn btn-sm btn-outline-success" id="btnTriggerCrawl">
+            <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#globe2"/></svg>
+            Suchmaschinen-Crawl anstoßen
         </button>
     </x-admin.main-panel>
 @endsection
@@ -170,6 +174,47 @@
         </div>
     </div>
 </div>
+
+{{-- Crawl Trigger Modal --}}
+<div class="modal fade" id="crawlTriggerModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title">
+                    <svg class="bi me-2" width="18" height="18" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#globe2"/></svg>
+                    Suchmaschinen-Crawl
+                </h5>
+            </div>
+            <div class="modal-body pt-2">
+                <div id="crawlStatusList" class="d-flex flex-column gap-2">
+                    <div class="d-flex align-items-center gap-2 small" data-service="sitemap">
+                        <span class="badge bg-secondary" style="min-width:74px;">…</span>
+                        <span class="fw-semibold">Sitemap-Cache</span>
+                        <span class="text-muted ms-auto crawl-msg" style="font-size:.8em;"></span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 small" data-service="indexnow">
+                        <span class="badge bg-secondary" style="min-width:74px;">…</span>
+                        <span class="fw-semibold">IndexNow (Bing/Yandex)</span>
+                        <span class="text-muted ms-auto crawl-msg" style="font-size:.8em;"></span>
+                    </div>
+                </div>
+                <hr class="my-3">
+                <div class="small text-muted">
+                    <div class="fw-semibold text-body mb-1">Google Search Console</div>
+                    Google muss einmalig manuell die Sitemap zugewiesen bekommen — danach holt Google sie automatisch regelmäßig:
+                    <a href="https://search.google.com/search-console/sitemaps?resource_id=sc-domain:tnduniverse.com"
+                       target="_blank" rel="noopener"
+                       class="d-inline-block mt-1">
+                        Sitemap in Search Console verwalten →
+                    </a>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Schließen</button>
+            </div>
+        </div>
+    </div>
+</div>
 @endpush
 
 @push('footer-scripts')
@@ -240,6 +285,52 @@ document.addEventListener('DOMContentLoaded', function () {
                              .map(c => c.dataset.status);
             navigateWithStatus(now.length === 0 ? ['all'] : now);
         });
+    });
+
+    // ── Trigger Crawl button ─────────────────────────────────────────────
+    const TRIGGER_CRAWL_URL = @json(route('admin.seo-geo.trigger-crawl'));
+    const btnCrawl   = document.getElementById('btnTriggerCrawl');
+    const crawlModal = new bootstrap.Modal(document.getElementById('crawlTriggerModal'));
+
+    function setCrawlRow(service, statusKey, message) {
+        const row = document.querySelector(`#crawlStatusList [data-service="${service}"]`);
+        if (!row) return;
+        const badge = row.querySelector('.badge');
+        const msg   = row.querySelector('.crawl-msg');
+
+        const map = {
+            success:        ['bg-success',         'OK'],
+            error:          ['bg-danger',          'Fehler'],
+            not_configured: ['bg-warning text-dark', 'Nicht konfig.'],
+            pending:        ['bg-secondary',       '…'],
+        };
+        const [cls, label] = map[statusKey] ?? map.pending;
+        badge.className = 'badge ' + cls;
+        badge.style.minWidth = '74px';
+        badge.textContent = label;
+        msg.textContent = message ?? '';
+    }
+
+    btnCrawl?.addEventListener('click', async () => {
+        ['sitemap', 'indexnow'].forEach(s => setCrawlRow(s, 'pending', 'läuft…'));
+        crawlModal.show();
+        btnCrawl.disabled = true;
+
+        try {
+            const res = await fetch(TRIGGER_CRAWL_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' },
+            });
+            const data = await res.json();
+            ['sitemap', 'indexnow'].forEach(s => {
+                const r = data[s] ?? { status: 'error', message: 'Keine Antwort' };
+                setCrawlRow(s, r.status, r.message ?? '');
+            });
+        } catch (err) {
+            ['sitemap', 'indexnow'].forEach(s => setCrawlRow(s, 'error', err.message));
+        } finally {
+            btnCrawl.disabled = false;
+        }
     });
 
     const btn          = document.getElementById('btnBulkGenerate');

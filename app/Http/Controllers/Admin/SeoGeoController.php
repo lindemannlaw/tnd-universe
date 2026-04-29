@@ -4,10 +4,13 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\DeepLTranslationService;
+use App\Services\IndexNowService;
 use App\Services\SeoGenerationService;
+use App\Services\SitemapGeneratorService;
 use App\Services\TranslatableModelRegistry;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
@@ -18,6 +21,8 @@ class SeoGeoController extends Controller
         private TranslatableModelRegistry $registry,
         private SeoGenerationService $seo,
         private DeepLTranslationService $deepl,
+        private SitemapGeneratorService $sitemap,
+        private IndexNowService $indexNow,
     ) {}
 
     public function index(Request $request): View
@@ -339,5 +344,28 @@ class SeoGeoController extends Controller
         if ($filled === $totalSlots) return 'complete';
         if ($filled === 0) return 'empty';
         return 'partial';
+    }
+
+    public function triggerCrawl(): JsonResponse
+    {
+        Cache::forget('sitemap:index');
+        foreach (SitemapGeneratorService::TYPES as $type) {
+            Cache::forget("sitemap:{$type}");
+        }
+
+        $sitemapUrl = rtrim((string) config('app.url'), '/') . '/sitemap.xml';
+
+        $urls           = $this->sitemap->allPublicUrls();
+        $indexNowResult = $this->indexNow->submit($urls);
+
+        return response()->json([
+            'sitemap' => [
+                'status'     => 'success',
+                'url'        => $sitemapUrl,
+                'urls_count' => count($urls),
+                'message'    => 'Sitemap-Cache geleert. ' . count($urls) . ' URL(s) bereit.',
+            ],
+            'indexnow' => $indexNowResult,
+        ]);
     }
 }
