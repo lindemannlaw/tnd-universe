@@ -34,6 +34,11 @@
 
     @include('admin.sections.alerts')
 
+    @php
+        $overlayChangedUnchanged = __('admin.overlay_changed_unchanged', ['unchanged' => ':unchanged', 'changed' => ':changed']);
+        $overlayTranslationsDetailOk = __('admin.overlay_translations_detail_ok', ['count' => ':count']);
+        $overlayTranslationsDetailMix = __('admin.overlay_translations_detail_mix', ['ok' => ':ok', 'err' => ':err']);
+    @endphp
     <script>
         window.ADMIN_I18N = @json([
             'overlay_changed_fields_processing' => __('admin.overlay_changed_fields_processing'),
@@ -57,9 +62,9 @@
             'overlay_saved' => __('admin.overlay_saved'),
             'overlay_saved_detail' => __('admin.overlay_saved_detail'),
             'overlay_fields' => __('admin.overlay_fields'),
-            'overlay_changed_unchanged' => __('admin.overlay_changed_unchanged', ['unchanged' => ':unchanged', 'changed' => ':changed']),
-            'overlay_translations_detail_ok' => __('admin.overlay_translations_detail_ok', ['count' => ':count']),
-            'overlay_translations_detail_mix' => __('admin.overlay_translations_detail_mix', ['ok' => ':ok', 'err' => ':err']),
+            'overlay_changed_unchanged' => $overlayChangedUnchanged,
+            'overlay_translations_detail_ok' => $overlayTranslationsDetailOk,
+            'overlay_translations_detail_mix' => $overlayTranslationsDetailMix,
             'overlay_seo_geo' => __('admin.overlay_seo_geo'),
             'overlay_generated' => __('admin.overlay_generated'),
             'overlay_generation_error' => __('admin.overlay_generation_error'),

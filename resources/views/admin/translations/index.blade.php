@@ -275,17 +275,22 @@ document.addEventListener('DOMContentLoaded', function () {
     const CSRF           = document.querySelector('meta[name="csrf-token"]')?.content;
     const LOCALE_FLAGS   = @json($localeFlags);
     const ITEMS          = @json($items);
+    @php
+        $i18nTranslatedTo = __('admin.translated_to', ['langs' => ':langs']);
+        $i18nTranslatedSaved = __('admin.translated_saved', ['count' => ':count', 'langs' => ':langs']);
+        $i18nTranslateWithDeeplCount = __('admin.translate_with_deepl_count', ['count' => ':count']);
+    @endphp
     const I18N = @json([
         'variables' => __('admin.variables'),
         'missing_in_translation' => __('admin.missing_in_translation'),
         'suggestion_editable' => __('admin.suggestion_editable'),
         'source_saved' => __('admin.source_saved'),
         'please_select_at_least_one_language' => __('admin.please_select_at_least_one_language'),
-        'translated_to' => __('admin.translated_to', ['langs' => ':langs']),
+        'translated_to' => $i18nTranslatedTo,
         'no_translation_received' => __('admin.no_translation_received'),
-        'translated_saved' => __('admin.translated_saved', ['count' => ':count', 'langs' => ':langs']),
+        'translated_saved' => $i18nTranslatedSaved,
         'apply' => __('admin.apply'),
-        'translate_with_deepl_count' => __('admin.translate_with_deepl_count', ['count' => ':count']),
+        'translate_with_deepl_count' => $i18nTranslateWithDeeplCount,
         'translate_with_deepl' => __('admin.translate_with_deepl'),
         'switch_to_draft' => __('admin.switch_to_draft'),
         'switch_to_live' => __('admin.switch_to_live'),
