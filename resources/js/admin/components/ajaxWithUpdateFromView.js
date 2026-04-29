@@ -53,27 +53,8 @@ export function ajaxWithUpdateFromView() {
                     })
                         .then(r => r.json())
                         .then(data => {
-                            // #region agent log
-                            if (data?.html) {
-                                const parser = new DOMParser();
-                                const doc = parser.parseFromString(data.html, 'text/html');
-                                const colEntries = {};
-                                doc.querySelectorAll('[name*="col_span"],[name*="col_start"]').forEach(f => {
-                                    colEntries[f.getAttribute('name')] = f.value;
-                                });
-                                console.log('[debug-fb4a59 RETURNED] col values from server:', JSON.stringify(colEntries));
-                            }
-                            // #endregion
                             if (modalEl && data?.html) {
                                 reloadModal(modalEl, data.html);
-
-                                // #region agent log
-                                const domColEntries = {};
-                                modalEl.querySelectorAll('[name*="col_span"],[name*="col_start"]').forEach(f => {
-                                    domColEntries[f.getAttribute('name')] = f.value;
-                                });
-                                console.log('[debug-fb4a59 POST-RELOAD DOM] col values after reloadModal+syncLibs:', JSON.stringify(domColEntries));
-                                // #endregion
                             }
 
                             // Fire autoTranslate after modal refreshed (update case)

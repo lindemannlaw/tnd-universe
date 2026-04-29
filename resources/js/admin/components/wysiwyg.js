@@ -258,8 +258,6 @@ function updateToolbarPosition(scrollWrapper, editor, wrapper) {
 	const toolbar = scrollProps.toolbar;
 	const container = editor.core.context.element.relative;
 
-	//console.log(scrollTop > scrollProps.maxFixedScroll);
-
 	if (scrollProps.editor.height > scrollProps.scrWrap.height) {
 		if (scrollTop >= scrollProps.editor.top && !html.classList.contains('wysiwyg-full-screen')) {
 			const topPos = scrollTop > scrollProps.maxFixedScroll ? (scrollProps.maxFixedScroll + scrollProps.scrWrap.top) - scrollTop + 'px' : scrollProps.scrWrap.top + 'px';

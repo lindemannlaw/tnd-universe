@@ -45,5 +45,3 @@ autoTranslateOverlay();
 saveAndShowActiveTab();
 
 preloader();
-
-console.log('all js inited');

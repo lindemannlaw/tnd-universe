@@ -709,9 +709,6 @@ function wireRetranslateButtons(overlay, allItems, translateUrl) {
 
                 const data = await response.json();
                 const translations = data.translations ?? {};
-                const responseKeys = Object.keys(translations);
-                console.log('[translateBlocks] Bulk response keys:', responseKeys.length, responseKeys.slice(0, 3));
-                console.log('[translateBlocks] Expected keys:', checkedItems.slice(0, 3).map(ci => ci.key));
 
                 let updated = 0;
                 let skipped = 0;

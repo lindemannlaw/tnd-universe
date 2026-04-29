@@ -24,5 +24,3 @@ paginationControl();
 
 contactForm();
 projectGalleryCarousel();
-
-console.log('all scripts inited');
