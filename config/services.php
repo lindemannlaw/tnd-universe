@@ -49,4 +49,9 @@ return [
         'seo_model' => env('ANTHROPIC_SEO_MODEL', 'claude-haiku-4-5'),
     ],
 
+    'indexnow' => [
+        'key'  => env('INDEXNOW_KEY'),
+        'host' => env('INDEXNOW_HOST', 'tnduniverse.com'),
+    ],
+
 ];

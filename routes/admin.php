@@ -229,6 +229,7 @@ Route::group([
         Route::post('/generate', [\App\Http\Controllers\Admin\SeoGeoController::class, 'generate'])->name('admin.seo-geo.generate');
         Route::post('/apply', [\App\Http\Controllers\Admin\SeoGeoController::class, 'apply'])->name('admin.seo-geo.apply');
         Route::post('/save-field', [\App\Http\Controllers\Admin\SeoGeoController::class, 'saveField'])->name('admin.seo-geo.save-field');
+        Route::post('/trigger-crawl', [\App\Http\Controllers\Admin\SeoGeoController::class, 'triggerCrawl'])->name('admin.seo-geo.trigger-crawl');
     });
 
     /* TRANSLATION CHECK */
