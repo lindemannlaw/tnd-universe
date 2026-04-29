@@ -3,24 +3,31 @@
 @section('title', 'SEO & GEO — ' . $title . ' - ' . config('app.name'))
 
 @section('panel')
-    <x-admin.main-panel :title="'SEO & GEO — ' . $title">
-        <a href="{{ route('admin.seo-geo.index') }}" class="btn btn-sm btn-outline-secondary me-2">
-            <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#arrow-left"/></svg>
-            Zurück
-        </a>
-        <a href="{{ $editUrl }}" class="btn btn-sm btn-outline-secondary me-2">
-            <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#pencil"/></svg>
-            Eintrag bearbeiten
-        </a>
-        <button type="button" class="btn btn-sm btn-outline-primary me-2" id="btnGenerate">
-            <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#stars"/></svg>
-            Alle Felder neu generieren
-        </button>
-        <button type="button" class="btn btn-sm btn-outline-secondary" id="btnTranslateFromEn">
-            <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#globe2"/></svg>
-            Alle Felder von EN übersetzen
-        </button>
-    </x-admin.main-panel>
+    <div id="mainPanel" class="main-panel d-flex align-items-center px-3 px-sm-4 py-2 border-bottom border-dark border-opacity-25 shadow-sm bg-white gap-3">
+        <div class="d-flex align-items-center" style="flex: 1 1 0; min-width: 0;">
+            <a href="{{ route('admin.seo-geo.index') }}" class="btn btn-sm btn-outline-secondary">
+                <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#arrow-left"/></svg>
+                Zurück
+            </a>
+        </div>
+        <div class="fs-4 lh-1 fw-semibold text-center" style="flex: 2 1 0; min-width: 0;">
+            SEO &amp; GEO — {{ $title }}
+        </div>
+        <div class="d-flex align-items-center justify-content-end gap-3 overflow-x-auto" style="flex: 1 1 0; min-width: 0;">
+            <a href="{{ $editUrl }}" class="btn btn-sm btn-outline-secondary">
+                <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#pencil"/></svg>
+                Eintrag bearbeiten
+            </a>
+            <button type="button" class="btn btn-sm btn-outline-primary" id="btnGenerate">
+                <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#stars"/></svg>
+                Alle Felder neu generieren
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="btnTranslateFromEn">
+                <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#globe2"/></svg>
+                Alle Felder von EN übersetzen
+            </button>
+        </div>
+    </div>
 @endsection
 
 @section('content')
@@ -62,20 +69,22 @@
                                     <span id="counter-{{ $field }}-en">{{ $enLen }}</span>/{{ $config['maxLen'] }}
                                 </span>
                             @endif
-                            <button type="button"
-                                    class="btn btn-sm btn-outline-warning ms-auto btn-regen-field"
-                                    data-field="{{ $field }}"
-                                    title="Diesen Block für alle Sprachen neu generieren">
-                                <svg class="bi" width="13" height="13" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#arrow-clockwise"/></svg>
-                                Block neu generieren
-                            </button>
-                            <button type="button"
-                                    class="btn btn-sm btn-outline-secondary btn-translate-field"
-                                    data-field="{{ $field }}"
-                                    title="Diesen Block auf Basis von EN übersetzen">
-                                <svg class="bi" width="13" height="13" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#globe2"/></svg>
-                                Block von EN übersetzen
-                            </button>
+                            <div class="d-flex justify-content-center gap-2 flex-grow-1">
+                                <button type="button"
+                                        class="btn btn-sm btn-dark btn-regen-field"
+                                        data-field="{{ $field }}"
+                                        title="Diesen Block für alle Sprachen neu generieren">
+                                    <svg class="bi" width="13" height="13" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#arrow-clockwise"/></svg>
+                                    Block neu generieren
+                                </button>
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-secondary btn-translate-field"
+                                        data-field="{{ $field }}"
+                                        title="Diesen Block auf Basis von EN übersetzen">
+                                    <svg class="bi" width="13" height="13" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#globe2"/></svg>
+                                    Block von EN übersetzen
+                                </button>
+                            </div>
                         </div>
 
                         {{-- Per-locale rows --}}

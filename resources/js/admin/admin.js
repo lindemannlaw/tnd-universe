@@ -8,6 +8,7 @@ import { ajaxViewModalButton } from './components/ajaxViewModalButton.js';
 import { ajaxConfirmDeleteButton } from './components/ajaxConfirmDeleteButton.js';
 import { ajaxCloneButton } from './components/ajaxCloneButton.js';
 import { ajaxWithUpdateFromView } from './components/ajaxWithUpdateFromView.js';
+import { autoOpenEditModal } from './components/autoOpenEditModal.js';
 
 import { scrollbars } from "./components/scrollbars.js";
 import { sidebar } from "./components/sidebar.js";
@@ -30,6 +31,7 @@ ajaxViewModalButton();
 ajaxConfirmDeleteButton();
 ajaxCloneButton();
 ajaxWithUpdateFromView();
+autoOpenEditModal();
 
 scrollbars();
 sidebar();

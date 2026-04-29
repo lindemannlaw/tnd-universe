@@ -296,11 +296,11 @@ class SeoGeoController extends Controller
     private function resolveEditUrl(string $type, $model): string
     {
         return match ($type) {
-            'project'          => route('admin.portfolio.projects'),
-            'service'          => route('admin.services.services'),
-            'service_category' => route('admin.services.categories'),
-            'news_article'     => route('admin.news.articles'),
-            'news_category'    => route('admin.news.categories'),
+            'project'          => route('admin.portfolio.projects',  ['edit' => $model->id]),
+            'service'          => route('admin.services.services',   ['edit' => $model->id]),
+            'service_category' => route('admin.services.categories', ['edit' => $model->id]),
+            'news_article'     => route('admin.news.articles',       ['edit' => $model->id]),
+            'news_category'    => route('admin.news.categories',     ['edit' => $model->id]),
             'page'             => $this->resolvePageEditUrl($model),
             default            => route('admin.seo-geo.index'),
         };

@@ -1,42 +1,40 @@
 {
-  "_ajax-ahvfpwvW.js": {
-    "file": "assets/js/ajax-ahvfpwvW.js",
+  "_ajax-CQHVx7UA.js": {
+    "file": "assets/js/ajax-CQHVx7UA.js",
     "name": "ajax"
   },
   "resources/css/admin/admin.scss": {
-    "file": "assets/css/admin-Cbvg1Je-.css",
+    "file": "assets/css/admin-CY6bf_yC.css",
     "src": "resources/css/admin/admin.scss",
     "isEntry": true,
-    "name": "admin",
     "names": [
       "admin.css"
     ]
   },
   "resources/css/public/public.scss": {
-    "file": "assets/css/public-BDaAigKu.css",
+    "file": "assets/css/public-Bz5jJ3ZX.css",
     "src": "resources/css/public/public.scss",
     "isEntry": true,
-    "name": "public",
     "names": [
       "public.css"
     ]
   },
   "resources/js/admin/admin.js": {
-    "file": "assets/js/admin-iVN0Aumt.js",
+    "file": "assets/js/admin-AcAHVQeC.js",
     "name": "admin",
     "src": "resources/js/admin/admin.js",
     "isEntry": true,
     "imports": [
-      "_ajax-ahvfpwvW.js"
+      "_ajax-CQHVx7UA.js"
     ]
   },
   "resources/js/public/public.js": {
-    "file": "assets/js/public-DkZ739RF.js",
+    "file": "assets/js/public-Ba57OJJr.js",
     "name": "public",
     "src": "resources/js/public/public.js",
     "isEntry": true,
     "imports": [
-      "_ajax-ahvfpwvW.js"
+      "_ajax-CQHVx7UA.js"
     ]
   }
 }

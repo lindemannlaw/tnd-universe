@@ -24,24 +24,6 @@
             <span>Übersetzungen</span>
         </a>
         <x-admin.button
-            data-translate-blocks
-            data-translate-mode="regenerate"
-            data-target-locale="de"
-            data-translate-url="{{ route('admin.translate') }}"
-            :btn="'btn-outline-info btn-sm'"
-            :iconName="'globe'"
-            :title="'Block neu generieren'"
-        />
-        <x-admin.button
-            data-translate-blocks
-            data-translate-mode="delta"
-            data-target-locale="de"
-            data-translate-url="{{ route('admin.translate') }}"
-            :btn="'btn-outline-secondary btn-sm'"
-            :iconName="'globe'"
-            :title="'Block von EN übersetzen'"
-        />
-        <x-admin.button
             :type="'submit'"
             :form="'edit-project-control-form'"
             :withLoader="true"
