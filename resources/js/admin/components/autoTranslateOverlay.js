@@ -4,15 +4,14 @@
  * Triggered by 'auto-translate-start' DOM event whose detail matches:
  *   {
  *     type, id, isUpdate, translateUrl, applyUrl, geoGenerateUrl,
- *     hasSeo, sourceLang, targetLangs, contentFields, seoFields,
+ *     hasSeo, sourceLang, targetLangs, contentFields,
  *     editUrl, translationsUrl, seoGeoUrl,
  *     unchangedCount, changedFields, changedSeoFields
  *   }
  *
- * Three-phase flow (store):
- *   Phase 1 – Translate content fields (title, description, …)
- *   Phase 2 – Generate SEO/GEO via Claude (EN + all target langs)
- *   Phase 3 – Translate SEO/GEO fields
+ * Two-phase flow (store):
+ *   Phase 1 – Translate content fields (title, description, …) via DeepL
+ *   Phase 2 – Generate SEO/GEO via Claude natively per locale (source + all target langs)
  *
  * For update: shows delta (x unchanged, y changed) and only processes changed fields.
  * Final summary screen with status per phase + navigation links.
@@ -45,7 +44,7 @@ async function runOverlay(cfg) {
         type, id, isUpdate = false,
         translateUrl, applyUrl, geoGenerateUrl,
         hasSeo = false, sourceLang, targetLangs,
-        contentFields = [], seoFields = [],
+        contentFields = [],
         editUrl, translationsUrl, seoGeoUrl,
         unchangedCount = 0, changedFields = [], changedSeoFields = [],
     } = cfg;
@@ -56,7 +55,6 @@ async function runOverlay(cfg) {
         contentOk: 0, contentErr: 0,
         geoOk: false, geoErr: false, geoSkipped: !hasSeo || !geoGenerateUrl,
         geoSkippedByUser: false,
-        seoOk: 0, seoErr: 0,
     };
 
     const overlay = buildOverlay(cfg);
@@ -81,7 +79,7 @@ async function runOverlay(cfg) {
         setNote(overlay, 'content', isUpdate ? 'Keine geänderten Felder' : 'Keine Felder');
     }
 
-    // ── Phase 2+3: SEO/GEO (for updates only after explicit confirmation) ──
+    // ── Phase 2: SEO/GEO (for updates only after explicit confirmation) ─────
     let shouldRunSeoGeo = true;
     if (isUpdate && hasSeo && geoGenerateUrl) {
         shouldRunSeoGeo = await askSeoGeoConfirmation(overlay);
@@ -89,11 +87,10 @@ async function runOverlay(cfg) {
             summary.geoSkippedByUser = true;
             summary.geoSkipped = true;
             setNote(overlay, 'geo', 'Übersprungen (bei Dialog mit "Nein" bestätigt)');
-            setNote(overlay, 'seo', 'Übersprungen (bei Dialog mit "Nein" bestätigt)');
         }
     }
 
-    // ── Phase 2: Generate SEO/GEO (EN first, then all target langs) ─────────
+    // ── Phase 2: Generate SEO/GEO natively per locale via Claude ────────────
     if (shouldRunSeoGeo && hasSeo && geoGenerateUrl) {
         showSection(overlay, 'geo');
         const allGeoLangs = [sourceLang, ...targetLangs];
@@ -110,22 +107,6 @@ async function runOverlay(cfg) {
         }
         summary.geoOk = geoAnyOk;
         summary.geoErr = !geoAnyOk;
-    }
-
-    // ── Phase 3: Translate SEO/GEO fields ───────────────────────────────────
-    if (shouldRunSeoGeo && hasSeo && seoFields.length) {
-        showSection(overlay, 'seo');
-        for (const lang of targetLangs) {
-            setStatus(overlay, 'seo', lang, 'running');
-            try {
-                await translateAndApply(translateUrl, applyUrl, type, id, seoFields, sourceLang, lang);
-                setStatus(overlay, 'seo', lang, 'ok');
-                summary.seoOk++;
-            } catch {
-                setStatus(overlay, 'seo', lang, 'err');
-                summary.seoErr++;
-            }
-        }
     }
 
     // ── Show final summary ──────────────────────────────────────────────────
@@ -260,19 +241,6 @@ function showSummary(overlay, summary, cfg) {
             'SEO & GEO',
             summary.geoOk ? 'Generiert' : 'Fehler bei Generierung'
         ));
-        // GEO translations
-        const gTotal = summary.seoOk + summary.seoErr;
-        if (gTotal > 0) {
-            const allOk = summary.seoErr === 0;
-            rows.push(summaryRow(
-                allOk ? '✓' : '!',
-                allOk ? 'bg-success' : 'bg-warning text-dark',
-                'GEO-Übersetzungen',
-                allOk
-                    ? `${summary.seoOk} Sprachen übersetzt`
-                    : `${summary.seoOk} OK · ${summary.seoErr} Fehler`
-            ));
-        }
     } else {
         const detail = summary.geoSkippedByUser
             ? 'Übersprungen (Benutzer-Auswahl)'
@@ -326,9 +294,9 @@ function askSeoGeoConfirmation(overlay) {
         dialog.innerHTML = `
             <div class="card shadow border-0" style="max-width:420px;width:calc(100% - 2rem)">
                 <div class="card-body">
-                    <div class="fw-semibold mb-2">SEO &amp; GEO neu ausführen?</div>
+                    <div class="fw-semibold mb-2">SEO &amp; GEO neu generieren?</div>
                     <div class="small text-muted mb-3">
-                        Inhalt wird wie gewohnt übersetzt. Soll zusätzlich SEO/GEO neu generiert und übersetzt werden?
+                        Inhalt wird wie gewohnt übersetzt. Soll zusätzlich SEO/GEO mit Claude pro Sprache neu generiert werden?
                     </div>
                     <div class="d-flex justify-content-end gap-2">
                         <button type="button" class="btn btn-sm btn-outline-secondary" data-ato-seo-no>Nein</button>
@@ -423,17 +391,6 @@ function buildOverlay(cfg) {
                     </div>
                     <div class="d-flex flex-wrap gap-2">
                         ${langBadges(allGeoLangs, 'geo')}
-                    </div>
-                </div>
-
-                <div data-ato-section="seo" style="display:none">
-                    <div class="d-flex align-items-center gap-2 text-muted mb-2" style="font-size:.8rem">
-                        <div class="flex-grow-1 border-top"></div>
-                        <span class="fw-semibold text-uppercase" style="letter-spacing:.05em">SEO &amp; GEO übersetzen</span>
-                        <div class="flex-grow-1 border-top"></div>
-                    </div>
-                    <div class="d-flex flex-wrap gap-2">
-                        ${langBadges(targetLangs, 'seo')}
                     </div>
                 </div>` : ''}
 
