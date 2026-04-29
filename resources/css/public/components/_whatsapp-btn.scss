@@ -73,9 +73,9 @@
 
     // Pull the next contacts-container item (phones/emails block) close to the
     // button: the parent .contacts-container has range.build(20, 50) row gap;
-    // negative margin compensates so the visible spacing is exactly 4px.
+    // negative margin compensates so the visible spacing is exactly 6px.
     &--contacts {
-        margin-bottom: calc(4px - #{range.build(20, 50)});
+        margin-bottom: calc(6px - #{range.build(20, 50)});
     }
 
     &--header {
