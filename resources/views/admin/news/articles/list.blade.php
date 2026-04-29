@@ -37,18 +37,6 @@
                 :updateIdSection="'articles-list'"
             />
 
-            <x-admin.button
-                class="btn-sm p-2"
-                :btn="'btn-outline-secondary'"
-                :iconName="'copy'"
-                :withLoader="true"
-                data-clone-item
-                data-clone-url="{{ route('admin.news.article.clone', $article->id) }}"
-                data-update-id-section="articles-list"
-                data-clone-confirm="{{ __('admin.articles') }} duplizieren?"
-                title="Duplizieren"
-            />
-
             <x-admin.ajax.view-modal-button
                 class="btn-sm p-2"
                 :action="route('admin.news.article.edit', $article->id)"

@@ -175,61 +175,6 @@ class ArticleController extends Controller
         abort(404);
     }
 
-    public function clone(Request $request, NewsArticle $newsArticle): JsonResponse
-    {
-        try {
-            DB::beginTransaction();
-
-            $clone = $newsArticle->replicate();
-
-            foreach (supported_languages_keys() as $locale) {
-                $title = $clone->getTranslation('title', $locale, false);
-                if (filled($title)) {
-                    $clone->setTranslation('title', $locale, $title . ' Copy');
-                }
-            }
-
-            $baseSlug = ($newsArticle->slug ?: 'article') . '-copy';
-            $slug = $baseSlug;
-            $counter = 1;
-            while (NewsArticle::where('slug', $slug)->exists()) {
-                $counter++;
-                $slug = $baseSlug . '-' . $counter;
-            }
-
-            $clone->slug = $slug;
-            $clone->active = false;
-            $clone->sort = (NewsArticle::max('sort') ?? 0) + 1;
-            $clone->save();
-
-            $clone->categories()->sync($newsArticle->categories->pluck('id')->all());
-
-            foreach ([$newsArticle->mediaDescription, $newsArticle->mediaLinkTopFile, $newsArticle->mediaLinkBottomFile] as $collection) {
-                foreach ($newsArticle->getMedia($collection) as $media) {
-                    $media->copy($clone, $collection);
-                }
-            }
-
-            DB::commit();
-        } catch (\Throwable $exception) {
-            DB::rollBack();
-            Log::error('Article clone failed', ['exception' => $exception]);
-
-            return response()->json([
-                'message' => 'Duplizierung fehlgeschlagen',
-                'error' => $exception->getMessage(),
-            ], 500);
-        }
-
-        return response()->json([
-            'toast' => [
-                'type' => 'success',
-                'message' => __('admin.success_create_data'),
-            ],
-            'html' => $this->getViewArticles(),
-        ]);
-    }
-
     public function getViewArticles(): View|string {
         $articles = NewsArticle::all();
 

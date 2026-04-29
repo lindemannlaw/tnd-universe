@@ -96,7 +96,6 @@ Route::group([
             Route::post('/store', [\App\Http\Controllers\Admin\News\ArticleController::class, 'store'])->name('admin.news.article.store');
             Route::get('/{newsArticle}/edit', [\App\Http\Controllers\Admin\News\ArticleController::class, 'edit'])->name('admin.news.article.edit');
             Route::patch('/{newsArticle}/update', [\App\Http\Controllers\Admin\News\ArticleController::class, 'update'])->name('admin.news.article.update');
-            Route::post('/{newsArticle}/clone', [\App\Http\Controllers\Admin\News\ArticleController::class, 'clone'])->name('admin.news.article.clone');
             Route::delete('/{newsArticle}/delete', [\App\Http\Controllers\Admin\News\ArticleController::class, 'delete'])->name('admin.news.article.delete');
 
         });
