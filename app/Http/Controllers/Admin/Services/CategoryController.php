@@ -125,7 +125,7 @@ class CategoryController extends Controller
             return response()->json([
                 'toast' => ['type' => 'success', 'message' => __('admin.success_update_data')],
                 'html'  => $this->getViewCategories(),
-                'autoTranslate' => ($payload['changedFields'] || $payload['changedSeoFields']) ? $payload : null,
+                'autoTranslate' => $payload['changedFields'] ? $payload : null,
             ]);
         }
 

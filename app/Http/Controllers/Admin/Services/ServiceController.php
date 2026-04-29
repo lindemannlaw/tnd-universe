@@ -144,7 +144,7 @@ class ServiceController extends Controller
             return response()->json([
                 'toast' => ['type' => 'success', 'message' => __('admin.success_update_data')],
                 'html'  => $this->getViewServices(),
-                'autoTranslate' => ($payload['changedFields'] || $payload['changedSeoFields']) ? $payload : null,
+                'autoTranslate' => $payload['changedFields'] ? $payload : null,
             ]);
         }
 
