@@ -24,9 +24,17 @@ class UpdateRequest extends FormRequest
     {
         $rules['hero_image'] = ['nullable', 'image', 'mimes:jpg,png,webp', 'max:20480'];
 
+        $fallback = config('app.fallback_locale');
+
         foreach (supported_languages_keys() as $locale) {
             $rules['title'] = ['required', 'array'];
-            $rules['title.' . $locale] = ['required', 'string', 'max:255'];
+            // The admin form only submits the fallback locale; other locales
+            // are merged from existing DB translations via preserveTranslations()
+            // in the controller. Requiring them here would break every save
+            // on a multi-locale install.
+            $rules['title.' . $locale] = $locale === $fallback
+                ? ['required', 'string', 'max:255']
+                : ['nullable', 'string', 'max:255'];
 
             $rules['description'] = ['nullable', 'array'];
             $rules['description.' . $locale] = ['nullable', 'string'];
