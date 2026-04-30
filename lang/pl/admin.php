@@ -121,4 +121,15 @@ return [
     'success_delete_data' => 'Operacja usunięcia danych zakończyła się powodzeniem',
     'success_updated_profile' => 'Profil zaktualizowany',
     'success_updated_password' => 'Hasło zaktualizowane pomyślnie',
+
+    'media' => 'Media / Pliki',
+    'replace' => 'Zastąp',
+    'replace_file' => 'Zastąp plik',
+    'replace_hint' => 'Nowy plik zastąpi istniejący. Pomniejszone warianty obrazów zostaną wygenerowane ponownie automatycznie.',
+    'download' => 'Pobierz',
+    'last_modified' => 'Ostatnio zmodyfikowane',
+    'size' => 'Rozmiar',
+    'owner' => 'Używane przez',
+    'collection' => 'Kolekcja',
+    'orphan' => 'Sierota',
 ];

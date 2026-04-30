@@ -174,6 +174,13 @@
                 'isCan' => $user->can('all'),
             ],
             [
+                'title' => __('admin.media'),
+                'url' => 'admin.media.index',
+                'icon' => 'images',
+                'submenu' => [],
+                'isCan' => $user->can('all'),
+            ],
+            [
                 'title' => __('admin.imprint'),
                 'url' => 'admin.imprint.page',
                 'icon' => 'card-text',

@@ -137,4 +137,15 @@ return [
 
     'success_updated_profile' => 'Success updated profile',
     'success_updated_password' => 'Success updated password',
+
+    'media' => 'Media / Files',
+    'replace' => 'Replace',
+    'replace_file' => 'Replace file',
+    'replace_hint' => 'A new file will replace the existing one. Resized variants are regenerated automatically for images.',
+    'download' => 'Download',
+    'last_modified' => 'Last modified',
+    'size' => 'Size',
+    'owner' => 'Used by',
+    'collection' => 'Collection',
+    'orphan' => 'Orphan',
 ];

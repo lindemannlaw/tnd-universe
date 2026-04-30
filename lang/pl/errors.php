@@ -22,4 +22,8 @@ return [
     'leader_store_failed' => 'Sklep Leader nie działa',
     'leader_update_failed' => 'Nie udało się zaktualizować lidera',
     'leader_delete_failed' => 'Nie udało się usunąć lidera',
+
+    'media_replace_failed' => 'Nie udało się zastąpić pliku',
+    'media_delete_failed' => 'Nie udało się usunąć pliku',
+    'media_orphan' => 'Ten plik jest osierocony (brak rekordu nadrzędnego). Wymiana nie jest możliwa.',
 ];

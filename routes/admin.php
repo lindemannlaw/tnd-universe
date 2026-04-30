@@ -239,6 +239,15 @@ Route::group([
         Route::post('/apply', [\App\Http\Controllers\Admin\TranslationCheckController::class, 'apply'])->name('admin.translations.apply');
     });
 
+    /* MEDIA */
+    Route::group(['prefix' => 'media'], function () {
+        Route::get('/',                  [\App\Http\Controllers\Admin\MediaController::class, 'index'])->name('admin.media.index');
+        Route::get('/{media}',           [\App\Http\Controllers\Admin\MediaController::class, 'show'])->name('admin.media.show');
+        Route::get('/{media}/download',  [\App\Http\Controllers\Admin\MediaController::class, 'download'])->name('admin.media.download');
+        Route::post('/{media}/replace',  [\App\Http\Controllers\Admin\MediaController::class, 'replace'])->name('admin.media.replace');
+        Route::delete('/{media}/delete', [\App\Http\Controllers\Admin\MediaController::class, 'destroy'])->name('admin.media.delete');
+    });
+
     /* LANGUAGE SETTINGS */
     Route::post('/language-settings/{locale}/toggle', [\App\Http\Controllers\Admin\LanguageSettingController::class, 'toggle'])
         ->name('admin.language-settings.toggle');

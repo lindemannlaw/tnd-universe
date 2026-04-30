@@ -136,4 +136,15 @@ return [
 
     'success_updated_profile' => 'Profil erfolgreich aktualisiert',
     'success_updated_password' => 'Passwort erfolgreich aktualisiert',
+
+    'media' => 'Medien / Dateien',
+    'replace' => 'Ersetzen',
+    'replace_file' => 'Datei ersetzen',
+    'replace_hint' => 'Eine neue Datei ersetzt die bestehende. Verkleinerte Varianten werden bei Bildern automatisch neu erzeugt.',
+    'download' => 'Herunterladen',
+    'last_modified' => 'Zuletzt geändert',
+    'size' => 'Größe',
+    'owner' => 'Verwendung',
+    'collection' => 'Sammlung',
+    'orphan' => 'Verwaist',
 ];

@@ -29,4 +29,8 @@ return [
     'leader_store_failed' => 'Das Speichern des Leiters ist fehlgeschlagen.',
     'leader_update_failed' => 'Die Aktualisierung des Leiters ist fehlgeschlagen.',
     'leader_delete_failed' => 'Das Löschen des Leiters ist fehlgeschlagen.',
+
+    'media_replace_failed' => 'Das Ersetzen der Datei ist fehlgeschlagen.',
+    'media_delete_failed' => 'Das Löschen der Datei ist fehlgeschlagen.',
+    'media_orphan' => 'Diese Datei ist verwaist (kein zugehöriges Element). Ersetzen ist nicht möglich.',
 ];

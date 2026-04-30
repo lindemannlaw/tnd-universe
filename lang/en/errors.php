@@ -29,4 +29,8 @@ return [
     'leader_store_failed' => 'Leader store failed',
     'leader_update_failed' => 'Leader update failed',
     'leader_delete_failed' => 'Leader delete failed',
+
+    'media_replace_failed' => 'Media replace failed',
+    'media_delete_failed' => 'Media delete failed',
+    'media_orphan' => 'This media is orphaned (no parent record). Replacement is not possible.',
 ];
