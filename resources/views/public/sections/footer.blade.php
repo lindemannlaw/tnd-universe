@@ -28,7 +28,7 @@
                                 target="_blank"
                                 rel="noopener"
                                 class="base-link footer-contact-link footer-contact-link--whatsapp"
-                            >{{ $whatsapp }}</a>
+                            >WhatsApp</a>
                         </p>
                     @endif
 

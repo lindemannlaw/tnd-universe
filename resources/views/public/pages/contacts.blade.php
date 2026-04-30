@@ -27,7 +27,11 @@
 
         <div class="container contacts-container">
             @php
+                $contentData = $contacts->getTranslation('content_data', config('app.fallback_locale'));
                 $whatsappText = data_get($contacts->getTranslation('content_data', config('app.fallback_locale')), 'whatsapp_text');
+                $phone = data_get($contentData, 'phones.0');
+                $whatsapp = data_get($contentData, 'whatsapp');
+                $email = data_get($contentData, 'emails.0');
             @endphp
 
             @if(!empty(trim(strip_tags((string) $whatsappText))))
@@ -36,20 +40,35 @@
                 </div>
             @endif
 
-            @include('public.fragments.whatsapp-button', ['variant' => 'contacts', 'label' => 'WhatsApp'])
-
             <div class="contacts-links">
-                @foreach(data_get($contacts->getTranslation('content_data', config('app.fallback_locale')), 'phones', []) as $phone)
+                @if(!empty(trim((string) $phone)))
                     <p>
-                        <a href="tel:{{ get_only_numbers($phone) }}" class="base-link">{{ $phone }}</a>
+                        <a
+                            href="tel:{{ get_only_numbers($phone) }}"
+                            class="base-link footer-contact-link footer-contact-link--phone"
+                        >{{ $phone }}</a>
                     </p>
-                @endforeach
+                @endif
 
-                @foreach(data_get($contacts->getTranslation('content_data', config('app.fallback_locale')), 'emails', []) as $email)
+                @if(!empty(trim((string) $whatsapp)))
                     <p>
-                        <a href="mailto:{{ $email }}" class="base-link">{{ $email }}</a>
+                        <a
+                            href="https://wa.me/{{ get_only_numbers($whatsapp) }}"
+                            target="_blank"
+                            rel="noopener"
+                            class="base-link footer-contact-link footer-contact-link--whatsapp"
+                        >WhatsApp</a>
                     </p>
-                @endforeach
+                @endif
+
+                @if(!empty(trim((string) $email)))
+                    <p>
+                        <a
+                            href="mailto:{{ $email }}"
+                            class="base-link footer-contact-link footer-contact-link--mail"
+                        >{{ $email }}</a>
+                    </p>
+                @endif
             </div>
 
             <address>{{ data_get($contacts->getTranslation('content_data', config('app.fallback_locale')), 'address') }}</address>
