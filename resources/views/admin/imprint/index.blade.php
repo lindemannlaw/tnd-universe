@@ -37,6 +37,13 @@
         :method="'PATCH'"
     >
         <div class="d-flex flex-column gap-4">
+            <x-admin.field.text
+                :name="'public_slug'"
+                :value="old('public_slug', $page->public_slug)"
+                :placeholder="'URL Slug (z. B. imprint)'"
+                :required="false"
+            />
+
             <!-- title -->
             <x-admin.field.text
                 :name="'title['. $lang .']'"

@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin\Portfolio\Project;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateRequest extends FormRequest
 {
@@ -24,6 +25,13 @@ class UpdateRequest extends FormRequest
         $rules['hero_image'] = ['nullable', 'image', 'mimes:jpg,png,webp', 'max:20480'];
 
         $rules['area'] = ['nullable', 'integer'];
+        $rules['slug'] = [
+            'nullable',
+            'string',
+            'max:255',
+            'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
+            Rule::unique('projects', 'slug')->ignore($this->route('project')?->id),
+        ];
         $rules['sort'] = ['required', 'integer'];
         $rules['active'] = ['required', 'boolean'];
         $rules['inquiry_button_active'] = ['required', 'boolean'];

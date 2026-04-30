@@ -23,6 +23,20 @@ class UpdateRequest extends FormRequest
     public function rules(): array
     {
         $rules['hero_image'] = ['nullable', 'image', 'mimes:jpg,png,webp', 'max:20480'];
+        $page = $this->route('page');
+
+        if ($page && in_array($page->slug, static_page_editable_slugs(), true)) {
+            $isHome = $page->slug === 'home';
+            $rules['public_slug'] = [
+                $isHome ? 'nullable' : 'required',
+                'string',
+                'max:255',
+                'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
+                Rule::notIn(static_page_reserved_paths()),
+                Rule::unique('pages', 'public_slug')->ignore($page->id),
+                Rule::unique('page_slug_redirects', 'old_slug'),
+            ];
+        }
 
         $fallback = config('app.fallback_locale');
 

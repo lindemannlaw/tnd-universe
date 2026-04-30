@@ -13,20 +13,16 @@ class SitemapGeneratorService
 {
     public const TYPES = ['pages', 'projects', 'services', 'news'];
 
-    /**
-     * Map static Page slugs to their public URL paths.
-     * Pages with slugs not in this map are excluded from the sitemap.
-     */
-    private const STATIC_PAGE_PATHS = [
-        'home'           => '/',
-        'about'          => '/about',
-        'services'       => '/services',
-        'portfolio'      => '/portfolio',
-        'news'           => '/news',
-        'contacts'       => '/contacts',
-        'imprint'        => '/imprint',
-        'privacy-notice' => '/privacy-notice',
-        'terms-of-use'   => '/terms-of-use',
+    private const STATIC_PAGE_SLUGS = [
+        'home',
+        'about',
+        'services',
+        'portfolio',
+        'news',
+        'contacts',
+        'imprint',
+        'privacy-notice',
+        'terms-of-use',
     ];
 
     public function index(): string
@@ -68,8 +64,9 @@ class SitemapGeneratorService
         $entries = [];
         $pages   = Page::all()->keyBy('slug');
 
-        foreach (self::STATIC_PAGE_PATHS as $slug => $path) {
+        foreach (self::STATIC_PAGE_SLUGS as $slug) {
             $page = $pages->get($slug);
+            $path = $this->staticPagePath($slug);
             $entries[] = [
                 'path'    => $path,
                 'lastmod' => $page?->updated_at,
@@ -163,7 +160,7 @@ class SitemapGeneratorService
             'project'      => '/portfolio/' . $model->slug,
             'service'      => '/services/' . $model->slug,
             'news_article' => '/news/' . $model->slug,
-            'page'         => self::STATIC_PAGE_PATHS[$model->slug] ?? null,
+            'page'         => in_array($model->slug, self::STATIC_PAGE_SLUGS, true) ? $this->staticPagePath($model->slug) : null,
             default        => null,
         };
 
@@ -230,6 +227,18 @@ class SitemapGeneratorService
     private function baseUrl(): string
     {
         return rtrim(config('app.url'), '/');
+    }
+
+    private function staticPagePath(string $slug): string
+    {
+        if (in_array($slug, static_page_editable_slugs(), true)) {
+            return static_page_url($slug);
+        }
+
+        return match ($slug) {
+            'home' => '/',
+            default => '/' . $slug,
+        };
     }
 
     private function localizedUrl(string $base, string $locale, string $defaultLocale, string $path): string

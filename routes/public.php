@@ -31,6 +31,11 @@ Route::get('/contacts', [App\Http\Controllers\Public\ContactsPageController::cla
 Route::get('/imprint', [App\Http\Controllers\Public\ImprintPageController::class, 'index'])->name('public.imprint');
 Route::get('/privacy-notice', [App\Http\Controllers\Public\PrivacyNoticePageController::class, 'index'])->name('public.privacy-notice');
 Route::get('/terms-of-use', [App\Http\Controllers\Public\TermsOfUsePageController::class, 'index'])->name('public.terms-of-use');
+Route::get('/{portfolioAlias}/{project:slug}', [App\Http\Controllers\Public\Portfolio\ProjectPageController::class, 'indexByAlias'])
+    ->where('portfolioAlias', '^(?!services$|portfolio$|news$|admin$|storage$|api$|sitemap\.xml$|sitemap-pages\.xml$|sitemap-projects\.xml$|sitemap-services\.xml$|sitemap-news\.xml$)[a-z0-9-]+$')
+    ->name('public.portfolio.project.alias');
+Route::get('/{pageAlias}', '\App\Http\Controllers\Public\StaticPageAliasController')
+    ->where('pageAlias', '^(?!services$|portfolio$|news$|admin$|storage$|api$|sitemap\.xml$|sitemap-pages\.xml$|sitemap-projects\.xml$|sitemap-services\.xml$|sitemap-news\.xml$)[a-z0-9-]+$');
 
 Route::group([
     'middleware' => [App\Http\Middleware\ThrottleEmails::class],

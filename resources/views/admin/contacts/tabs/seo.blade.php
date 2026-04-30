@@ -15,6 +15,13 @@
 
     <div class="g-col-12 g-col-md-8">
         <div class="d-flex flex-column gap-4">
+            <x-admin.field.text
+                :name="'public_slug'"
+                :value="old('public_slug', $page->public_slug)"
+                :placeholder="'URL Slug (z. B. contacts)'"
+                :required="false"
+            />
+
             <!-- title -->
             <x-admin.field.text
                 :name="'title['. $lang .']'"

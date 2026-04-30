@@ -4,7 +4,7 @@
 
 <a
     {{ $attributes->merge(['class' => 'logo']) }}
-    href="{{ route('public.home') }}"
+    href="{{ static_page_url('home') }}"
 >
     @if ($isHorisontal)
         <svg

@@ -206,7 +206,7 @@
 
 <aside id="adminSidebar" class="sidebar d-flex flex-column bg-secondary text-white active">
     <div class="sidebar-header d-flex align-items-center gap-4 lh-sm border-bottom border-white border-opacity-25 shadow-sm py-2 px-3 position-relative">
-        <a href="{{ route('public.home') }}" target="_blank" class="position-relative rounded-circle">
+        <a href="{{ static_page_url('home') }}" target="_blank" class="position-relative rounded-circle">
             <img src="/img/admin-logo.jpg" alt="Logo" width="36" class="img-fluid p-1 rounded-pill">
         </a>
 

@@ -17,6 +17,14 @@
     <div class="d-flex flex-column gap-4 g-col-12 g-col-lg-7 g-col-xl-8">
         @php $lang = config('app.fallback_locale', 'en'); @endphp
         <div class="d-flex flex-column gap-4">
+            <!-- slug -->
+            <x-admin.field.text
+                :name="'slug'"
+                :value="old('slug', isset($project) ? $project->slug : null)"
+                :placeholder="'Slug (z. B. zuerich-residence-clone)'"
+                :required="false"
+            />
+
             <!-- title -->
             <x-admin.field.text
                 :name="'title[' . $lang . ']'"

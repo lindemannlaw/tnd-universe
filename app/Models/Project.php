@@ -85,6 +85,10 @@ class Project extends Model implements HasMedia
         parent::boot();
 
         static::saving(function ($model) {
+            if (filled($model->slug)) {
+                $model->slug = (string) Str::of((string) $model->slug)->slug('-');
+            }
+
             if (empty($model->getOriginal('slug')) && is_null($model->slug)) {
                 $title = $model->getTranslation('title', config('app.fallback_locale'));
                 $base  = (string) Str::of($title)->slug('-');

@@ -14,6 +14,44 @@ class Page extends Model implements HasMedia
 {
     use HasFactory, InteractsWithMedia, HasTranslations;
 
+    protected static function booted(): void
+    {
+        static::saving(function (self $page) {
+            if (!in_array($page->slug, static_page_editable_slugs(), true)) {
+                return;
+            }
+
+            $normalized = trim((string) ($page->public_slug ?? ''), '/');
+            $page->public_slug = $normalized !== '' ? $normalized : null;
+        });
+
+        static::updated(function (self $page) {
+            if (!in_array($page->slug, static_page_editable_slugs(), true)) {
+                return;
+            }
+
+            if (!$page->wasChanged('public_slug')) {
+                return;
+            }
+
+            $oldSlug = trim((string) ($page->getOriginal('public_slug') ?? ''), '/');
+            $newSlug = trim((string) ($page->public_slug ?? ''), '/');
+
+            if ($oldSlug === '' || $oldSlug === $newSlug) {
+                return;
+            }
+
+            $page->slugRedirects()->updateOrCreate(
+                ['old_slug' => $oldSlug],
+                ['page_id' => $page->id]
+            );
+
+            if ($newSlug !== '') {
+                PageSlugRedirect::query()->where('old_slug', $newSlug)->delete();
+            }
+        });
+    }
+
     public string $mediaCollection = 'pages';
 
     public array $mediaSizes = [
@@ -26,6 +64,7 @@ class Page extends Model implements HasMedia
 
     protected $fillable = [
         'title',
+        'public_slug',
         'description',
 
         'seo_title',
@@ -59,6 +98,11 @@ class Page extends Model implements HasMedia
             'geo_text' => 'json',
             'content_data' => 'json',
         ];
+    }
+
+    public function slugRedirects(): HasMany
+    {
+        return $this->hasMany(PageSlugRedirect::class);
     }
 
     public function registerMediaConversions(Media $media = null): void

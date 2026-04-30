@@ -9,12 +9,16 @@ use App\Models\Page;
 use App\Models\Project;
 use App\Models\ServiceCategory;
 use App\Models\SiteSection;
-use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class HomePageController extends Controller
 {
-    public function index(): View {
+    public function index(): View|RedirectResponse {
+        if ($redirect = static_page_canonical_redirect('home')) {
+            return $redirect;
+        }
+
         $page = Page::where('slug', 'home')->first();
         $serviceCategories = ServiceCategory::whereHas('services', function ($query) {
             $query->where('active', 1);

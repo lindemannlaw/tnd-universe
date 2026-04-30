@@ -8,11 +8,11 @@
             </div>
 
             <ul>
-                <li><a href="{{ route('public.about') }}" class="{{ request()->routeIs('public.about') ? 'is-active' : '' }}">{{ __('base.about') }}</a></li>
+                <li><a href="{{ static_page_url('about') }}" class="{{ static_page_is_active('about') ? 'is-active' : '' }}">{{ __('base.about') }}</a></li>
                 <li><a href="{{ route('public.services') }}" class="{{ request()->routeIs('public.service*') ? 'is-active' : '' }}">{{ __('base.expertise') }}</a></li>
-                <li><a href="{{ route('public.portfolio') }}" class="{{ request()->routeIs('public.portfolio*') ? 'is-active' : '' }}">{{ __('base.portfolio') }}</a></li>
+                <li><a href="{{ portfolio_url() }}" class="{{ portfolio_is_active() ? 'is-active' : '' }}">{{ __('base.portfolio') }}</a></li>
                 <li><a href="{{ route('public.news') }}" class="{{ request()->routeIs('public.news*') ? 'is-active' : '' }}">{{ __('base.news') }}</a></li>
-                <li><a href="{{ route('public.contacts') }}" class="{{ request()->routeIs('public.contacts') ? 'is-active' : '' }}">{{ __('base.contacts') }}</a></li>
+                <li><a href="{{ static_page_url('contacts') }}" class="{{ static_page_is_active('contacts') ? 'is-active' : '' }}">{{ __('base.contacts') }}</a></li>
             </ul>
         </nav>
 

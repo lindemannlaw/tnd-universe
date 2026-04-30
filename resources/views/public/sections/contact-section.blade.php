@@ -57,7 +57,7 @@
 
                     <div data-form-errors data-error-messge="{{ __('public.error_validate_form') }}" class="form-errors"></div>
 
-                    <p class="form-info">{{ __('public.by_clicking_send') }} <a href="{{ route('public.privacy-notice') }}">{{ __('public.privacy_notice') }}</a>.</p>
+                    <p class="form-info">{{ __('public.by_clicking_send') }} <a href="{{ static_page_url('privacy-notice') }}">{{ __('public.privacy_notice') }}</a>.</p>
 
                     <button type="submit" class="btn btn-submit">{{ __('base.send') }}</button>
                 </form>

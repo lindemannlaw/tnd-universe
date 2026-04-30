@@ -86,7 +86,7 @@ $galleryImageSizes = [
                                 );
                             @endphp
                             @if ($btnText)
-                                <a href="{{ route('public.contacts') }}" class="btn btn-submit project-inquiry-btn">
+                                <a href="{{ static_page_url('contacts') }}" class="btn btn-submit project-inquiry-btn">
                                     {{ $btnText }}
                                 </a>
                             @endif

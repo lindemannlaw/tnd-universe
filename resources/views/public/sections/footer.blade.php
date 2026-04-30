@@ -5,25 +5,41 @@
                 <x-public.logo class="footer-logo" />
 
                 <div class="footer-contacts-links">
-                    @foreach (data_get($contacts->getTranslation('content_data', config('app.fallback_locale')), 'phones', []) as $phone)
+                    @php
+                        $contentData = $contacts->getTranslation('content_data', config('app.fallback_locale'));
+                        $phone = data_get($contentData, 'phones.0');
+                        $whatsapp = data_get($contentData, 'whatsapp');
+                        $email = data_get($contentData, 'emails.0');
+                    @endphp
+
+                    @if(!empty(trim((string) $phone)))
                         <p>
                             <a
                                 href="tel:{{ get_only_numbers($phone) }}"
-                                class="base-link"
+                                class="base-link footer-contact-link footer-contact-link--phone"
                             >{{ $phone }}</a>
                         </p>
-                    @endforeach
+                    @endif
 
-                    @foreach (data_get($contacts->getTranslation('content_data', config('app.fallback_locale')), 'emails', []) as $email)
+                    @if(!empty(trim((string) $whatsapp)))
+                        <p>
+                            <a
+                                href="https://wa.me/{{ get_only_numbers($whatsapp) }}"
+                                target="_blank"
+                                rel="noopener"
+                                class="base-link footer-contact-link footer-contact-link--whatsapp"
+                            >{{ $whatsapp }}</a>
+                        </p>
+                    @endif
+
+                    @if(!empty(trim((string) $email)))
                         <p>
                             <a
                                 href="mailto:{{ $email }}"
-                                class="base-link"
+                                class="base-link footer-contact-link footer-contact-link--mail"
                             >{{ $email }}</a>
                         </p>
-                    @endforeach
-
-                    @include('public.fragments.whatsapp-button', ['variant' => 'footer', 'label' => 'WhatsApp'])
+                    @endif
                 </div>
 
                 <address>
@@ -34,8 +50,8 @@
             <nav class="footer-col footer-menu">
                 <ul>
                     <li><a
-                            href="{{ route('public.about') }}"
-                            class="{{ request()->routeIs('public.about') ? 'is-active' : '' }}"
+                            href="{{ static_page_url('about') }}"
+                            class="{{ static_page_is_active('about') ? 'is-active' : '' }}"
                         >{{ __('base.about') }}</a></li>
                     <li><a
                             href="{{ route('public.services') }}"
@@ -50,23 +66,23 @@
                             class="{{ request()->routeIs('public.news*') ? 'is-active' : '' }}"
                         >{{ __('base.news') }}</a></li>
                     <li><a
-                            href="{{ route('public.contacts') }}"
-                            class="{{ request()->routeIs('public.contacts') ? 'is-active' : '' }}"
+                            href="{{ static_page_url('contacts') }}"
+                            class="{{ static_page_is_active('contacts') ? 'is-active' : '' }}"
                         >{{ __('base.contacts') }}</a></li>
                 </ul>
 
                 <ul>
                     <li><a
-                            href="{{ route('public.imprint') }}"
-                            class="{{ request()->routeIs('public.imprint') ? 'is-active' : '' }}"
+                            href="{{ static_page_url('imprint') }}"
+                            class="{{ static_page_is_active('imprint') ? 'is-active' : '' }}"
                         >{{ __('base.imprint') }}</a></li>
                     <li><a
-                            href="{{ route('public.privacy-notice') }}"
-                            class="{{ request()->routeIs('public.privacy-notice') ? 'is-active' : '' }}"
+                            href="{{ static_page_url('privacy-notice') }}"
+                            class="{{ static_page_is_active('privacy-notice') ? 'is-active' : '' }}"
                         >{{ __('base.privacy_notice') }}</a></li>
                     <li><a
-                            href="{{ route('public.terms-of-use') }}"
-                            class="{{ request()->routeIs('public.terms-of-use') ? 'is-active' : '' }}"
+                            href="{{ static_page_url('terms-of-use') }}"
+                            class="{{ static_page_is_active('terms-of-use') ? 'is-active' : '' }}"
                         >{{ __('base.terms_of_use') }}</a></li>
                 </ul>
             </nav>
