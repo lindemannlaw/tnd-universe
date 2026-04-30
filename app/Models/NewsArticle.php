@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Services\MediaTransferService;
 use App\Traits\HasImageProcessing;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Log;
@@ -33,9 +35,11 @@ class NewsArticle extends Model implements HasMedia
         'link_top_active',
         'link_top_text',
         'link_top_url',
+        'link_top_media_id',
         'link_bottom_active',
         'link_bottom_text',
         'link_bottom_url',
+        'link_bottom_media_id',
 
         'active',
         'sort',
@@ -67,8 +71,10 @@ class NewsArticle extends Model implements HasMedia
             'geo_text' => 'json',
             'link_top_text' => 'json',
             'link_top_active' => 'boolean',
+            'link_top_media_id' => 'integer',
             'link_bottom_text' => 'json',
             'link_bottom_active' => 'boolean',
+            'link_bottom_media_id' => 'integer',
             'active' => 'boolean',
         ];
     }
@@ -109,6 +115,15 @@ class NewsArticle extends Model implements HasMedia
                 $model->slug = $slug;
             }
         });
+
+        // Cascade-Schutz: bevor ein Article gelöscht wird, transferiert der
+        // MediaTransferService die Ownership jedes ihm gehörenden Medien-Files
+        // auf einen anderen Article, der das File noch per FK referenziert —
+        // andernfalls würde Spatie's Owner-Cascade das physische File löschen
+        // und alle anderen FK-Referenzen blind machen.
+        static::deleting(function (self $article) {
+            app(MediaTransferService::class)->protectFromOwnerCascade($article);
+        });
     }
 
     public function categories(): BelongsToMany {
@@ -117,6 +132,14 @@ class NewsArticle extends Model implements HasMedia
 
     public function getFirstCategoryAttribute(): ?NewsCategory {
         return $this->categories?->first();
+    }
+
+    public function linkTopMedia(): BelongsTo {
+        return $this->belongsTo(Media::class, 'link_top_media_id');
+    }
+
+    public function linkBottomMedia(): BelongsTo {
+        return $this->belongsTo(Media::class, 'link_bottom_media_id');
     }
 
     public function registerMediaConversions(Media $media = null): void

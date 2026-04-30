@@ -26,4 +26,5 @@ return [
     'media_replace_failed' => 'Nie udało się zastąpić pliku',
     'media_delete_failed' => 'Nie udało się usunąć pliku',
     'media_orphan' => 'Ten plik jest osierocony (brak rekordu nadrzędnego). Wymiana nie jest możliwa.',
+    'media_upload_failed' => 'Nie udało się przesłać pliku',
 ];

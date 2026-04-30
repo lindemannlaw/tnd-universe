@@ -148,4 +148,11 @@ return [
     'owner' => 'Used by',
     'collection' => 'Collection',
     'orphan' => 'Orphan',
+    'no_file_selected' => 'No file selected',
+    'choose_file' => 'Choose file',
+    'pick' => 'Pick',
+    'upload' => 'Upload',
+    'upload_library_hint' => 'Uploaded files land in the library and can be reused in articles.',
+    'library' => 'Library',
+    'success_upload_data' => 'File uploaded successfully',
 ];

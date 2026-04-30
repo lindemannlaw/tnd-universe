@@ -135,12 +135,83 @@ class MediaController extends Controller
         abort(404);
     }
 
-    private function buildListData(Request $request): array
+    public function picker(Request $request): string
     {
-        $query   = trim((string) $request->input('search_query', ''));
-        $sortBy  = $request->input('sort_by', 'updated_at');
-        $sortDir = $request->input('sort_dir', 'desc');
-        $view    = $request->input('view', 'table');
+        if (!$request->ajax()) {
+            abort(404);
+        }
+
+        $data = $this->buildListData($request, pickerMode: true);
+        $data['mimeFilter'] = $request->input('mime_filter');
+        $data['field']      = $request->input('field');
+
+        return view('admin.media.picker', $data)->render();
+    }
+
+    public function pickerList(Request $request): string
+    {
+        if (!$request->ajax()) {
+            abort(404);
+        }
+
+        $data = $this->buildListData($request, pickerMode: true);
+        $data['mimeFilter'] = $request->input('mime_filter');
+        $data['field']      = $request->input('field');
+
+        return view('admin.media.picker-list', $data)->render();
+    }
+
+    public function upload(Request $request): JsonResponse
+    {
+        $request->validate([
+            'file' => ['required', 'file', 'max:51200'],
+        ]);
+
+        $user = $request->user();
+        if (!$user) {
+            return response()->json(['message' => __('errors.media_upload_failed')], 401);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $uploaded     = $request->file('file');
+            $originalName = pathinfo($uploaded->getClientOriginalName(), PATHINFO_FILENAME) ?: 'file';
+
+            $media = $user->addMediaFromRequest('file')
+                ->usingName($originalName)
+                ->toMediaCollection('library');
+
+            DB::commit();
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            Log::error(__('errors.media_upload_failed'), ['exception' => $exception]);
+
+            return response()->json([
+                'message' => __('errors.media_upload_failed'),
+                'error'   => $exception->getMessage(),
+            ], 500);
+        }
+
+        return response()->json([
+            'toast' => ['type' => 'success', 'message' => __('admin.success_upload_data')],
+            'media' => [
+                'id'        => $media->id,
+                'name'      => $media->name,
+                'file_name' => $media->file_name,
+                'size'      => $media->size,
+                'mime_type' => $media->mime_type,
+            ],
+        ]);
+    }
+
+    private function buildListData(Request $request, bool $pickerMode = false): array
+    {
+        $query      = trim((string) $request->input('search_query', ''));
+        $sortBy     = $request->input('sort_by', 'updated_at');
+        $sortDir    = $request->input('sort_dir', 'desc');
+        $view       = $request->input('view', 'table');
+        $mimeFilter = $request->input('mime_filter');
 
         if (!in_array($sortBy, self::SORTABLE, true)) {
             $sortBy = 'updated_at';
@@ -161,17 +232,19 @@ class MediaController extends Controller
                        ->orWhere('custom_properties->name', 'like', $like);
                 });
             })
+            ->when($mimeFilter, fn ($q) => $q->where('mime_type', $mimeFilter))
             ->orderBy($sortBy, $sortDir)
             ->orderBy('id', 'desc')
             ->paginate(50)
             ->withQueryString();
 
         return [
-            'media'   => $media,
-            'query'   => $query,
-            'sortBy'  => $sortBy,
-            'sortDir' => $sortDir,
-            'view'    => $view,
+            'media'      => $media,
+            'query'      => $query,
+            'sortBy'     => $sortBy,
+            'sortDir'    => $sortDir,
+            'view'       => $view,
+            'pickerMode' => $pickerMode,
         ];
     }
 

@@ -38,12 +38,12 @@ class UpdateRequest extends FormRequest
         $rules['link_top_active'] = ['required', 'boolean'];
         $rules['link_top_text'] = ['nullable', 'array'];
         $rules['link_top_url'] = ['nullable', 'string', 'max:2048'];
-        $rules['link_top_file'] = ['nullable', 'file', 'max:51200'];
+        $rules['link_top_media_id'] = ['nullable', 'integer', 'exists:media,id'];
 
         $rules['link_bottom_active'] = ['required', 'boolean'];
         $rules['link_bottom_text'] = ['nullable', 'array'];
         $rules['link_bottom_url'] = ['nullable', 'string', 'max:2048'];
-        $rules['link_bottom_file'] = ['nullable', 'file', 'max:51200'];
+        $rules['link_bottom_media_id'] = ['nullable', 'integer', 'exists:media,id'];
 
         foreach (supported_languages_keys() as $locale) {
             $isSource = $locale === $sourceLang;

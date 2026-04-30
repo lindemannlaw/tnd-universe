@@ -132,4 +132,11 @@ return [
     'owner' => 'Używane przez',
     'collection' => 'Kolekcja',
     'orphan' => 'Sierota',
+    'no_file_selected' => 'Nie wybrano pliku',
+    'choose_file' => 'Wybierz plik',
+    'pick' => 'Wybierz',
+    'upload' => 'Prześlij',
+    'upload_library_hint' => 'Przesłane pliki trafiają do biblioteki i mogą być ponownie używane w artykułach.',
+    'library' => 'Biblioteka',
+    'success_upload_data' => 'Plik został przesłany pomyślnie',
 ];

@@ -242,6 +242,9 @@ Route::group([
     /* MEDIA */
     Route::group(['prefix' => 'media'], function () {
         Route::get('/',                  [\App\Http\Controllers\Admin\MediaController::class, 'index'])->name('admin.media.index');
+        Route::get('/picker',            [\App\Http\Controllers\Admin\MediaController::class, 'picker'])->name('admin.media.picker');
+        Route::get('/picker/list',       [\App\Http\Controllers\Admin\MediaController::class, 'pickerList'])->name('admin.media.picker.list');
+        Route::post('/upload',           [\App\Http\Controllers\Admin\MediaController::class, 'upload'])->name('admin.media.upload');
         Route::get('/{media}',           [\App\Http\Controllers\Admin\MediaController::class, 'show'])->name('admin.media.show');
         Route::get('/{media}/download',  [\App\Http\Controllers\Admin\MediaController::class, 'download'])->name('admin.media.download');
         Route::post('/{media}/replace',  [\App\Http\Controllers\Admin\MediaController::class, 'replace'])->name('admin.media.replace');

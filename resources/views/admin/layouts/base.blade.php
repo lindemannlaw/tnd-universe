@@ -40,5 +40,13 @@
     @stack('modals')
 
     <x-admin.modal.wrapper id="confirm-delete-modal"/>
+
+    <div id="media-picker-modal"
+         class="modal fade"
+         tabindex="-1"
+         data-bs-backdrop="static"
+         aria-labelledby="media-picker-modal"
+         aria-hidden="true"
+         style="z-index: 1265"></div>
 </body>
 </html>

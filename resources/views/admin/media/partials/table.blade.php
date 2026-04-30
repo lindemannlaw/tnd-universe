@@ -99,6 +99,19 @@
                         {{ $item->updated_at?->diffForHumans() }}
                     </td>
                     <td class="text-end">
+                        @if (!empty($pickerMode))
+                            <button type="button"
+                                    class="btn btn-sm btn-primary d-inline-flex align-items-center gap-2"
+                                    data-picker-pick
+                                    data-media-id="{{ $item->id }}"
+                                    data-media-name="{{ $item->name }}"
+                                    data-media-file-name="{{ $item->file_name }}"
+                                    data-media-size="{{ $item->size }}"
+                                    data-media-mime="{{ $item->mime_type }}">
+                                <x-admin.icon :name="'check2'" :width="14" :height="14" />
+                                <span>{{ __('admin.pick') }}</span>
+                            </button>
+                        @else
                         <div class="d-inline-flex align-items-center gap-2">
                             <x-admin.ajax.view-modal-button
                                 class="btn-sm p-2"
@@ -121,6 +134,7 @@
                                 :updateIdSection="'media-list'"
                             />
                         </div>
+                        @endif
                     </td>
                 </tr>
             @endforeach

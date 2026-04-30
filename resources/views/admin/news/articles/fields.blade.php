@@ -85,36 +85,10 @@
         :required="false"
     />
 
-    @if(isset($article) && $article->hasMedia($article->mediaLinkTopFile))
-        @php $topFile = $article->getFirstMedia($article->mediaLinkTopFile); @endphp
-        <div class="d-flex gap-3 align-items-center">
-            <x-admin.field.text
-                class="col"
-                :name="'_link_top_file_display'"
-                :value="$topFile->file_name . ' (' . number_format($topFile->size / 1024, 0) . ' KB)'"
-                :placeholder="__('admin.file')"
-                :required="false"
-                :readonly="true"
-            />
-            <label class="btn btn-sm btn-secondary d-inline-flex align-items-center gap-2 flex-shrink-0 cursor-pointer m-0" style="height: 38px;">
-                <svg class="bi" width="14" height="14" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#upload"/></svg>
-                {{ __('admin.link_replace_file') }}
-                <input type="file" name="link_top_file" class="d-none" onchange="const t=this.closest('.d-flex').querySelector('input[type=text]'); if(t&&this.files[0]) t.value=this.files[0].name;">
-            </label>
-            <x-admin.button
-                :btnInFieldGroup="true"
-                :href="$topFile->getUrl()"
-                :icon-name="'download'"
-                download="{{ $topFile->file_name }}"
-            />
-        </div>
-    @else
-        <label class="btn btn-sm btn-secondary d-inline-flex align-items-center gap-2 align-self-start cursor-pointer">
-            <svg class="bi" width="14" height="14" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#upload"/></svg>
-            {{ __('admin.link_upload_file') }}
-            <input type="file" name="link_top_file" class="d-none" onchange="this.closest('label').querySelector('span')?.remove(); const s=document.createElement('span'); s.className='text-muted ms-1'; s.textContent=this.files[0]?.name||''; this.closest('label').append(s);">
-        </label>
-    @endif
+    @include('admin.news.articles.fields._link-media-picker', [
+        'article' => $article ?? null,
+        'field'   => 'link_top_media_id',
+    ])
 
     <x-admin.field.radio-switch
         class="m-0 me-auto"
@@ -142,36 +116,10 @@
         :required="false"
     />
 
-    @if(isset($article) && $article->hasMedia($article->mediaLinkBottomFile))
-        @php $bottomFile = $article->getFirstMedia($article->mediaLinkBottomFile); @endphp
-        <div class="d-flex gap-3 align-items-center">
-            <x-admin.field.text
-                class="col"
-                :name="'_link_bottom_file_display'"
-                :value="$bottomFile->file_name . ' (' . number_format($bottomFile->size / 1024, 0) . ' KB)'"
-                :placeholder="__('admin.file')"
-                :required="false"
-                :readonly="true"
-            />
-            <label class="btn btn-sm btn-secondary d-inline-flex align-items-center gap-2 flex-shrink-0 cursor-pointer m-0" style="height: 38px;">
-                <svg class="bi" width="14" height="14" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#upload"/></svg>
-                {{ __('admin.link_replace_file') }}
-                <input type="file" name="link_bottom_file" class="d-none" onchange="const t=this.closest('.d-flex').querySelector('input[type=text]'); if(t&&this.files[0]) t.value=this.files[0].name;">
-            </label>
-            <x-admin.button
-                :btnInFieldGroup="true"
-                :href="$bottomFile->getUrl()"
-                :icon-name="'download'"
-                download="{{ $bottomFile->file_name }}"
-            />
-        </div>
-    @else
-        <label class="btn btn-sm btn-secondary d-inline-flex align-items-center gap-2 align-self-start cursor-pointer">
-            <svg class="bi" width="14" height="14" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#upload"/></svg>
-            {{ __('admin.link_upload_file') }}
-            <input type="file" name="link_bottom_file" class="d-none" onchange="this.closest('label').querySelector('span')?.remove(); const s=document.createElement('span'); s.className='text-muted ms-1'; s.textContent=this.files[0]?.name||''; this.closest('label').append(s);">
-        </label>
-    @endif
+    @include('admin.news.articles.fields._link-media-picker', [
+        'article' => $article ?? null,
+        'field'   => 'link_bottom_media_id',
+    ])
 
     <x-admin.field.radio-switch
         class="m-0 me-auto"

@@ -33,4 +33,5 @@ return [
     'media_replace_failed' => 'Media replace failed',
     'media_delete_failed' => 'Media delete failed',
     'media_orphan' => 'This media is orphaned (no parent record). Replacement is not possible.',
+    'media_upload_failed' => 'Media upload failed',
 ];

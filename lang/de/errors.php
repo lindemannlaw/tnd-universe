@@ -33,4 +33,5 @@ return [
     'media_replace_failed' => 'Das Ersetzen der Datei ist fehlgeschlagen.',
     'media_delete_failed' => 'Das Löschen der Datei ist fehlgeschlagen.',
     'media_orphan' => 'Diese Datei ist verwaist (kein zugehöriges Element). Ersetzen ist nicht möglich.',
+    'media_upload_failed' => 'Das Hochladen der Datei ist fehlgeschlagen.',
 ];

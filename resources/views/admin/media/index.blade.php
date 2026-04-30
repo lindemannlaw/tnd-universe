@@ -25,6 +25,14 @@
         </div>
 
         <x-admin.button
+            class="btn-sm"
+            data-bs-toggle="modal"
+            data-bs-target="#media-upload-modal"
+            :iconName="'cloud-upload'"
+            :title="__('admin.upload')"
+        />
+
+        <x-admin.button
             class="btn-sm p-2"
             data-bs-toggle="modal"
             data-bs-target="#media-search-modal"
@@ -51,6 +59,10 @@
         :title="__('admin.media')"
     />
     <x-admin.modal.wrapper id="media-detail-modal" />
+
+    <div id="media-upload-modal" class="modal fade" tabindex="-1" data-bs-backdrop="static" data-update-after-upload="media-list">
+        @include('admin.media.upload-modal')
+    </div>
 @endpush
 
 @push('footer-scripts')

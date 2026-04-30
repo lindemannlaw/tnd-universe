@@ -34,15 +34,17 @@
     };
 @endphp
 
+@php $pickerMode = $pickerMode ?? false; @endphp
+
 @if ($media->isEmpty())
     <div class="d-flex flex-auto">
         <x-admin.empty-message />
     </div>
 @else
     @if ($view === 'grid')
-        @include('admin.media.partials.grid', compact('media', 'ownerLabels', 'sortOptions', 'sortBy', 'sortDir'))
+        @include('admin.media.partials.grid', compact('media', 'ownerLabels', 'sortOptions', 'sortBy', 'sortDir', 'pickerMode'))
     @else
-        @include('admin.media.partials.table', compact('media', 'ownerLabels', 'sortUrl', 'sortArrow'))
+        @include('admin.media.partials.table', compact('media', 'ownerLabels', 'sortUrl', 'sortArrow', 'pickerMode'))
     @endif
 
     @if ($media->hasPages())

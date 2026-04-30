@@ -39,9 +39,7 @@
                         @php
                             $topText = $article->getTranslation('link_top_text', app()->getLocale(), false)
                                     ?: $article->getTranslation('link_top_text', config('app.fallback_locale'), false);
-                            $topFile = $article->hasMedia($article->mediaLinkTopFile)
-                                     ? $article->getFirstMedia($article->mediaLinkTopFile)
-                                     : null;
+                            $topFile = $article->linkTopMedia;
                             $topHref = $topFile ? $topFile->getUrl() : $article->link_top_url;
                         @endphp
                         @if ($topText && $topHref)
@@ -64,9 +62,7 @@
             @php
                 $bottomText = $article->getTranslation('link_bottom_text', app()->getLocale(), false)
                             ?: $article->getTranslation('link_bottom_text', config('app.fallback_locale'), false);
-                $bottomFile = $article->hasMedia($article->mediaLinkBottomFile)
-                            ? $article->getFirstMedia($article->mediaLinkBottomFile)
-                            : null;
+                $bottomFile = $article->linkBottomMedia;
                 $bottomHref = $bottomFile ? $bottomFile->getUrl() : $article->link_bottom_url;
                 $bottomIsDownload = (bool) $bottomFile;
                 $bottomFileSize = $bottomFile ? number_format($bottomFile->size / (1024 * 1024), 2) : null;

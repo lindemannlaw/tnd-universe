@@ -56,11 +56,22 @@
 
             <div class="col">
                 <div class="card h-100 shadow-sm position-relative {{ $isOrphan ? 'opacity-75' : '' }}">
+                    @if (!empty($pickerMode))
+                        <button type="button"
+                                class="text-decoration-none text-reset d-block bg-transparent border-0 p-0 text-start"
+                                data-picker-pick
+                                data-media-id="{{ $item->id }}"
+                                data-media-name="{{ $item->name }}"
+                                data-media-file-name="{{ $item->file_name }}"
+                                data-media-size="{{ $item->size }}"
+                                data-media-mime="{{ $item->mime_type }}">
+                    @else
                     <a href="{{ route('admin.media.show', $item->id) }}"
                        data-ajax-view-modal-button
                        data-action="{{ route('admin.media.show', $item->id) }}"
                        data-modal="media-detail-modal"
                        class="text-decoration-none text-reset d-block">
+                    @endif
 
                         <div class="ratio ratio-4x3 bg-light rounded-top overflow-hidden">
                             @if ($thumbUrl)
@@ -83,6 +94,10 @@
                                 <div class="mt-1"><span class="badge bg-warning text-dark">{{ __('admin.orphan') }}</span></div>
                             @endif
                         </div>
+
+                    @if (!empty($pickerMode))
+                        </button>
+                    @else
                     </a>
 
                     <div class="position-absolute top-0 end-0 m-2 d-flex gap-1">
@@ -92,6 +107,7 @@
                             :updateIdSection="'media-list'"
                         />
                     </div>
+                    @endif
                 </div>
             </div>
         @endforeach

@@ -147,4 +147,11 @@ return [
     'owner' => 'Verwendung',
     'collection' => 'Sammlung',
     'orphan' => 'Verwaist',
+    'no_file_selected' => 'Keine Datei gewählt',
+    'choose_file' => 'Datei wählen',
+    'pick' => 'Wählen',
+    'upload' => 'Hochladen',
+    'upload_library_hint' => 'Hochgeladene Dateien landen in der Bibliothek und können in Artikeln wiederverwendet werden.',
+    'library' => 'Bibliothek',
+    'success_upload_data' => 'Datei erfolgreich hochgeladen',
 ];

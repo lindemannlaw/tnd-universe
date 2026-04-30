@@ -15,14 +15,21 @@ export function ajaxViewModalButton() {
         if (!button) return;
 
         const targetModal = document.getElementById(button.dataset.modal);
-        let url = button.dataset.action;
+        const url = button.dataset.action;
+        // Default 1: existing call-sites keep the old "close all modals first"
+        // behaviour. Pass data-with-hide-modals="0" to stack the new modal on
+        // top of any modal already open (e.g. the media picker over an
+        // article-edit modal).
+        const withHideModals = button.dataset.withHideModals === undefined
+            ? 1
+            : +button.dataset.withHideModals;
 
         ajax(event, {
             submitter: button,
             url: url,
             method: 'get',
             successHandler: (response) => {
-                hideAllModals();
+                if (withHideModals) hideAllModals();
                 showModal(targetModal, response.data);
             },
             errorHandler: (error) => {

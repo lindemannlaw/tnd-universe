@@ -9,6 +9,10 @@ import { ajaxConfirmDeleteButton } from './components/ajaxConfirmDeleteButton.js
 import { ajaxCloneButton } from './components/ajaxCloneButton.js';
 import { ajaxWithUpdateFromView } from './components/ajaxWithUpdateFromView.js';
 import { autoOpenEditModal } from './components/autoOpenEditModal.js';
+import { mediaPickerModal } from './components/mediaPickerModal.js';
+import { linkMediaPickerField } from './components/linkMediaPickerField.js';
+import { stackedModalFix } from './components/stackedModalFix.js';
+import { libraryUpload } from './components/libraryUpload.js';
 
 import { scrollbars } from "./components/scrollbars.js";
 import { sidebar } from "./components/sidebar.js";
@@ -32,6 +36,10 @@ ajaxConfirmDeleteButton();
 ajaxCloneButton();
 ajaxWithUpdateFromView();
 autoOpenEditModal();
+mediaPickerModal();
+linkMediaPickerField();
+stackedModalFix();
+libraryUpload();
 
 scrollbars();
 sidebar();
