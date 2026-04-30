@@ -71,11 +71,12 @@
 }
 
 // On mobile, give the header the same look as the desktop "scrolled" state:
-// near-opaque white (97%) with a backdrop blur and a light shadow line.
-// Applies to every page so the nav looks consistent regardless of route.
+// 80% white with backdrop blur (8px) and a subtle shadow — identical to
+// .is-page-scrolled .header. Applies to every page so the nav looks
+// consistent regardless of route.
 @media (max-width: 1259px) {
     .header {
-        background-color: rgba(var(--color-white-rgb), .97);
+        background-color: rgba(var(--color-white-rgb), .8);
         backdrop-filter: blur(8px);
         box-shadow:
             0 0 0 1px rgba(var(--color-black-rgb), .05),
