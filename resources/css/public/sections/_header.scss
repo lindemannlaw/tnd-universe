@@ -118,6 +118,15 @@
                     background-color: var(--color-primary-brand-900-darker-silent);
                 }
             }
+
+            // Menu items revert to brand green on mobile (desktop sets them
+            // white for the dark hero, but mobile has a white header so we
+            // need the green back for legibility / state feedback).
+            .main-menu ul a {
+                --menu-link-color: var(--color-interaction-primary-default);
+                --menu-link-hover-color: var(--color-interaction-primary-hover);
+                --menu-link-active-color: var(--color-interaction-primary-active);
+            }
         }
     }
 }
