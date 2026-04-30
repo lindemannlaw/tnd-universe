@@ -246,14 +246,14 @@
     margin-right: calc(range.build(10, 23) * -1);
 
     @media (max-width: 1259px) {
-        width: 260px;
+        width: 100vw;
         height: 100vh;
         height: 100dvh;
         display: flex;
         flex-direction: column;
         position: fixed;
         top: 0;
-        left: -280px;
+        left: -100vw;
         margin-right: 0;
         background-color: var(--color-white);
         box-shadow: 0 0 16px 0 rgba(var(--color-dark-rgb), .25);
