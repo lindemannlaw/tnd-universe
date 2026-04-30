@@ -9,6 +9,6 @@
                         <p>{{ $tag }}</p>
                     @endforeach
                 </div>
-                <a href="{{ route('public.portfolio.project', $project->slug) }}" class="project-card-link"></a>
+                <a href="{{ portfolio_project_url($project) }}" class="project-card-link"></a>
             </div>
 </div>

@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Traits\HasImageProcessing;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 use Spatie\MediaLibrary\HasMedia;
@@ -108,6 +109,33 @@ class Project extends Model implements HasMedia
                 $model->slug = $slug;
             }
         });
+
+        static::updated(function ($model) {
+            if (!$model->wasChanged('slug')) {
+                return;
+            }
+
+            $oldSlug = trim((string) ($model->getOriginal('slug') ?? ''), '/');
+            $newSlug = trim((string) ($model->slug ?? ''), '/');
+
+            if ($oldSlug === '' || $oldSlug === $newSlug) {
+                return;
+            }
+
+            $model->slugRedirects()->updateOrCreate(
+                ['old_slug' => $oldSlug],
+                ['project_id' => $model->id]
+            );
+
+            if ($newSlug !== '') {
+                ProjectSlugRedirect::query()->where('old_slug', $newSlug)->delete();
+            }
+        });
+    }
+
+    public function slugRedirects(): HasMany
+    {
+        return $this->hasMany(ProjectSlugRedirect::class);
     }
 
     public function hasAnyPropertyDetail(): bool

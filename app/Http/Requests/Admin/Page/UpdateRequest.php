@@ -26,9 +26,8 @@ class UpdateRequest extends FormRequest
         $page = $this->route('page');
 
         if ($page && in_array($page->slug, static_page_editable_slugs(), true)) {
-            $isHome = $page->slug === 'home';
             $rules['public_slug'] = [
-                $isHome ? 'nullable' : 'required',
+                'nullable',
                 'string',
                 'max:255',
                 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',

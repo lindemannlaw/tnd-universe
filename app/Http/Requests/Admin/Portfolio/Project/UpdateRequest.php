@@ -31,6 +31,7 @@ class UpdateRequest extends FormRequest
             'max:255',
             'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
             Rule::unique('projects', 'slug')->ignore($this->route('project')?->id),
+            Rule::unique('project_slug_redirects', 'old_slug'),
         ];
         $rules['sort'] = ['required', 'integer'];
         $rules['active'] = ['required', 'boolean'];

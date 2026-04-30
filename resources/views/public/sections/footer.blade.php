@@ -58,8 +58,8 @@
                             class="{{ request()->routeIs('public.service*') ? 'is-active' : '' }}"
                         >{{ __('base.expertise') }}</a></li>
                     <li><a
-                            href="{{ route('public.portfolio') }}"
-                            class="{{ request()->routeIs('public.portfolio*') ? 'is-active' : '' }}"
+                            href="{{ portfolio_url() }}"
+                            class="{{ portfolio_is_active() ? 'is-active' : '' }}"
                         >{{ __('base.portfolio') }}</a></li>
                     <li><a
                             href="{{ route('public.news') }}"

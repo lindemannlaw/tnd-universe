@@ -38,7 +38,7 @@ $projectImage = $project->hasMedia($project->mediaHero) ? $project->getFirstMedi
     @endif
 
     <a
-        href="{{ route('public.portfolio.project', $project->slug) }}"
+        href="{{ portfolio_project_url($project) }}"
         class="project-scaled-card-link"
     ></a>
 </div>

@@ -25,7 +25,7 @@
                     <div class="home-portfolio-subtitle">{{ __('base.portfolio') }}</div>
                     <h2 class="home-portfolio-title">{{ __('base.recent_cases') }}</h2>
                     <a
-                        href="{{ route('public.portfolio') }}"
+                        href="{{ portfolio_url() }}"
                         class="btn btn-submit btn-view-all home-portfolio-link"
                     >{{ __('base.view_all') }}</a>
                 </div>

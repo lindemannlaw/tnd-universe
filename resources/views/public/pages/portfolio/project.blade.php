@@ -46,7 +46,7 @@ $galleryImageSizes = [
         <div class="container project-hero-container">
             <nav class="breadcrumbs is-breadcrumbs-bg-dark project-hero-breadcrumbs">
                 <ul>
-                    <li><a href="{{ route('public.portfolio') }}">{{ __('base.portfolio') }}</a></li>
+                    <li><a href="{{ portfolio_url() }}">{{ __('base.portfolio') }}</a></li>
                     <li>{{ $project->title }}</li>
                 </ul>
             </nav>
@@ -441,7 +441,7 @@ $galleryImageSizes = [
             <div class="other-projects-head">
                 <h3 class="other-projects-title">{{ __('public.other_cases') }}</h3>
                 <a
-                    href="{{ route('public.portfolio') }}"
+                    href="{{ portfolio_url() }}"
                     class="btn btn-submit btn-view-all home-portfolio-link"
                 >{{ __('base.view_all') }}</a>
             </div>
