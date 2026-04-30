@@ -495,10 +495,6 @@
     --btn-color: var(--color-primary-brand-900-darker-silent);
 
     text-transform: uppercase;
-    // Sit above sibling header items (cta-group/whatsapp/lang) which can
-    // claim z-index: 20. Without this, the negative-z-index ::before overlay
-    // can land in the same stacking context as a sibling and absorb the tap.
-    z-index: 30;
 
     @media (max-width: 424px) {
         --btn-fz: 14px;
