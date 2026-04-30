@@ -16,7 +16,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $staticHelpers = app_path('Helpers/static-pages.php');
+        if (is_file($staticHelpers)) {
+            require_once $staticHelpers;
+        }
     }
 
     /**
