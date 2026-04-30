@@ -40,6 +40,31 @@
     $deleteSubtitle = $media->file_name
         . ($media->collection_name ? ' · ' . $media->collection_name : '')
         . ($ownerLabel ? ' · ' . $ownerLabel : '');
+
+    // Generated conversions (Spatie xl/hd/lg/md/sm-webp etc.) — pull from
+    // the `generated_conversions` JSON column, resolve URL + on-disk size.
+    $conversions = collect($media->generated_conversions ?? [])
+        ->filter(fn ($v) => (bool) $v)
+        ->map(function ($_, $name) use ($media) {
+            $size = null;
+            try {
+                $path = $media->getPath($name);
+                if (is_file($path)) {
+                    $size = filesize($path);
+                }
+            } catch (\Throwable $e) {
+                // disk path unresolvable — leave size as null
+            }
+            $url = null;
+            try {
+                $url = $media->getUrl($name);
+            } catch (\Throwable $e) {
+                // skip
+            }
+            return ['name' => $name, 'url' => $url, 'size' => $size];
+        })
+        ->filter(fn ($c) => !empty($c['url']))
+        ->values();
 @endphp
 
 <x-admin.modal.content :size="'lg'" :title="$media->name">
@@ -93,6 +118,45 @@
                     </tr>
                 </tbody>
             </table>
+
+            @if ($conversions->isNotEmpty())
+                <div class="border-top pt-3">
+                    <div class="fw-semibold small text-gray mb-2">
+                        {{ __('admin.conversions') }}
+                        <span class="text-gray">({{ $conversions->count() }})</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>{{ __('admin.name') }}</th>
+                                    <th>{{ __('admin.size') }}</th>
+                                    <th class="text-end" style="width: 1%; white-space: nowrap;">&nbsp;</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($conversions as $c)
+                                    <tr>
+                                        <td><code>{{ $c['name'] }}</code></td>
+                                        <td class="text-nowrap">
+                                            {{ $c['size'] !== null ? Number::fileSize($c['size']) : '—' }}
+                                        </td>
+                                        <td class="text-end">
+                                            <a href="{{ $c['url'] }}"
+                                               target="_blank"
+                                               rel="noopener"
+                                               class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-2">
+                                                <x-admin.icon :name="'box-arrow-up-right'" :width="14" :height="14" />
+                                                {{ __('admin.open') }}
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            @endif
 
             @unless ($isOrphan)
                 <form

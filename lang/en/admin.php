@@ -155,4 +155,6 @@ return [
     'upload_library_hint' => 'Uploaded files land in the library and can be reused in articles.',
     'library' => 'Library',
     'success_upload_data' => 'File uploaded successfully',
+    'conversions' => 'Generated variants',
+    'open' => 'Open',
 ];

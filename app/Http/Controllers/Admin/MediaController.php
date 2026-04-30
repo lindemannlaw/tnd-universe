@@ -242,7 +242,16 @@ class MediaController extends Controller
             ->orderBy($sortBy, $sortDir)
             ->orderBy('id', 'desc')
             ->paginate(50)
-            ->withQueryString();
+            ->withQueryString()
+            // Always render pagination URLs against the index route, not the
+            // current request URL. Otherwise, after a delete or replace
+            // refresh, the pagination would point at /admin/media/{id}/delete
+            // (DELETE-only) and clicking page 2 would hit 405.
+            ->withPath(
+                $pickerMode
+                    ? route('admin.media.picker.list')
+                    : route('admin.media.index')
+            );
 
         return [
             'media'      => $media,

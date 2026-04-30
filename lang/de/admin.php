@@ -154,4 +154,6 @@ return [
     'upload_library_hint' => 'Hochgeladene Dateien landen in der Bibliothek und können in Artikeln wiederverwendet werden.',
     'library' => 'Bibliothek',
     'success_upload_data' => 'Datei erfolgreich hochgeladen',
+    'conversions' => 'Generierte Varianten',
+    'open' => 'Öffnen',
 ];

@@ -139,4 +139,6 @@ return [
     'upload_library_hint' => 'Przesłane pliki trafiają do biblioteki i mogą być ponownie używane w artykułach.',
     'library' => 'Biblioteka',
     'success_upload_data' => 'Plik został przesłany pomyślnie',
+    'conversions' => 'Wygenerowane warianty',
+    'open' => 'Otwórz',
 ];
