@@ -4,7 +4,23 @@ import { ajax } from '../../ajax.js';
 
 const PICKER_MODAL_ID = 'media-picker-modal';
 
+// Captured at trigger-click time. Avoids round-tripping the field through the
+// modal HTML where it could go stale or cross-contaminate between top/bottom
+// slots. The capture-phase listener guarantees we read it before any other
+// click handler (notably ajaxViewModalButton) runs.
+let activePickerField = null;
+
 export function mediaPickerModal() {
+    // Capture the source field whenever a picker trigger is clicked.
+    document.addEventListener('click', (event) => {
+        const trigger = event.target.closest(
+            '[data-ajax-view-modal-button][data-modal="' + PICKER_MODAL_ID + '"]'
+        );
+        if (!trigger) return;
+        const wrapper = trigger.closest('[data-link-media-field]');
+        activePickerField = wrapper?.dataset.linkMediaField ?? null;
+    }, true);
+
     // Pick button → fire picker:select and close picker
     document.addEventListener('click', (event) => {
         const button = event.target.closest('[data-picker-pick]');
@@ -12,8 +28,6 @@ export function mediaPickerModal() {
         if (!button.closest(`#${PICKER_MODAL_ID}`)) return;
 
         const modalEl = document.getElementById(PICKER_MODAL_ID);
-        const fieldEl = modalEl?.querySelector('[data-media-picker-modal]');
-        const field   = fieldEl?.dataset.field || null;
 
         firePickerSelect({
             id:        button.dataset.mediaId,
@@ -21,7 +35,7 @@ export function mediaPickerModal() {
             file_name: button.dataset.mediaFileName,
             size:      button.dataset.mediaSize,
             mime_type: button.dataset.mediaMime,
-            field,
+            field:     activePickerField,
         });
 
         bootstrap.Modal.getInstance(modalEl)?.hide();
@@ -59,8 +73,6 @@ export function mediaPickerModal() {
                 if (!m) return;
 
                 const modalEl = document.getElementById(PICKER_MODAL_ID);
-                const fieldEl = modalEl?.querySelector('[data-media-picker-modal]');
-                const field   = fieldEl?.dataset.field || null;
 
                 firePickerSelect({
                     id:        m.id,
@@ -68,7 +80,7 @@ export function mediaPickerModal() {
                     file_name: m.file_name,
                     size:      m.size,
                     mime_type: m.mime_type,
-                    field,
+                    field:     activePickerField,
                 });
 
                 bootstrap.Modal.getInstance(modalEl)?.hide();
