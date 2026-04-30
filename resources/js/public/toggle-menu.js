@@ -22,4 +22,7 @@ export function toggleMenu() {
         html.classList.remove(toggleClassname);
     });
 
+    window.addEventListener('scroll', () => {
+        html.classList.remove(toggleClassname);
+    });
 }
