@@ -20,7 +20,12 @@
                 @endforeach
             </div>
 
-            <nav class="pagination news-pagination">{{ $projects->withQueryString()->links('vendor.pagination.public') }}
+            @php
+                $paginationView = view()->exists('vendor.pagination.public')
+                    ? 'vendor.pagination.public'
+                    : 'pagination::default';
+            @endphp
+            <nav class="pagination news-pagination">{{ $projects->withQueryString()->links($paginationView) }}
             </nav>
         </div>
     </section>
