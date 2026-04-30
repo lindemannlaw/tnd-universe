@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
-use Symfony\Component\HttpFoundation\Response;
 
 class MediaController extends Controller
 {
@@ -35,10 +34,17 @@ class MediaController extends Controller
         ])->render();
     }
 
-    public function download(Media $media): Response
+    public function download(Media $media)
     {
-        return $media->toResponse(request())
-            ->setContentDisposition('attachment', $media->file_name);
+        $path = $media->getPath();
+
+        if (!is_file($path)) {
+            abort(404);
+        }
+
+        return response()->download($path, $media->file_name, [
+            'Content-Type' => $media->mime_type ?? 'application/octet-stream',
+        ]);
     }
 
     public function replace(Request $request, Media $media)
