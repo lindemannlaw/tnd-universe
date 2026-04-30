@@ -36,10 +36,16 @@ class NewsArticle extends Model implements HasMedia
         'link_top_text',
         'link_top_url',
         'link_top_media_id',
+        'link_top_show_image',
+        'link_top_image_source',
+        'link_top_image_media_id',
         'link_bottom_active',
         'link_bottom_text',
         'link_bottom_url',
         'link_bottom_media_id',
+        'link_bottom_show_image',
+        'link_bottom_image_source',
+        'link_bottom_image_media_id',
 
         'active',
         'sort',
@@ -72,9 +78,13 @@ class NewsArticle extends Model implements HasMedia
             'link_top_text' => 'json',
             'link_top_active' => 'boolean',
             'link_top_media_id' => 'integer',
+            'link_top_show_image' => 'boolean',
+            'link_top_image_media_id' => 'integer',
             'link_bottom_text' => 'json',
             'link_bottom_active' => 'boolean',
             'link_bottom_media_id' => 'integer',
+            'link_bottom_show_image' => 'boolean',
+            'link_bottom_image_media_id' => 'integer',
             'active' => 'boolean',
         ];
     }
@@ -140,6 +150,14 @@ class NewsArticle extends Model implements HasMedia
 
     public function linkBottomMedia(): BelongsTo {
         return $this->belongsTo(Media::class, 'link_bottom_media_id');
+    }
+
+    public function linkTopImage(): BelongsTo {
+        return $this->belongsTo(Media::class, 'link_top_image_media_id');
+    }
+
+    public function linkBottomImage(): BelongsTo {
+        return $this->belongsTo(Media::class, 'link_bottom_image_media_id');
     }
 
     public function registerMediaConversions(Media $media = null): void

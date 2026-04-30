@@ -39,11 +39,17 @@ class StoreRequest extends FormRequest
         $rules['link_top_text'] = ['nullable', 'array'];
         $rules['link_top_url'] = ['nullable', 'string', 'max:2048'];
         $rules['link_top_media_id'] = ['nullable', 'integer', 'exists:media,id'];
+        $rules['link_top_show_image'] = ['required', 'boolean'];
+        $rules['link_top_image_source'] = ['nullable', 'string', 'in:pdf,custom'];
+        $rules['link_top_image_media_id'] = ['nullable', 'integer', 'exists:media,id'];
 
         $rules['link_bottom_active'] = ['required', 'boolean'];
         $rules['link_bottom_text'] = ['nullable', 'array'];
         $rules['link_bottom_url'] = ['nullable', 'string', 'max:2048'];
         $rules['link_bottom_media_id'] = ['nullable', 'integer', 'exists:media,id'];
+        $rules['link_bottom_show_image'] = ['required', 'boolean'];
+        $rules['link_bottom_image_source'] = ['nullable', 'string', 'in:pdf,custom'];
+        $rules['link_bottom_image_media_id'] = ['nullable', 'integer', 'exists:media,id'];
 
         foreach (supported_languages_keys() as $locale) {
             $isSource = $locale === $sourceLang;

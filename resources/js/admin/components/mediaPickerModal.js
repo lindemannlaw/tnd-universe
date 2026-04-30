@@ -35,6 +35,7 @@ export function mediaPickerModal() {
             file_name: button.dataset.mediaFileName,
             size:      button.dataset.mediaSize,
             mime_type: button.dataset.mediaMime,
+            url:       button.dataset.mediaUrl,
             field:     activePickerField,
         });
 
@@ -80,6 +81,7 @@ export function mediaPickerModal() {
                     file_name: m.file_name,
                     size:      m.size,
                     mime_type: m.mime_type,
+                    url:       m.url,
                     field:     activePickerField,
                 });
 

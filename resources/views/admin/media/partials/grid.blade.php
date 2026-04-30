@@ -64,7 +64,8 @@
                                 data-media-name="{{ $item->name }}"
                                 data-media-file-name="{{ $item->file_name }}"
                                 data-media-size="{{ $item->size }}"
-                                data-media-mime="{{ $item->mime_type }}">
+                                data-media-mime="{{ $item->mime_type }}"
+                                data-media-url="{{ $item->getUrl() }}">
                     @else
                     <a href="{{ route('admin.media.show', $item->id) }}"
                        data-ajax-view-modal-button

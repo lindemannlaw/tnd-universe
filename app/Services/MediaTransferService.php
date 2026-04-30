@@ -22,7 +22,12 @@ class MediaTransferService
     /**
      * NewsArticle FK columns that may reference a media row owned by another article.
      */
-    private const NEWS_ARTICLE_FK_COLUMNS = ['link_top_media_id', 'link_bottom_media_id'];
+    private const NEWS_ARTICLE_FK_COLUMNS = [
+        'link_top_media_id',
+        'link_bottom_media_id',
+        'link_top_image_media_id',
+        'link_bottom_image_media_id',
+    ];
 
     public function protectFromOwnerCascade(Model $model): void
     {

@@ -141,4 +141,10 @@ return [
     'success_upload_data' => 'Plik został przesłany pomyślnie',
     'conversions' => 'Wygenerowane warianty',
     'open' => 'Otwórz',
+    'show_image' => 'Pokaż obraz',
+    'image_source' => 'Źródło obrazu',
+    'image_source_pdf' => 'Strona 1 PDF',
+    'image_source_custom' => 'Własny obraz',
+    'generate_from_pdf' => 'Generuj z PDF',
+    'no_image_selected' => 'Nie wybrano obrazu',
 ];

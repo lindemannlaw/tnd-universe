@@ -157,4 +157,10 @@ return [
     'success_upload_data' => 'File uploaded successfully',
     'conversions' => 'Generated variants',
     'open' => 'Open',
+    'show_image' => 'Show image',
+    'image_source' => 'Image source',
+    'image_source_pdf' => 'PDF page 1',
+    'image_source_custom' => 'Custom image',
+    'generate_from_pdf' => 'Generate from PDF',
+    'no_image_selected' => 'No image selected',
 ];

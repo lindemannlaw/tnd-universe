@@ -24,6 +24,7 @@
         "bootstrap": "^5.3.8",
         "caniuse-lite": "^1.0.30001750",
         "overlayscrollbars": "^2.12.0",
+        "pdfjs-dist": "^5.7.284",
         "qs": "^6.14.0",
         "reset-css": "^5.0.2",
         "slim-select": "^2.13.1",

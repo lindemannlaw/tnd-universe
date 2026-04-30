@@ -107,7 +107,8 @@
                                     data-media-name="{{ $item->name }}"
                                     data-media-file-name="{{ $item->file_name }}"
                                     data-media-size="{{ $item->size }}"
-                                    data-media-mime="{{ $item->mime_type }}">
+                                    data-media-mime="{{ $item->mime_type }}"
+                                    data-media-url="{{ $item->getUrl() }}">
                                 <x-admin.icon :name="'check2'" :width="14" :height="14" />
                                 <span>{{ __('admin.pick') }}</span>
                             </button>

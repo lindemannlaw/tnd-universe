@@ -207,6 +207,7 @@ class MediaController extends Controller
                 'file_name' => $media->file_name,
                 'size'      => $media->size,
                 'mime_type' => $media->mime_type,
+                'url'       => $media->getUrl(),
             ],
         ]);
     }
@@ -238,7 +239,13 @@ class MediaController extends Controller
                        ->orWhere('custom_properties->name', 'like', $like);
                 });
             })
-            ->when($mimeFilter, fn ($q) => $q->where('mime_type', $mimeFilter))
+            ->when($mimeFilter, function ($q) use ($mimeFilter) {
+                if (str_ends_with($mimeFilter, '/*')) {
+                    $q->where('mime_type', 'like', substr($mimeFilter, 0, -1) . '%');
+                } else {
+                    $q->where('mime_type', $mimeFilter);
+                }
+            })
             ->orderBy($sortBy, $sortDir)
             ->orderBy('id', 'desc')
             ->paginate(50)

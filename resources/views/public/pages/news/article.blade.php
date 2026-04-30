@@ -41,6 +41,7 @@
                                     ?: $article->getTranslation('link_top_text', config('app.fallback_locale'), false);
                             $topFile = $article->linkTopMedia;
                             $topHref = $topFile ? $topFile->getUrl() : $article->link_top_url;
+                            $topImage = $article->link_top_show_image ? $article->linkTopImage : null;
                         @endphp
                         @if ($topText && $topHref)
                             <a href="{{ $topHref }}" class="arrow-link news-article-link-top">
@@ -49,6 +50,12 @@
                                     <path d="M0 5H30M30 5L26 1M30 5L26 9" stroke="currentColor" stroke-width="1.2"/>
                                 </svg>
                             </a>
+                            @if ($topImage)
+                                <a href="{{ $topHref }}" class="news-article-link-image news-article-link-top-image"
+                                   @if($topFile) download="{{ $topFile->file_name }}" @endif>
+                                    <img src="{{ $topImage->getUrl() }}" alt="{{ $topText }}" loading="lazy">
+                                </a>
+                            @endif
                         @endif
                     @endif
                 </div>
@@ -66,6 +73,7 @@
                 $bottomHref = $bottomFile ? $bottomFile->getUrl() : $article->link_bottom_url;
                 $bottomIsDownload = (bool) $bottomFile;
                 $bottomFileSize = $bottomFile ? number_format($bottomFile->size / (1024 * 1024), 2) : null;
+                $bottomImage = $article->link_bottom_show_image ? $article->linkBottomImage : null;
             @endphp
             @if ($bottomText && $bottomHref)
                 <div class="container">
@@ -80,6 +88,12 @@
                                 <span class="file-download-size">{{ $bottomFileSize }} Mb</span>
                             @endif
                         </a>
+                        @if ($bottomImage)
+                            <a href="{{ $bottomHref }}" class="news-article-link-image news-article-link-bottom-image"
+                               @if($bottomIsDownload) download="{{ $bottomFile->file_name }}" @endif>
+                                <img src="{{ $bottomImage->getUrl() }}" alt="{{ $bottomText }}" loading="lazy">
+                            </a>
+                        @endif
                     </div>
                 </div>
             @endif

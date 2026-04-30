@@ -18,7 +18,7 @@ const HUMAN = (bytes) => {
 
 export function linkMediaPickerField() {
     document.addEventListener('picker:select', (event) => {
-        const { id, file_name, size, field } = event.detail || {};
+        const { id, file_name, size, url, mime_type, field } = event.detail || {};
         if (!field) return;
 
         const wrapper = document.querySelector(`[data-link-media-field="${field}"]`);
@@ -28,6 +28,8 @@ export function linkMediaPickerField() {
         const preview = wrapper.querySelector('[data-preview]');
 
         if (input)   input.value = id ?? '';
+        if (url)     wrapper.dataset.linkMediaUrl = url;
+        if (mime_type) wrapper.dataset.linkMediaMime = mime_type;
         if (preview) {
             preview.innerHTML = `
                 <span class="fw-semibold"></span>
@@ -36,6 +38,11 @@ export function linkMediaPickerField() {
             preview.querySelector('.fw-semibold').textContent  = file_name || '';
             preview.querySelector('.text-gray.small').textContent = size ? `(${HUMAN(size)})` : '';
         }
+
+        // Tell the link-image generator that the source PDF changed.
+        document.dispatchEvent(new CustomEvent('link-media:changed', {
+            detail: { field, url, mime_type, id },
+        }));
     });
 
     document.addEventListener('click', (event) => {
@@ -49,6 +56,12 @@ export function linkMediaPickerField() {
         const preview = wrapper.querySelector('[data-preview]');
 
         if (input)   input.value = '';
+        wrapper.dataset.linkMediaUrl  = '';
+        wrapper.dataset.linkMediaMime = '';
         if (preview) preview.innerHTML = '<span class="text-gray">—</span>';
+
+        document.dispatchEvent(new CustomEvent('link-media:changed', {
+            detail: { field: wrapper.dataset.linkMediaField, url: null, mime_type: null, id: null },
+        }));
     });
 }

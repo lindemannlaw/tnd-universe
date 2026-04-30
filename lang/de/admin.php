@@ -156,4 +156,10 @@ return [
     'success_upload_data' => 'Datei erfolgreich hochgeladen',
     'conversions' => 'Generierte Varianten',
     'open' => 'Öffnen',
+    'show_image' => 'Bild anzeigen',
+    'image_source' => 'Bildquelle',
+    'image_source_pdf' => 'PDF Seite 1',
+    'image_source_custom' => 'Eigenes Bild',
+    'generate_from_pdf' => 'Aus PDF generieren',
+    'no_image_selected' => 'Kein Bild gewählt',
 ];

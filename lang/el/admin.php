@@ -141,4 +141,10 @@ return [
     'success_upload_data' => 'Το αρχείο μεταφορτώθηκε επιτυχώς',
     'conversions' => 'Δημιουργημένες παραλλαγές',
     'open' => 'Άνοιγμα',
+    'show_image' => 'Εμφάνιση εικόνας',
+    'image_source' => 'Πηγή εικόνας',
+    'image_source_pdf' => 'Σελίδα 1 PDF',
+    'image_source_custom' => 'Προσαρμοσμένη εικόνα',
+    'generate_from_pdf' => 'Δημιουργία από PDF',
+    'no_image_selected' => 'Δεν έχει επιλεγεί εικόνα',
 ];

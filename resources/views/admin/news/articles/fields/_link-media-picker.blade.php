@@ -14,7 +14,9 @@
 @endphp
 
 <div class="link-media-picker-field d-flex flex-column gap-2"
-     data-link-media-field="{{ $field }}">
+     data-link-media-field="{{ $field }}"
+     data-link-media-url="{{ $media?->getUrl() }}"
+     data-link-media-mime="{{ $media?->mime_type }}">
     <input type="hidden" name="{{ $field }}" value="{{ $media?->id }}" data-link-media-input>
 
     <div class="d-flex gap-2 align-items-center flex-wrap">

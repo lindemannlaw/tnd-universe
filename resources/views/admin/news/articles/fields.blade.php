@@ -90,6 +90,14 @@
         'field'   => 'link_top_media_id',
     ])
 
+    @include('admin.news.articles.fields._link-image-field', [
+        'article'        => $article ?? null,
+        'showField'      => 'link_top_show_image',
+        'sourceField'    => 'link_top_image_source',
+        'mediaField'     => 'link_top_image_media_id',
+        'pdfSourceField' => 'link_top_media_id',
+    ])
+
     <x-admin.field.radio-switch
         class="m-0 me-auto"
         :name="'link_top_active'"
@@ -119,6 +127,14 @@
     @include('admin.news.articles.fields._link-media-picker', [
         'article' => $article ?? null,
         'field'   => 'link_bottom_media_id',
+    ])
+
+    @include('admin.news.articles.fields._link-image-field', [
+        'article'        => $article ?? null,
+        'showField'      => 'link_bottom_show_image',
+        'sourceField'    => 'link_bottom_image_source',
+        'mediaField'     => 'link_bottom_image_media_id',
+        'pdfSourceField' => 'link_bottom_media_id',
     ])
 
     <x-admin.field.radio-switch
