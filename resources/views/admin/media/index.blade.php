@@ -25,10 +25,10 @@
         </div>
 
         <x-admin.button
+            class="btn-sm p-2"
             data-bs-toggle="modal"
             data-bs-target="#media-search-modal"
             :iconName="'search'"
-            :title="__('buttons.search')"
         />
     </x-admin.main-panel>
 @endsection

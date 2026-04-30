@@ -47,7 +47,7 @@
 
     @if ($media->hasPages())
         <div class="d-flex justify-content-center px-3 px-sm-4 py-3 border-top border-dark border-opacity-25">
-            {{ $media->links() }}
+            {{ $media->links('pagination::bootstrap-5') }}
         </div>
     @endif
 @endif
