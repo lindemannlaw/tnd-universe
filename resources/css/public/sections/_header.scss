@@ -70,67 +70,6 @@
     }
 }
 
-// On mobile, give the header the same look as the desktop "scrolled" state:
-// 80% white with backdrop blur (8px) and a subtle shadow — identical to
-// .is-page-scrolled .header. Applies to every page so the nav looks
-// consistent regardless of route.
-@media (max-width: 1259px) {
-    .header {
-        background-color: rgba(var(--color-white-rgb), .8);
-        backdrop-filter: blur(8px);
-        box-shadow:
-            0 0 0 1px rgba(var(--color-black-rgb), .05),
-            0 0 16px 0 rgba(var(--color-black-rgb), .1);
-        color: var(--color-primary-brand-900-darker-silent);
-    }
-
-    // Suppress the dark gradient overlay that home/post-page adds via ::before
-    // — it would tint the otherwise white header.
-    .home-page,
-    .post-page {
-        .header::before {
-            display: none;
-        }
-    }
-
-    // Pages that override header text/logo/toggle to white (home, portfolio
-    // project, news article) need to revert to dark colours on mobile so they
-    // remain legible on the white background.
-    .home-page,
-    .portfolio-project-page,
-    .news-article-page {
-        .header {
-            color: var(--color-primary-brand-900-darker-silent);
-
-            .header-logo {
-                color: var(--color-primary-brand-900-darker-silent);
-
-                &:hover {
-                    color: var(--color-primary-brand-800-dark);
-                }
-            }
-
-            .main-menu-toggle-button {
-                --btn-color: var(--color-primary-brand-900-darker-silent);
-
-                span::before,
-                span::after {
-                    background-color: var(--color-primary-brand-900-darker-silent);
-                }
-            }
-
-            // Menu items revert to brand green on mobile (desktop sets them
-            // white for the dark hero, but mobile has a white header so we
-            // need the green back for legibility / state feedback).
-            .main-menu ul a {
-                --menu-link-color: var(--color-interaction-primary-default);
-                --menu-link-hover-color: var(--color-interaction-primary-hover);
-                --menu-link-active-color: var(--color-interaction-primary-active);
-            }
-        }
-    }
-}
-
 .home-page .header,
 .portfolio-project-page .header,
 .news-article-page .header {
