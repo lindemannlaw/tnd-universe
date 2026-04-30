@@ -111,9 +111,6 @@
                 root.classList.remove(toggleClassname);
             });
 
-            window.addEventListener('scroll', function () {
-                root.classList.remove(toggleClassname);
-            }, { passive: true });
         }
 
         function initHeaderFallback() {
