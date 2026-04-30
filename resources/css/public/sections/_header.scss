@@ -70,24 +70,54 @@
     }
 }
 
-// On mobile, apply the same gradient/blur header background to every page so
-// the nav bar consistently sits over a soft Home-style overlay regardless of
-// route (about, contacts, services, …).
+// On mobile, give the header the same look as the desktop "scrolled" state:
+// near-opaque white (97%) with a backdrop blur and a light shadow line.
+// Applies to every page so the nav looks consistent regardless of route.
 @media (max-width: 1259px) {
-    .header::before {
-        display: block;
-        content: '';
-        width: 100%;
-        height: 140%;
-        position: absolute;
-        top: 0;
-        left: 0;
-        z-index: -1;
-        background: linear-gradient(to top, rgba(var(--color-black-rgb), 0) 0%, rgba(var(--color-black-rgb), .35) 100%);
-        mask-image: linear-gradient(to top, rgba(var(--color-black-rgb), 0) 0%, rgba(var(--color-black-rgb), 1) 40%);
-        transition: var(--transition);
-        transition-property: opacity, visibility;
-        backdrop-filter: blur(10px);
+    .header {
+        background-color: rgba(var(--color-white-rgb), .97);
+        backdrop-filter: blur(8px);
+        box-shadow:
+            0 0 0 1px rgba(var(--color-black-rgb), .05),
+            0 0 16px 0 rgba(var(--color-black-rgb), .1);
+        color: var(--color-primary-brand-900-darker-silent);
+    }
+
+    // Suppress the dark gradient overlay that home/post-page adds via ::before
+    // — it would tint the otherwise white header.
+    .home-page,
+    .post-page {
+        .header::before {
+            display: none;
+        }
+    }
+
+    // Pages that override header text/logo/toggle to white (home, portfolio
+    // project, news article) need to revert to dark colours on mobile so they
+    // remain legible on the white background.
+    .home-page,
+    .portfolio-project-page,
+    .news-article-page {
+        .header {
+            color: var(--color-primary-brand-900-darker-silent);
+
+            .header-logo {
+                color: var(--color-primary-brand-900-darker-silent);
+
+                &:hover {
+                    color: var(--color-primary-brand-800-dark);
+                }
+            }
+
+            .main-menu-toggle-button {
+                --btn-color: var(--color-primary-brand-900-darker-silent);
+
+                span::before,
+                span::after {
+                    background-color: var(--color-primary-brand-900-darker-silent);
+                }
+            }
+        }
     }
 }
 
