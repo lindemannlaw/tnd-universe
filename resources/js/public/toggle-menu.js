@@ -4,6 +4,8 @@ export function toggleMenu() {
     const toggleButton = document.getElementById('main-menu-toggle-button');
 
     if (!toggleButton) return;
+    if (toggleButton.dataset.headerMenuBound === '1' || toggleButton.dataset.headerFallbackBound === '1') return;
+    toggleButton.dataset.headerMenuBound = '1';
 
     const toggleClassname = 'is-opened-main-menu';
 

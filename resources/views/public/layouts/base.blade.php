@@ -81,6 +81,56 @@
 
 @vite('resources/js/public/public.js')
 
+<script>
+    (function () {
+        if (window.__tndHeaderFallbackInited) return;
+        window.__tndHeaderFallbackInited = true;
+
+        var root = document.documentElement;
+        var toggleClassname = 'is-opened-main-menu';
+
+        function applyScrollState() {
+            root.classList.toggle('is-page-scrolled', window.scrollY > 0);
+        }
+
+        function bindMenuToggle() {
+            var toggleButton = document.getElementById('main-menu-toggle-button');
+            if (!toggleButton || toggleButton.dataset.headerFallbackBound === '1' || toggleButton.dataset.headerMenuBound === '1') return;
+
+            toggleButton.dataset.headerFallbackBound = '1';
+
+            toggleButton.addEventListener('click', function () {
+                root.classList.toggle(toggleClassname);
+            });
+
+            document.addEventListener('click', function (event) {
+                var targetMenu = event && event.target && event.target.closest ? event.target.closest('#main-menu') : null;
+                var targetToggleButton = event && event.target && event.target.closest ? event.target.closest('#main-menu-toggle-button') : null;
+
+                if (targetMenu || targetToggleButton) return;
+                root.classList.remove(toggleClassname);
+            });
+
+            window.addEventListener('scroll', function () {
+                root.classList.remove(toggleClassname);
+            }, { passive: true });
+        }
+
+        function initHeaderFallback() {
+            applyScrollState();
+            bindMenuToggle();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initHeaderFallback, { once: true });
+        } else {
+            initHeaderFallback();
+        }
+
+        window.addEventListener('scroll', applyScrollState, { passive: true });
+    })();
+</script>
+
 <div class="modals">
     @include('public.modals.contact-modal')
     @include('public.modals.success-send-modal')
