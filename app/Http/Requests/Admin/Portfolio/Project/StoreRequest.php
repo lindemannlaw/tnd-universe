@@ -22,7 +22,8 @@ class StoreRequest extends FormRequest
      */
     public function rules(): array
     {
-        $rules['hero_image'] = ['required', 'image', 'mimes:jpg,png,webp', 'max:20480'];
+        $rules['hero_image'] = ['nullable', 'image', 'mimes:jpg,png,webp', 'max:20480', 'required_without:hero_image_media_id'];
+        $rules['hero_image_media_id'] = ['nullable', 'integer', 'exists:media,id', 'required_without:hero_image'];
 
         $rules['area'] = ['nullable', 'integer'];
         $rules['slug'] = [

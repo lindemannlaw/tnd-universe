@@ -24,7 +24,9 @@ class UpdateRequest extends FormRequest
         $sourceLang = config('app.fallback_locale', 'en');
 
         $rules['photo'] = ['nullable', 'image', 'mimes:jpg,png,webp', 'max:20480'];
+        $rules['photo_media_id'] = ['nullable', 'integer', 'exists:media,id'];
         $rules['resume'] = ['nullable', 'file', 'max:20480'];
+        $rules['resume_media_id'] = ['nullable', 'integer', 'exists:media,id'];
 
         $rules['sort'] = ['required', 'integer'];
         $rules['active'] = ['required', 'boolean'];

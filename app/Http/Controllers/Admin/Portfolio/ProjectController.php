@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\Portfolio\Project\StoreRequest;
 use App\Http\Requests\Admin\Portfolio\Project\UpdateRequest;
 use Illuminate\Http\RedirectResponse;
 use App\Models\Project;
+use App\Services\MediaPickerService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -17,6 +18,8 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class ProjectController extends Controller
 {
+    public function __construct(private MediaPickerService $mediaPicker) {}
+
     public function index(): View {
         $projects = Project::latest()->get();
 
@@ -47,10 +50,7 @@ class ProjectController extends Controller
                 $project->save();
             }
 
-            if ($request->hasFile('hero_image')) {
-                $project->addMediaFromRequest('hero_image')
-                    ->toMediaCollection($project->mediaHero);
-            }
+            $this->mediaPicker->applyToCollection($project, $project->mediaHero, $request, 'hero_image');
 
             foreach ($request->input('new_files') ?? [] as $index => $fileData) {
                 $file = $request->file("new_files.{$index}.file");
@@ -181,11 +181,7 @@ class ProjectController extends Controller
                 ->where('id', $project->id)
                 ->update(['description_blocks' => $descBlocksJson]);
 
-            if ($request->hasFile('hero_image')) {
-                $project->clearMediaCollection($project->mediaHero);
-                $project->addMediaFromRequest('hero_image')
-                    ->toMediaCollection($project->mediaHero);
-            }
+            $this->mediaPicker->applyToCollection($project, $project->mediaHero, $request, 'hero_image');
 
             foreach ($request->input('current_files') ?? [] as $id => $fileData) {
                 $fileName = trim((string) data_get($fileData, 'name', ''));

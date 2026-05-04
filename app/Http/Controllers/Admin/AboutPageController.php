@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Page\UpdateRequest;
 use App\Models\Page;
+use App\Services\MediaPickerService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -12,6 +13,8 @@ use Illuminate\View\View;
 
 class AboutPageController extends Controller
 {
+    public function __construct(private MediaPickerService $mediaPicker) {}
+
     public function index(): View {
         $page = Page::where('slug', 'about')->first();
 
@@ -24,11 +27,7 @@ class AboutPageController extends Controller
         try {
             DB::beginTransaction();
 
-            if ($request->hasFile('hero_image')) {
-                $page->clearMediaCollection('hero-image');
-                $page->addMediaFromRequest('hero_image')
-                    ->toMediaCollection('hero-image');
-            }
+            $this->mediaPicker->applyToCollection($page, 'hero-image', $request, 'hero_image');
 
             $this->preserveTranslations($page, $data);
             $page->updateOrFail($data);

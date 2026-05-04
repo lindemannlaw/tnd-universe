@@ -23,8 +23,10 @@ class StoreRequest extends FormRequest
     {
         $sourceLang = config('app.fallback_locale', 'en');
 
-        $rules['photo'] = ['required', 'image', 'mimes:jpg,png,webp', 'max:20480'];
-        $rules['resume'] = ['required', 'file', 'max:20480'];
+        $rules['photo'] = ['nullable', 'image', 'mimes:jpg,png,webp', 'max:20480', 'required_without:photo_media_id'];
+        $rules['photo_media_id'] = ['nullable', 'integer', 'exists:media,id', 'required_without:photo'];
+        $rules['resume'] = ['nullable', 'file', 'max:20480', 'required_without:resume_media_id'];
+        $rules['resume_media_id'] = ['nullable', 'integer', 'exists:media,id', 'required_without:resume'];
 
         $rules['sort'] = ['required', 'integer'];
         $rules['active'] = ['required', 'boolean'];

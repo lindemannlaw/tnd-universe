@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\Services\Service\StoreRequest;
 use App\Http\Requests\Admin\Services\Service\UpdateRequest;
 use App\Models\Service;
 use App\Models\ServiceCategory;
+use App\Services\MediaPickerService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,6 +16,8 @@ use Illuminate\View\View;
 
 class ServiceController extends Controller
 {
+    public function __construct(private MediaPickerService $mediaPicker) {}
+
     public function index(): View {
         $services = Service::latest()->get();
 
@@ -43,15 +46,8 @@ class ServiceController extends Controller
 
             $service = Service::create($data);
 
-            if ($request->hasFile('hero_image')) {
-                $service->addMediaFromRequest('hero_image')
-                    ->toMediaCollection($service->mediaHero);
-            }
-
-            if ($request->hasFile('info_image')) {
-                $service->addMediaFromRequest('info_image')
-                    ->toMediaCollection($service->mediaInfo);
-            }
+            $this->mediaPicker->applyToCollection($service, $service->mediaHero, $request, 'hero_image');
+            $this->mediaPicker->applyToCollection($service, $service->mediaInfo, $request, 'info_image');
 
             DB::commit();
         } catch (\Exception $exception) {
@@ -104,17 +100,8 @@ class ServiceController extends Controller
         try {
             DB::beginTransaction();
 
-            if ($request->hasFile('hero_image')) {
-                $service->clearMediaCollection($service->mediaHero);
-                $service->addMediaFromRequest('hero_image')
-                    ->toMediaCollection($service->mediaHero);
-            }
-
-            if ($request->hasFile('info_image')) {
-                $service->clearMediaCollection($service->mediaInfo);
-                $service->addMediaFromRequest('info_image')
-                    ->toMediaCollection($service->mediaInfo);
-            }
+            $this->mediaPicker->applyToCollection($service, $service->mediaHero, $request, 'hero_image');
+            $this->mediaPicker->applyToCollection($service, $service->mediaInfo, $request, 'info_image');
 
             $this->preserveTranslations($service, $data);
             $service->updateOrFail($data);

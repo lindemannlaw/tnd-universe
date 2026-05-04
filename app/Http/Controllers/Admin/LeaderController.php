@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Leader\StoreRequest;
 use App\Http\Requests\Admin\Leader\UpdateRequest;
 use App\Models\Leader;
+use App\Services\MediaPickerService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,6 +15,8 @@ use Illuminate\View\View;
 
 class LeaderController extends Controller
 {
+    public function __construct(private MediaPickerService $mediaPicker) {}
+
     public function index(): View {
         $leaders = Leader::orderByDesc('sort')->get();
 
@@ -38,15 +41,8 @@ class LeaderController extends Controller
 
             $leader = Leader::create($data);
 
-            if ($request->hasFile('photo')) {
-                $leader->addMediaFromRequest('photo')
-                    ->toMediaCollection($leader->mediaPhoto);
-            }
-
-            if ($request->hasFile('resume')) {
-                $leader->addMediaFromRequest('resume')
-                    ->toMediaCollection($leader->mediaResume);
-            }
+            $this->mediaPicker->applyToCollection($leader, $leader->mediaPhoto, $request, 'photo');
+            $this->mediaPicker->applyToCollection($leader, $leader->mediaResume, $request, 'resume');
 
             DB::commit();
         } catch (\Exception $exception) {
@@ -97,17 +93,8 @@ class LeaderController extends Controller
             $this->preserveTranslations($leader, $data);
             $leader->updateOrFail($data);
 
-            if ($request->hasFile('photo')) {
-                $leader->clearMediaCollection($leader->mediaPhoto);
-                $leader->addMediaFromRequest('photo')
-                    ->toMediaCollection($leader->mediaPhoto);
-            }
-
-            if ($request->hasFile('resume')) {
-                $leader->clearMediaCollection($leader->mediaResume);
-                $leader->addMediaFromRequest('resume')
-                    ->toMediaCollection($leader->mediaResume);
-            }
+            $this->mediaPicker->applyToCollection($leader, $leader->mediaPhoto, $request, 'photo');
+            $this->mediaPicker->applyToCollection($leader, $leader->mediaResume, $request, 'resume');
 
             DB::commit();
         } catch (\Exception $exception) {

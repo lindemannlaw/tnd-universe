@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Manager\StoreRequest;
 use App\Http\Requests\Admin\Manager\UpdateRequest;
 use App\Models\User;
+use App\Services\MediaPickerService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,6 +16,8 @@ use Illuminate\View\View;
 
 class ManagerController extends Controller
 {
+    public function __construct(private MediaPickerService $mediaPicker) {}
+
     public function index(): View {
         $user = auth()->user();
         $withoutForSuperAdmin = [RolesEnum::SUPERADMIN->value];
@@ -38,10 +41,7 @@ class ManagerController extends Controller
 
             $manager = User::create($data);
 
-            if ($request->hasFile('avatar')) {
-                $manager->addMediaFromRequest('avatar')
-                    ->toMediaCollection($manager->mediaCollection);
-            }
+            $this->mediaPicker->applyToCollection($manager, $manager->mediaCollection, $request, 'avatar');
 
             $manager->assignRole($request->role);
 
@@ -75,12 +75,7 @@ class ManagerController extends Controller
         try {
             DB::beginTransaction();
 
-            if ($request->hasFile('avatar')) {
-                $user->clearMediaCollection($user->mediaCollection);
-
-                $user->addMediaFromRequest('avatar')
-                    ->toMediaCollection($user->mediaCollection);
-            }
+            $this->mediaPicker->applyToCollection($user, $user->mediaCollection, $request, 'avatar');
 
             $manager->syncRoles($request->role);
 

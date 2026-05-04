@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\SiteSections;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\SiteSections\WhoWeAre\UpdateRequest;
 use App\Models\SiteSection;
+use App\Services\MediaPickerService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -12,6 +13,8 @@ use Illuminate\View\View;
 
 class WhoWeAreSectionController extends Controller
 {
+    public function __construct(private MediaPickerService $mediaPicker) {}
+
     public function index(): View {
         $section = SiteSection::where('slug', 'who-we-are')->first();
 
@@ -24,17 +27,8 @@ class WhoWeAreSectionController extends Controller
         try {
             DB::beginTransaction();
 
-            if ($request->hasFile('back_image')) {
-                $siteSection->clearMediaCollection('back-image');
-                $siteSection->addMediaFromRequest('back_image')
-                    ->toMediaCollection('back-image');
-            }
-
-            if ($request->hasFile('front_image')) {
-                $siteSection->clearMediaCollection('front-image');
-                $siteSection->addMediaFromRequest('front_image')
-                    ->toMediaCollection('front-image');
-            }
+            $this->mediaPicker->applyToCollection($siteSection, 'back-image', $request, 'back_image');
+            $this->mediaPicker->applyToCollection($siteSection, 'front-image', $request, 'front_image');
 
             $this->preserveTranslations($siteSection, $data);
             $siteSection->updateOrFail($data);

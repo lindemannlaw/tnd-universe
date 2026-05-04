@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Services\Category\StoreRequest;
 use App\Http\Requests\Admin\Services\Category\UpdateRequest;
 use App\Models\ServiceCategory;
+use App\Services\MediaPickerService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,6 +15,8 @@ use Illuminate\View\View;
 
 class CategoryController extends Controller
 {
+    public function __construct(private MediaPickerService $mediaPicker) {}
+
     public function index(): View {
         $categories = ServiceCategory::all();
 
@@ -38,10 +41,7 @@ class CategoryController extends Controller
 
             $category = ServiceCategory::create($data);
 
-            if ($request->hasFile('hero_image')) {
-                $category->addMediaFromRequest('hero_image')
-                    ->toMediaCollection($category->mediaHero);
-            }
+            $this->mediaPicker->applyToCollection($category, $category->mediaHero, $request, 'hero_image');
 
             DB::commit();
         } catch (\Exception $exception) {
@@ -91,11 +91,7 @@ class CategoryController extends Controller
         try {
             DB::beginTransaction();
 
-            if ($request->hasFile('hero_image')) {
-                $serviceCategory->clearMediaCollection($serviceCategory->mediaHero);
-                $serviceCategory->addMediaFromRequest('hero_image')
-                    ->toMediaCollection($serviceCategory->mediaHero);
-            }
+            $this->mediaPicker->applyToCollection($serviceCategory, $serviceCategory->mediaHero, $request, 'hero_image');
 
             $this->preserveTranslations($serviceCategory, $data);
             $serviceCategory->updateOrFail($data);

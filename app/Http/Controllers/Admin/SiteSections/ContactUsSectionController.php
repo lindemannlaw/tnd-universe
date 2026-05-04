@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\SiteSections;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\SiteSections\ContactUs\UpdateRequest;
 use App\Models\SiteSection;
+use App\Services\MediaPickerService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -12,6 +13,8 @@ use Illuminate\View\View;
 
 class ContactUsSectionController extends Controller
 {
+    public function __construct(private MediaPickerService $mediaPicker) {}
+
     public function index(): View {
         $section = SiteSection::where('slug', 'contact-us')->first();
 
@@ -24,11 +27,7 @@ class ContactUsSectionController extends Controller
         try {
             DB::beginTransaction();
 
-            if ($request->hasFile('bg_image')) {
-                $siteSection->clearMediaCollection('bg-image');
-                $siteSection->addMediaFromRequest('bg_image')
-                    ->toMediaCollection('bg-image');
-            }
+            $this->mediaPicker->applyToCollection($siteSection, 'bg-image', $request, 'bg_image');
 
             $this->preserveTranslations($siteSection, $data);
             $siteSection->updateOrFail($data);

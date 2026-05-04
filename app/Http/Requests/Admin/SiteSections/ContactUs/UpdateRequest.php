@@ -22,6 +22,7 @@ class UpdateRequest extends FormRequest
     public function rules(): array
     {
         $rules['bg_image'] = ['nullable', 'image', 'mimes:jpg,png,webp', 'max:20480'];
+        $rules['bg_image_media_id'] = ['nullable', 'integer', 'exists:media,id'];
 
         foreach (supported_languages_keys() as $locale) {
             $rules['title'] = ['required', 'array'];
