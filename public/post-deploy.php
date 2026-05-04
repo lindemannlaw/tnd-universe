@@ -4,6 +4,31 @@ if (($_GET['token'] ?? '') !== 'tnd-pd-2026') {
     die('Forbidden');
 }
 
+// Verify the Vite manifest references files that actually exist on disk.
+// Runs before any output so we can still send a 500 status if anything is missing.
+$manifestPath = __DIR__ . '/build/manifest.json';
+if (file_exists($manifestPath)) {
+    $manifest = json_decode((string) file_get_contents($manifestPath), true);
+    $missing = [];
+    if (is_array($manifest)) {
+        foreach ($manifest as $entry) {
+            $file = $entry['file'] ?? null;
+            if ($file && !file_exists(__DIR__ . '/build/' . $file)) {
+                $missing[] = $file;
+            }
+        }
+    }
+    if ($missing) {
+        http_response_code(500);
+        header('Content-Type: text/plain');
+        echo "DEPLOY BROKEN — manifest references missing files:\n";
+        foreach ($missing as $f) {
+            echo "  - $f\n";
+        }
+        exit(1);
+    }
+}
+
 echo "<pre>\n";
 
 // Optional composer install (recommended for deploys that exclude vendor upload)
