@@ -8,8 +8,8 @@
             :placeholder="__('admin.bg_image') . ' ( 16 / 9 )'"
             :ratio="'16x9'"
             :fit="'contain'"
-            :src="$page->hasMedia('hero-image') ? $page->getFirstMediaUrl('hero-image', 'md-webp') : null"
-            :required="!$page->hasMedia('hero-image')"
+            :src="$page->hasAttachedMedia('hero-image') ? $page->firstAttachedMediaUrl('hero-image', 'md-webp') : null"
+            :required="!$page->hasAttachedMedia('hero-image')"
         />
     </div>
 

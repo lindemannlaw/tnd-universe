@@ -8,7 +8,7 @@
     <section class="contacts">
         <img
             @php
-                $heroImage = $contacts->hasMedia('hero-image') ? $contacts->getFirstMedia('hero-image') : '/img/default.svg';
+                $heroImage = $contacts->hasAttachedMedia('hero-image') ? $contacts->firstAttachedMedia('hero-image') : '/img/default.svg';
                 $heroImageSizes = [
                     'lg' => is_object($heroImage) ? $heroImage->getUrl('lg-webp') : $heroImage,
                     'hd' => is_object($heroImage) ? $heroImage->getUrl('hd-webp') : $heroImage
