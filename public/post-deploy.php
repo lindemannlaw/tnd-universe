@@ -34,9 +34,39 @@ if (file_exists($manifestPath)) {
 // Runs BEFORE <pre> is emitted so any failure path can still send a real HTTP 500
 // instead of being trapped behind already-flushed headers.
 $composerOutput = '';
+$phpBinary = null;
+$composerBinary = null;
 $runComposer = (($_GET['composer'] ?? '0') === '1');
 if ($runComposer) {
     $projectRoot = realpath(__DIR__ . '/..');
+
+    // Plesk's CLI default is often PHP 7.4, which can't satisfy Laravel 12's
+    // ^8.2 platform constraint, so composer install bails on lock-file resolve.
+    // Probe Plesk's per-version PHP locations and pick the first PHP >= 8.2 we find.
+    $phpCandidates = [
+        '/opt/plesk/php/8.4/bin/php',
+        '/opt/plesk/php/8.3/bin/php',
+        '/opt/plesk/php/8.2/bin/php',
+        '/usr/local/psa/admin/sbin/modules/php-cli/php',
+        PHP_BINARY,
+        'php',
+    ];
+    foreach ($phpCandidates as $cand) {
+        $cmd = sprintf('%s -r "echo PHP_VERSION_ID;" 2>/dev/null', escapeshellarg($cand));
+        $vid = (int) trim((string) shell_exec($cmd));
+        if ($vid >= 80200) {
+            $phpBinary = $cand;
+            break;
+        }
+    }
+
+    if ($phpBinary === null) {
+        http_response_code(500);
+        header('Content-Type: text/plain');
+        echo "✗ No PHP >= 8.2 binary found among:\n";
+        foreach ($phpCandidates as $cand) echo "  - {$cand}\n";
+        exit(1);
+    }
 
     // Ensure composer has writable HOME/COMPOSER_HOME in non-interactive web context.
     $composerHome = sys_get_temp_dir() . '/composer-home';
@@ -49,12 +79,25 @@ if ($runComposer) {
     $_SERVER['HOME'] = $composerHome;
     $_SERVER['COMPOSER_HOME'] = $composerHome;
 
-    $composerBinary = null;
-    foreach (['composer', '/usr/local/bin/composer', '/opt/bin/composer'] as $bin) {
-        $checkCmd = sprintf('%s --version >/dev/null 2>&1', escapeshellarg($bin));
-        exec($checkCmd, $out, $exitCode);
-        if ($exitCode === 0) {
-            $composerBinary = $bin;
+    // Composer is itself a PHP phar — invoke it via the chosen PHP 8.x binary so
+    // the platform check sees PHP 8.3, not the OS-default 7.4.
+    //
+    // Probe is done via the shell (`test -f`) instead of is_file()/file_exists()
+    // because Plesk's open_basedir restricts those PHP filesystem calls to the
+    // vhost root + /tmp, while shell_exec runs without that restriction. We must
+    // point at the real .phar — calling /usr/local/bin/composer would invoke the
+    // Plesk shell wrapper, which our chosen PHP would then mis-interpret as PHP
+    // source (silently echoing the script and exiting 0 without running anything).
+    $composerCandidates = [
+        '/usr/local/psa/var/modules/composer/composer.phar',
+        $projectRoot . '/composer.phar',
+        '/opt/plesk/composer/bin/composer.phar',
+        '/usr/local/bin/composer.phar',
+    ];
+    foreach ($composerCandidates as $cand) {
+        $check = trim((string) shell_exec(sprintf('test -f %s && echo yes', escapeshellarg($cand))));
+        if ($check === 'yes') {
+            $composerBinary = $cand;
             break;
         }
     }
@@ -62,7 +105,8 @@ if ($runComposer) {
     if ($composerBinary === null) {
         http_response_code(500);
         header('Content-Type: text/plain');
-        echo "✗ Composer binary not found. Aborting.\n";
+        echo "✗ Composer phar not found among:\n";
+        foreach ($composerCandidates as $cand) echo "  - {$cand}\n";
         exit(1);
     }
 
@@ -70,9 +114,10 @@ if ($runComposer) {
     // so without it composer would look for composer.json next to post-deploy.php
     // and fail with "No composer.json in current directory".
     $composerCmd = sprintf(
-        'HOME=%s COMPOSER_HOME=%s COMPOSER_ALLOW_SUPERUSER=1 %s install --working-dir=%s --no-dev --optimize-autoloader --no-interaction 2>&1',
+        'HOME=%s COMPOSER_HOME=%s COMPOSER_ALLOW_SUPERUSER=1 %s %s install --working-dir=%s --no-dev --optimize-autoloader --no-interaction 2>&1',
         escapeshellarg($composerHome),
         escapeshellarg($composerHome),
+        escapeshellarg($phpBinary),
         escapeshellarg($composerBinary),
         escapeshellarg($projectRoot)
     );
@@ -85,8 +130,10 @@ if ($runComposer) {
         http_response_code(500);
         header('Content-Type: text/plain');
         echo "=== Composer install ===\n";
-        echo "Using COMPOSER_HOME={$composerHome}\n";
+        echo "PHP: {$phpBinary}\n";
+        echo "Composer: {$composerBinary}\n";
         echo "Working dir: {$projectRoot}\n";
+        echo "COMPOSER_HOME: {$composerHome}\n";
         echo $composerOutput . "\n";
         echo "✗ Composer install failed with exit code {$composerExitCode}\n";
         exit($composerExitCode);
@@ -97,7 +144,8 @@ echo "<pre>\n";
 
 if ($runComposer) {
     echo "=== Composer install ===\n";
-    echo "Using COMPOSER_HOME={$composerHome}\n";
+    echo "PHP: {$phpBinary}\n";
+    echo "Composer: {$composerBinary}\n";
     echo "Working dir: {$projectRoot}\n";
     echo $composerOutput;
     echo "✓ Composer install finished\n";
