@@ -31,3 +31,4 @@ composer.phar
 .env.save
 .ftp-deploy-sync-state.json
 .ftp-deploy-sync-state-prelive.json
+/public/build

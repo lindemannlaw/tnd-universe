@@ -24,7 +24,7 @@ jobs:
 
       - name: Build frontend assets
         run: |
-          npm install
+          npm ci
           npm run build
 
       - name: Deploy via FTP (attempt 1)
@@ -50,6 +50,7 @@ jobs:
             **/tests/**
             **/.claude/**
             .env
+            public/build/**
             public/storage
             public/media/**
             storage/app/public/**
@@ -80,12 +81,27 @@ jobs:
             **/tests/**
             **/.claude/**
             .env
+            public/build/**
             public/storage
             public/media/**
             storage/app/public/**
             storage/logs/**
             storage/framework/cache/**
             storage/framework/views/**
+
+      - name: Deploy public/build (clean slate, no delta state)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          timeout: 300000
+          local-dir: ./public/build/
+          server-dir: ${{ vars.DEPLOY_SERVER_DIR }}public/build/
+          log-level: verbose
+          dangerous-clean-slate: true
 
       - name: Run post-deploy commands
         run: |
