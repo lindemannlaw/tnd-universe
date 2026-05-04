@@ -1,6 +1,7 @@
 import '../bootstrap';
 import * as bootstrap from 'bootstrap';
 window.bootstrap = bootstrap;
+window.__tndAdminBuildId = 'b1';
 
 import { fields } from "./fields/fields.js";
 
