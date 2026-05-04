@@ -252,6 +252,15 @@
         --menu-link-hover-color: var(--color-interaction-primary-hover);
         --menu-link-active-color: var(--color-interaction-primary-active);
     }
+
+    .whatsapp-btn--header {
+        --wa-color: var(--color-interaction-primary-default);
+        --wa-border: var(--color-interaction-primary-default);
+        --wa-bg: transparent;
+        --wa-hover-color: var(--color-white);
+        --wa-hover-bg: var(--color-interaction-primary-hover);
+        --wa-hover-border: var(--color-interaction-primary-hover);
+    }
 }
 
 .header-container {
@@ -350,6 +359,12 @@
         --menu-link-color: var(--color-interaction-primary-default);
         --menu-link-hover-color: var(--color-interaction-primary-hover);
         --menu-link-active-color: var(--color-interaction-primary-active);
+
+        @media (max-width: 1259px) {
+            --menu-link-color: var(--color-interaction-primary-default) !important;
+            --menu-link-hover-color: var(--color-interaction-primary-hover) !important;
+            --menu-link-active-color: var(--color-interaction-primary-active) !important;
+        }
 
         display: flex;
         align-items: center;
