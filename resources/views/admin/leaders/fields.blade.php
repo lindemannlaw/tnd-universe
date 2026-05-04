@@ -11,8 +11,8 @@
             :placeholder="__('admin.photo') . ' ( 1 / 1)'"
             :ratio="'1x1'"
             :fit="'contain'"
-            :src="isset($leader) && $leader->hasMedia($leader->mediaPhoto) ? $leader->getFirstMediaUrl($leader->mediaPhoto, 'md-webp') : null"
-            :required="isset($leader) ? !$leader->hasMedia($leader->mediaPhoto) : true"
+            :src="isset($leader) && $leader->hasAttachedMedia($leader->mediaPhoto) ? $leader->firstAttachedMediaUrl($leader->mediaPhoto, 'md-webp') : null"
+            :required="isset($leader) ? !$leader->hasAttachedMedia($leader->mediaPhoto) : true"
         />
     </div>
 
@@ -79,12 +79,12 @@
                 class="col"
                 :name="'resume'"
                 :placeholder="__('admin.resume')"
-                :required="!(isset($leader) && $leader->hasMedia($leader->mediaResume))"
+                :required="!(isset($leader) && $leader->hasAttachedMedia($leader->mediaResume))"
             />
 
-            @if(isset($leader) && $leader->hasMedia($leader->mediaResume))
+            @if(isset($leader) && $leader->hasAttachedMedia($leader->mediaResume))
                 @php
-                    $resume = $leader->getFirstMedia($leader->mediaResume);
+                    $resume = $leader->firstAttachedMedia($leader->mediaResume);
                 @endphp
 
                 <!-- download -->

@@ -8,7 +8,7 @@
         <div class="about-hero-picture">
             <img
                 @php
-                    $heroImage = $page->hasMedia('hero-image') ? $page->getFirstMedia('hero-image') : '/img/default.svg';
+                    $heroImage = $page->hasAttachedMedia('hero-image') ? $page->firstAttachedMedia('hero-image') : '/img/default.svg';
                     $heroImageSizes = [
                         'lg' => is_object($heroImage) ? $heroImage->getUrl('lg-webp') : $heroImage,
                         'hd' => is_object($heroImage) ? $heroImage->getUrl('hd-webp') : $heroImage
@@ -39,7 +39,7 @@
                     <x-public.icon.building-outline/>
                     <img
                         @php
-                            $leaderPhoto = $leader->hasMedia($leader->mediaPhoto) ? $leader->getFirstMedia($leader->mediaPhoto) : '/img/default.svg';
+                            $leaderPhoto = $leader->hasAttachedMedia($leader->mediaPhoto) ? $leader->firstAttachedMedia($leader->mediaPhoto) : '/img/default.svg';
                             $leaderPhotoSizes = [
                                 'md' => is_object($leaderPhoto) ? $leaderPhoto->getUrl('md-webp') : $leaderPhoto,
                                 'lg' => is_object($leaderPhoto) ? $leaderPhoto->getUrl('lg-webp') : $leaderPhoto
@@ -68,9 +68,9 @@
                             </li>
                         @endforeach
                     </ul>
-                    @if($leader->hasMedia($leader->mediaResume))
+                    @if($leader->hasAttachedMedia($leader->mediaResume))
                         @php
-                            $resume = $leader->getFirstMedia($leader->mediaResume);
+                            $resume = $leader->firstAttachedMedia($leader->mediaResume);
                         @endphp
                         <a href="{{ $resume->getUrl() }}" class="primary-link leader-card-download-link" download="{{ $leader->getTranslation('name', current_locale()) . '-' . __('public.resume') }}">{{ __('public.download_resume') }}</a>
                     @endif

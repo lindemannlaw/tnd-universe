@@ -3,7 +3,7 @@
         $gallery = [];
 
         if (isset($project)) {
-            $gallery = $project->getMedia($project->mediaGallery)->sortBy('order_column');
+            $gallery = $project->attachedMedia($project->mediaGallery)->sortBy('order_column');
         }
     @endphp
 
@@ -15,7 +15,7 @@
                 :placeholder="__('admin.image') . ' ( 16 / 9 )'"
                 :ratio="'16x9'"
                 :src="$media->getUrl('md-webp')"
-                :required="isset($project) ? !$project->hasMedia($project->mediaGallery) : true"
+                :required="isset($project) ? !$project->hasAttachedMedia($project->mediaGallery) : true"
             />
 
             <x-admin.field.hidden
@@ -33,7 +33,7 @@
                 :name="'gallery[0][image]'"
                 :placeholder="__('admin.image') . ' ( 16 / 9 )'"
                 :ratio="'16x9'"
-                :required="isset($project) ? !$project->hasMedia($project->mediaHero) : true"
+                :required="isset($project) ? !$project->hasAttachedMedia($project->mediaHero) : true"
             />
 
             <x-admin.field.hidden :name="'gallery[0][media_id]'" />

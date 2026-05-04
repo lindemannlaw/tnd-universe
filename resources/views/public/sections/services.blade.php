@@ -37,7 +37,7 @@
                             </div>
                             <img
                                 @php
-$categoryImage = $category->hasMedia($category->mediaHero) ? $category->getFirstMedia($category->mediaHero) : '/img/default.svg';
+$categoryImage = $category->hasAttachedMedia($category->mediaHero) ? $category->firstAttachedMedia($category->mediaHero) : '/img/default.svg';
                                     $categoryImageSizes = [
                                         'md' => is_object($categoryImage) ? $categoryImage->getUrl('md-webp') : $categoryImage,
                                         'lg' => is_object($categoryImage) ? $categoryImage->getUrl('lg-webp') : $categoryImage
@@ -73,7 +73,7 @@ $categoryImage = $category->hasMedia($category->mediaHero) ? $category->getFirst
                         </div>
                         <img
                             @php
-$categoryImage = $category->hasMedia($category->mediaHero) ? $category->getFirstMedia($category->mediaHero) : '/img/default.svg';
+$categoryImage = $category->hasAttachedMedia($category->mediaHero) ? $category->firstAttachedMedia($category->mediaHero) : '/img/default.svg';
                                 $categoryImageSizes = [
                                     'md' => is_object($categoryImage) ? $categoryImage->getUrl('md-webp') : $categoryImage,
                                     'lg' => is_object($categoryImage) ? $categoryImage->getUrl('lg-webp') : $categoryImage

@@ -5,8 +5,8 @@
             <x-admin.picture
                 style="width: 80px;"
                 class="overflow-hidden"
-                :src="$service->hasMedia($service->mediaHero)
-                    ? $service->getFirstMediaUrl($service->mediaHero, 'sm-webp')
+                :src="$service->hasAttachedMedia($service->mediaHero)
+                    ? $service->firstAttachedMediaUrl($service->mediaHero, 'sm-webp')
                     : null"
                 :ratio="'3x2'"
                 :fit="'contain'"

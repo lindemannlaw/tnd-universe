@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasModelMedia;
 use App\Services\MediaTransferService;
 use App\Traits\HasImageProcessing;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -19,7 +20,7 @@ use Spatie\Translatable\HasTranslations;
 
 class NewsArticle extends Model implements HasMedia
 {
-    use HasFactory, HasTranslations, SoftDeletes, InteractsWithMedia, HasImageProcessing;
+    use HasFactory, HasTranslations, SoftDeletes, InteractsWithMedia, HasImageProcessing, HasModelMedia;
 
     protected $fillable = [
         'title',
