@@ -387,8 +387,14 @@ class SeoGeoController extends Controller
                     if (preg_match('/<title[^>]*>(.*?)<\/title>/is', $html, $m)) {
                         $title = html_entity_decode(trim($m[1]), ENT_QUOTES | ENT_HTML5, 'UTF-8');
                     }
-                    if (preg_match('/<meta[^>]+name=["\']description["\'][^>]+content=["\']([^"\']*)["\']/i', $html, $m)) {
-                        $description = html_entity_decode(trim($m[1]), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                    if (preg_match_all('/<meta\b[^>]*>/i', $html, $tags)) {
+                        foreach ($tags[0] as $tag) {
+                            if (preg_match('/\bname\s*=\s*["\']description["\']/i', $tag)
+                                && preg_match('/\bcontent\s*=\s*"([^"]*)"|\bcontent\s*=\s*\'([^\']*)\'/i', $tag, $cm)) {
+                                $description = html_entity_decode(trim($cm[1] !== '' ? $cm[1] : ($cm[2] ?? '')), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                                break;
+                            }
+                        }
                     }
 
                     return [
