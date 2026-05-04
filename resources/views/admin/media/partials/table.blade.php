@@ -85,13 +85,41 @@
                         <div class="text-gray small text-break">{{ $item->file_name }}</div>
                     </td>
                     <td>
-                        @if ($isOrphan)
+                        @php
+                            // Build the full usage list: native Spatie owner + every
+                            // model_media pivot attachment, deduplicated. The mirror
+                            // migration already echoes non-User-owned natives into the
+                            // pivot, so the dedupe collapses those into one entry.
+                            $usages = [];
+                            if (! $isOrphan && $item->model_type) {
+                                $usages[] = ['type' => $item->model_type, 'collection' => $item->collection_name];
+                            }
+                            foreach ($item->model_media_attachments ?? [] as $att) {
+                                $usages[] = ['type' => $att->model_type, 'collection' => $att->collection_name];
+                            }
+                            $seen = [];
+                            $usages = array_values(array_filter($usages, function ($u) use (&$seen) {
+                                $k = ($u['type'] ?? '') . '|' . ($u['collection'] ?? '');
+                                if (isset($seen[$k])) return false;
+                                $seen[$k] = true;
+                                return true;
+                            }));
+                        @endphp
+                        @if (empty($usages))
                             <span class="badge bg-warning text-dark">{{ __('admin.orphan') }}</span>
                         @else
-                            <div>{{ $ownerLabel }}</div>
-                            @if ($item->collection_name)
-                                <div class="text-gray small">{{ $item->collection_name }}</div>
-                            @endif
+                            @foreach ($usages as $u)
+                                @php
+                                    $t     = class_basename($u['type']);
+                                    $label = $ownerLabels[$t] ?? $t;
+                                @endphp
+                                <div>
+                                    {{ $label }}
+                                    @if ($u['collection'])
+                                        <span class="text-gray small">/ {{ $u['collection'] }}</span>
+                                    @endif
+                                </div>
+                            @endforeach
                         @endif
                     </td>
                     <td class="text-nowrap">{{ Number::fileSize($item->size) }}</td>

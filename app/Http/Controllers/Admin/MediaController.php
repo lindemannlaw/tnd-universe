@@ -283,6 +283,25 @@ class MediaController extends Controller
                     : route('admin.media.index')
             );
 
+        // Annotate each Media with its model_media pivot rows so the "Used by"
+        // column can show every consumer, not just the native Spatie owner.
+        // One extra query for the whole page — no N+1.
+        $mediaItems = $media->getCollection();
+        $mediaIds   = $mediaItems->pluck('id')->all();
+        if ($mediaIds) {
+            $attachments = DB::table('model_media')
+                ->whereIn('media_id', $mediaIds)
+                ->orderBy('id')
+                ->get()
+                ->groupBy('media_id');
+            foreach ($mediaItems as $item) {
+                $item->setAttribute(
+                    'model_media_attachments',
+                    $attachments->get($item->id, collect())->values()->all()
+                );
+            }
+        }
+
         return [
             'media'      => $media,
             'query'      => $query,

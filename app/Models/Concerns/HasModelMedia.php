@@ -53,7 +53,21 @@ trait HasModelMedia
             return '';
         }
 
-        return $conversion === '' ? $media->getUrl() : $media->getUrl($conversion);
+        if ($conversion === '') {
+            return $media->getUrl();
+        }
+
+        try {
+            return $media->getUrl($conversion);
+        } catch (\Throwable $e) {
+            // The pivot lets a Media row be attached to (model, collection) pairs other
+            // than its native owner — and conversions are registered on the native
+            // owner's collection, not the pivot's. If the requested conversion isn't
+            // registered for this Media (e.g. picked from a User-owned Library item
+            // whose registerMediaConversions only generates an avatar size), fall back
+            // to the original URL rather than 500ing the page.
+            return $media->getUrl();
+        }
     }
 
     public function attachMedia(int $mediaId, string $collection, ?int $order = null): void
