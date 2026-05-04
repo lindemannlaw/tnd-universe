@@ -17,8 +17,12 @@ export function mediaPickerModal() {
             '[data-ajax-view-modal-button][data-modal="' + PICKER_MODAL_ID + '"]'
         );
         if (!trigger) return;
-        const wrapper = trigger.closest('[data-link-media-field]');
-        activePickerField = wrapper?.dataset.linkMediaField ?? null;
+        const linkWrapper  = trigger.closest('[data-link-media-field]');
+        const imageWrapper = trigger.closest('[data-image-picker-field]');
+        activePickerField =
+            linkWrapper?.dataset.linkMediaField
+            ?? imageWrapper?.dataset.imagePickerField
+            ?? null;
     }, true);
 
     // Pick button → fire picker:select and close picker
