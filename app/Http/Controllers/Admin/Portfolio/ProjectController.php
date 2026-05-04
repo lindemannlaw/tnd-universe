@@ -58,18 +58,21 @@ class ProjectController extends Controller
 
                 if (!$file || !$fileName) continue;
 
-                $project->addMedia($file)
+                $newFileMedia = $project->addMedia($file)
                     ->withCustomProperties([
                         'name' => $fileName,
                     ])
                     ->toMediaCollection($project->mediaFiles);
+                $project->attachMedia($newFileMedia->id, $project->mediaFiles);
             }
 
             foreach ($request->input('gallery') ?? [] as $index => $data) {
                 $image = data_get($request->file('gallery'), $index . '.image');
 
                 if ($image) {
-                    $project->addMedia($image)->toMediaCollection($project->mediaGallery)->update(['order_column' => $index]);
+                    $newGalleryMedia = $project->addMedia($image)->toMediaCollection($project->mediaGallery);
+                    $newGalleryMedia->update(['order_column' => $index]);
+                    $project->attachMedia($newGalleryMedia->id, $project->mediaGallery, $index);
                 }
             }
 
@@ -204,11 +207,12 @@ class ProjectController extends Controller
 
                 if (!$file || !$fileName) continue;
 
-                $project->addMedia($file)
+                $newFileMedia = $project->addMedia($file)
                     ->withCustomProperties([
                         'name' => $fileName,
                     ])
                     ->toMediaCollection($project->mediaFiles);
+                $project->attachMedia($newFileMedia->id, $project->mediaFiles);
             }
 
             $galleryCurrentMediaIds = collect($request->input('gallery', []))->pluck('media_id')->all();
@@ -226,6 +230,7 @@ class ProjectController extends Controller
                     $media = $project->addMedia($image)->toMediaCollection($project->mediaGallery);
 
                     $galleryCurrentMediaIds[] = $media->id;
+                    $project->attachMedia($media->id, $project->mediaGallery, $index);
                 }
 
                 if ($media) {
@@ -233,8 +238,9 @@ class ProjectController extends Controller
                 }
             }
 
-            $galleryToDelete = $project->getMedia($project->mediaGallery)->whereNotIn('id', $galleryCurrentMediaIds);
-
+            // Spatie-native cleanup: any Project-owned gallery rows not in the submitted list.
+            // Cascade FK on model_media drops the pivot rows automatically.
+            $galleryToDelete = $project->attachedMedia($project->mediaGallery)->whereNotIn('id', $galleryCurrentMediaIds);
             $galleryToDelete->each->delete();
 
             DB::commit();
@@ -319,10 +325,12 @@ class ProjectController extends Controller
 
             $clone->save();
 
-            // Copy media (hero, gallery, files, description)
+            // Copy media (hero, gallery, files, description). Clone gets its own
+            // Spatie-owned Media rows AND matching pivot attachments.
             foreach (['hero', 'gallery', 'files', 'description'] as $collection) {
-                foreach ($project->getMedia($collection) as $media) {
-                    $media->copy($clone, $collection);
+                foreach ($project->attachedMedia($collection) as $media) {
+                    $copy = $media->copy($clone, $collection);
+                    $clone->attachMedia($copy->id, $collection);
                 }
             }
 

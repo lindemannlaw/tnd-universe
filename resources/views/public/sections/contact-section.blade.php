@@ -1,6 +1,6 @@
 @if(isset($contactUsSection))
     <section class="container contact-section">
-        <div class="contact-section-content bg-img-cover" style="background-image: url({{ $contactUsSection->getFirstMediaUrl('bg-image', 'hd-webp') }});">
+        <div class="contact-section-content bg-img-cover" style="background-image: url({{ $contactUsSection->firstAttachedMediaUrl('bg-image', 'hd-webp') }});">
             <div class="contact-section-body">
                 <div class="contact-section-head">
                     <h2 class="contact-section-title">{{ $contactUsSection->title }}</h2>

@@ -4,8 +4,8 @@
             <x-admin.picture
                 style="width: 60px;"
                 class="overflow-hidden"
-                :src="$category->hasMedia($category->mediaHero)
-                    ? $category->getFirstMediaUrl($category->mediaHero, 'sm-webp')
+                :src="$category->hasAttachedMedia($category->mediaHero)
+                    ? $category->firstAttachedMediaUrl($category->mediaHero, 'sm-webp')
                     : null"
                 :ratio="'1x1'"
                 :fit="'contain'"

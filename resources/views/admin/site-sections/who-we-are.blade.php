@@ -39,8 +39,8 @@
                         :name="'back_image'"
                         :placeholder="__('admin.back_image') . ' ( 5 / 6 )'"
                         :ratio="'5x6'"
-                        :src="$section->hasMedia('back-image') ? $section->getFirstMediaUrl('back-image', 'md-webp') : null"
-                        :required="!$section->hasMedia('back-image')"
+                        :src="$section->hasAttachedMedia('back-image') ? $section->firstAttachedMediaUrl('back-image', 'md-webp') : null"
+                        :required="!$section->hasAttachedMedia('back-image')"
                     />
                 </div>
 
@@ -50,8 +50,8 @@
                         :name="'front_image'"
                         :placeholder="__('admin.front_image') . ' ( 5 / 6 )'"
                         :ratio="'5x6'"
-                        :src="$section->hasMedia('front-image') ? $section->getFirstMediaUrl('front-image', 'md-webp') : null"
-                        :required="!$section->hasMedia('front-image')"
+                        :src="$section->hasAttachedMedia('front-image') ? $section->firstAttachedMediaUrl('front-image', 'md-webp') : null"
+                        :required="!$section->hasAttachedMedia('front-image')"
                     />
                 </div>
             </div>

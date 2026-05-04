@@ -9,7 +9,7 @@
     <div class="container service-main-picture">
         <img
             @php
-                $serviceHeroImage = $service->hasMedia($service->mediaHero) ? $service->getFirstMedia($service->mediaHero) : '/img/default.svg';
+                $serviceHeroImage = $service->hasAttachedMedia($service->mediaHero) ? $service->firstAttachedMedia($service->mediaHero) : '/img/default.svg';
             @endphp
 
             srcset="
