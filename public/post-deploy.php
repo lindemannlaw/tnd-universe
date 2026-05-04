@@ -29,15 +29,16 @@ if (file_exists($manifestPath)) {
     }
 }
 
-echo "<pre>\n";
-
-// Optional composer install (recommended for deploys that exclude vendor upload)
+// Optional composer install (recommended for deploys that exclude vendor upload).
 // Usage: ?token=...&composer=1
+// Runs BEFORE <pre> is emitted so any failure path can still send a real HTTP 500
+// instead of being trapped behind already-flushed headers.
+$composerOutput = '';
 $runComposer = (($_GET['composer'] ?? '0') === '1');
 if ($runComposer) {
-    echo "=== Composer install ===\n";
+    $projectRoot = realpath(__DIR__ . '/..');
 
-    // Ensure composer has writable HOME/COMPOSER_HOME in non-interactive web context
+    // Ensure composer has writable HOME/COMPOSER_HOME in non-interactive web context.
     $composerHome = sys_get_temp_dir() . '/composer-home';
     if (!is_dir($composerHome)) {
         @mkdir($composerHome, 0775, true);
@@ -47,7 +48,6 @@ if ($runComposer) {
     @putenv('COMPOSER_ALLOW_SUPERUSER=1');
     $_SERVER['HOME'] = $composerHome;
     $_SERVER['COMPOSER_HOME'] = $composerHome;
-    echo "Using COMPOSER_HOME={$composerHome}\n";
 
     $composerBinary = null;
     foreach (['composer', '/usr/local/bin/composer', '/opt/bin/composer'] as $bin) {
@@ -61,26 +61,45 @@ if ($runComposer) {
 
     if ($composerBinary === null) {
         http_response_code(500);
+        header('Content-Type: text/plain');
         echo "✗ Composer binary not found. Aborting.\n";
-        echo "</pre>";
         exit(1);
     }
 
+    // --working-dir is essential: passthru() inherits the SAPI cwd (typically public/),
+    // so without it composer would look for composer.json next to post-deploy.php
+    // and fail with "No composer.json in current directory".
     $composerCmd = sprintf(
-        'HOME=%s COMPOSER_HOME=%s COMPOSER_ALLOW_SUPERUSER=1 %s install --no-dev --optimize-autoloader --no-interaction 2>&1',
+        'HOME=%s COMPOSER_HOME=%s COMPOSER_ALLOW_SUPERUSER=1 %s install --working-dir=%s --no-dev --optimize-autoloader --no-interaction 2>&1',
         escapeshellarg($composerHome),
         escapeshellarg($composerHome),
-        escapeshellarg($composerBinary)
+        escapeshellarg($composerBinary),
+        escapeshellarg($projectRoot)
     );
+
+    ob_start();
     passthru($composerCmd, $composerExitCode);
+    $composerOutput = (string) ob_get_clean();
 
     if ($composerExitCode !== 0) {
         http_response_code(500);
+        header('Content-Type: text/plain');
+        echo "=== Composer install ===\n";
+        echo "Using COMPOSER_HOME={$composerHome}\n";
+        echo "Working dir: {$projectRoot}\n";
+        echo $composerOutput . "\n";
         echo "✗ Composer install failed with exit code {$composerExitCode}\n";
-        echo "</pre>";
         exit($composerExitCode);
     }
+}
 
+echo "<pre>\n";
+
+if ($runComposer) {
+    echo "=== Composer install ===\n";
+    echo "Using COMPOSER_HOME={$composerHome}\n";
+    echo "Working dir: {$projectRoot}\n";
+    echo $composerOutput;
     echo "✓ Composer install finished\n";
 }
 
