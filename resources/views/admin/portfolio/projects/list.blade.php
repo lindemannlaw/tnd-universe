@@ -5,8 +5,8 @@
             <x-admin.picture
                 style="width: 80px;"
                 class="rounded overflow-hidden"
-                :src="$project->hasMedia($project->mediaHero)
-                    ? $project->getFirstMediaUrl($project->mediaHero, 'sm-webp')
+                :src="$project->hasAttachedMedia($project->mediaHero)
+                    ? $project->firstAttachedMediaUrl($project->mediaHero, 'sm-webp')
                     : null"
                 :ratio="'3x2'"
             />

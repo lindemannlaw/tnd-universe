@@ -7,8 +7,8 @@
             :name="'info_image'"
             :placeholder="__('admin.info_image') . ' ( 5 / 6 )'"
             :ratio="'5x6'"
-            :src="isset($service) && $service->hasMedia($service->mediaInfo) ? $service->getFirstMediaUrl($service->mediaInfo, 'md-webp') : null"
-            :required="isset($service) ? !$service->hasMedia($service->mediaInfo) : true"
+            :src="isset($service) && $service->hasAttachedMedia($service->mediaInfo) ? $service->firstAttachedMediaUrl($service->mediaInfo, 'md-webp') : null"
+            :required="isset($service) ? !$service->hasAttachedMedia($service->mediaInfo) : true"
         />
     </div>
 

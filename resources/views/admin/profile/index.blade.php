@@ -33,7 +33,7 @@
                 :ratio="'1x1'"
                 :rounded="'rounded-circle'"
                 :required="false"
-                :src="$user->hasMedia($user->mediaCollection) ? $user->getFirstMediaUrl($user->mediaCollection, 'avatar') : null"
+                :src="$user->hasAttachedMedia($user->mediaCollection) ? $user->firstAttachedMediaUrl($user->mediaCollection, 'avatar') : null"
             />
 
             <div style="min-width: 150px;" class="d-flex flex-column gap-4 flex-auto">

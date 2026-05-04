@@ -67,6 +67,15 @@ class MediaController extends Controller
             $customProps     = $media->custom_properties ?? [];
             $orderColumn     = $media->order_column;
 
+            // Capture pivot attachments before delete so we can re-point them to the
+            // replacement Media row — otherwise FK cascade drops them and every consumer
+            // silently loses the image.
+            $oldAttachments = DB::table('model_media')
+                ->where('media_id', $media->id)
+                ->get()
+                ->map(fn ($row) => (array) $row)
+                ->toArray();
+
             $uploaded     = $request->file('file');
             $originalName = pathinfo($uploaded->getClientOriginalName(), PATHINFO_FILENAME) ?: $media->name;
 
@@ -80,6 +89,20 @@ class MediaController extends Controller
             if (!is_null($orderColumn)) {
                 $newMedia->order_column = $orderColumn;
                 $newMedia->save();
+            }
+
+            if ($oldAttachments) {
+                $now = now();
+                $reattach = array_map(fn ($r) => [
+                    'media_id'        => $newMedia->id,
+                    'model_type'      => $r['model_type'],
+                    'model_id'        => $r['model_id'],
+                    'collection_name' => $r['collection_name'],
+                    'order_column'    => $r['order_column'] ?? 0,
+                    'created_at'      => $now,
+                    'updated_at'      => $now,
+                ], $oldAttachments);
+                DB::table('model_media')->insertOrIgnore($reattach);
             }
 
             DB::commit();
@@ -259,6 +282,25 @@ class MediaController extends Controller
                     ? route('admin.media.picker.list')
                     : route('admin.media.index')
             );
+
+        // Annotate each Media with its model_media pivot rows so the "Used by"
+        // column can show every consumer, not just the native Spatie owner.
+        // One extra query for the whole page — no N+1.
+        $mediaItems = $media->getCollection();
+        $mediaIds   = $mediaItems->pluck('id')->all();
+        if ($mediaIds) {
+            $attachments = DB::table('model_media')
+                ->whereIn('media_id', $mediaIds)
+                ->orderBy('id')
+                ->get()
+                ->groupBy('media_id');
+            foreach ($mediaItems as $item) {
+                $item->setAttribute(
+                    'model_media_attachments',
+                    $attachments->get($item->id, collect())->values()->all()
+                );
+            }
+        }
 
         return [
             'media'      => $media,

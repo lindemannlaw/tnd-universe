@@ -13,10 +13,10 @@
                 $defaultImage = '/img/default.svg';
                 $gallery = [$defaultImage];
 
-                if ($project->hasMedia($project->mediaGallery)) {
-                    $gallery = $project->getMedia($project->mediaGallery);
-                } elseif ($project->hasMedia($project->mediaHero)) {
-                    $gallery = [$project->getFirstMedia($project->mediaHero)];
+                if ($project->hasAttachedMedia($project->mediaGallery)) {
+                    $gallery = $project->attachedMedia($project->mediaGallery);
+                } elseif ($project->hasAttachedMedia($project->mediaHero)) {
+                    $gallery = [$project->firstAttachedMedia($project->mediaHero)];
                 }
             @endphp
 
@@ -132,12 +132,12 @@ $galleryImageSizes = [
                         }
                     }
 
-                    if ($project->hasMedia($project->mediaHero)) {
-                        $heroImage = $project->getFirstMedia($project->mediaHero);
+                    if ($project->hasAttachedMedia($project->mediaHero)) {
+                        $heroImage = $project->firstAttachedMedia($project->mediaHero);
                         $lightboxImageUrls[] = $heroImage?->getUrl('xl-webp') ?: $heroImage?->getUrl();
                     }
 
-                    foreach ($project->getMedia($project->mediaGallery) as $galleryImage) {
+                    foreach ($project->attachedMedia($project->mediaGallery) as $galleryImage) {
                         $lightboxImageUrls[] = $galleryImage->getUrl('xl-webp') ?: $galleryImage->getUrl();
                     }
 
@@ -418,9 +418,9 @@ $galleryImageSizes = [
                 @endif
             </article>
 
-            @if ($project->hasMedia($project->mediaFiles))
+            @if ($project->hasAttachedMedia($project->mediaFiles))
                 <div class="project-files file-download-list">
-                    @foreach ($project->getMedia($project->mediaFiles) as $file)
+                    @foreach ($project->attachedMedia($project->mediaFiles) as $file)
                         <a
                             href="{{ $file->getUrl() }}"
                             class="file-download"

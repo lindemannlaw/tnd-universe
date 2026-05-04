@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasModelMedia;
 use App\Traits\HasImageProcessing;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -15,7 +16,7 @@ use Spatie\Translatable\HasTranslations;
 
 class Project extends Model implements HasMedia
 {
-    use HasFactory, HasTranslations, SoftDeletes, InteractsWithMedia, HasImageProcessing;
+    use HasFactory, HasTranslations, SoftDeletes, InteractsWithMedia, HasImageProcessing, HasModelMedia;
 
     protected $fillable = [
         'title',

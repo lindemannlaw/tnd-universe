@@ -2,7 +2,7 @@
     <picture class="project-scaled-card-picture">
         <img
             @php
-$projectImage = $project->hasMedia($project->mediaHero) ? $project->getFirstMedia($project->mediaHero) : '/img/default.svg';
+$projectImage = $project->hasAttachedMedia($project->mediaHero) ? $project->firstAttachedMedia($project->mediaHero) : '/img/default.svg';
             $projectImageSizes = [
                 'md' => is_object($projectImage) ? $projectImage->getUrl('md-webp') : $projectImage,
                 'lg' => is_object($projectImage) ? $projectImage->getUrl('lg-webp') : $projectImage

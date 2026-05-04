@@ -4,7 +4,7 @@
             <div class="who-we-are-pictures">
                 <img
                     @php
-$backImage = $whoWeAreSection->hasMedia('back-image') ? $whoWeAreSection->getFirstMedia('back-image') : '/img/default.svg';
+$backImage = $whoWeAreSection->hasAttachedMedia('back-image') ? $whoWeAreSection->firstAttachedMedia('back-image') : '/img/default.svg';
                         $backImageSizes = [
                             'sm' => is_object($backImage) ? $backImage->getUrl('md-webp') : $backImage,
                             'md' => is_object($backImage) ? $backImage->getUrl('lg-webp') : $backImage
@@ -22,7 +22,7 @@ $backImage = $whoWeAreSection->hasMedia('back-image') ? $whoWeAreSection->getFir
 
                 <img
                     @php
-$frontImage = $whoWeAreSection->hasMedia('front-image') ? $whoWeAreSection->getFirstMedia('front-image') : '/img/default.svg';
+$frontImage = $whoWeAreSection->hasAttachedMedia('front-image') ? $whoWeAreSection->firstAttachedMedia('front-image') : '/img/default.svg';
                         $frontImageSizes = [
                             'sm' => is_object($frontImage) ? $frontImage->getUrl('md-webp') : $frontImage,
                             'md' => is_object($frontImage) ? $frontImage->getUrl('lg-webp') : $frontImage

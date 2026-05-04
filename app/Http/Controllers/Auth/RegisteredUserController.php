@@ -41,8 +41,9 @@ class RegisteredUserController extends Controller
         ]);
 
         if ($request->hasFile('avatar')) {
-            $user->addMediaFromRequest('avatar')
+            $newAvatar = $user->addMediaFromRequest('avatar')
                 ->toMediaCollection($user->mediaCollection);
+            $user->attachMedia($newAvatar->id, $user->mediaCollection);
         }
 
         $user->save();

@@ -34,7 +34,7 @@
                 :ratio="'1x1'"
                 :rounded="'rounded-circle'"
                 :required="false"
-                :src="old('avatar', $manager->hasMedia($manager->mediaCollection) ? $manager->getFirstMediaUrl($manager->mediaCollection, 'avatar') : null )"
+                :src="old('avatar', $manager->hasAttachedMedia($manager->mediaCollection) ? $manager->firstAttachedMediaUrl($manager->mediaCollection, 'avatar') : null )"
             />
 
             <div style="min-width: 150px;" class="d-flex flex-column gap-4 flex-auto">
