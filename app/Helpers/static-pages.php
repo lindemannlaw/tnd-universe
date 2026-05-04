@@ -82,18 +82,50 @@ if (!function_exists('portfolio_project_url')) {
     }
 }
 
+if (!function_exists('current_url_locale_prefix')) {
+    function current_url_locale_prefix(): string
+    {
+        $locale        = app()->getLocale();
+        $defaultLocale = config('app.fallback_locale', 'en');
+        $hideDefault   = (bool) config('laravellocalization.hideDefaultLocaleInURL', true);
+
+        if ($hideDefault && $locale === $defaultLocale) {
+            return '';
+        }
+        return (string) $locale;
+    }
+}
+
+if (!function_exists('request_path_without_locale')) {
+    function request_path_without_locale(): string
+    {
+        $path   = trim(request()->path(), '/');
+        $prefix = current_url_locale_prefix();
+
+        if ($prefix === '') {
+            return $path;
+        }
+        if ($path === $prefix) {
+            return '';
+        }
+        if (str_starts_with($path, $prefix . '/')) {
+            return substr($path, strlen($prefix) + 1);
+        }
+        return $path;
+    }
+}
+
 if (!function_exists('static_page_is_active')) {
     function static_page_is_active(string $slug): bool
     {
-        $currentPath = trim(request()->path(), '/');
-        return $currentPath === static_page_path($slug);
+        return request_path_without_locale() === static_page_path($slug);
     }
 }
 
 if (!function_exists('portfolio_is_active')) {
     function portfolio_is_active(): bool
     {
-        $currentPath = trim(request()->path(), '/');
+        $currentPath   = request_path_without_locale();
         $portfolioPath = static_page_path('portfolio');
         return $currentPath === $portfolioPath || str_starts_with($currentPath, $portfolioPath . '/');
     }
@@ -102,13 +134,19 @@ if (!function_exists('portfolio_is_active')) {
 if (!function_exists('static_page_canonical_redirect')) {
     function static_page_canonical_redirect(string $slug): ?RedirectResponse
     {
-        $currentPath = trim(request()->path(), '/');
-        $canonical = static_page_path($slug);
+        $currentPath = request_path_without_locale();
+        $canonical   = static_page_path($slug);
 
         if ($currentPath === $canonical) {
             return null;
         }
 
-        return redirect(static_page_url($slug), 301);
+        $prefix    = current_url_locale_prefix();
+        $canonical = static_page_url($slug);
+        $target    = $prefix === ''
+            ? $canonical
+            : '/' . $prefix . ($canonical === '/' ? '' : $canonical);
+
+        return redirect($target, 301);
     }
 }
