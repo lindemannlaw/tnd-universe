@@ -13,7 +13,7 @@
     'viewImageAttributes' => '',
     'youtubeVideoId' => null,
     'compact' => false,
-    'mime' => 'image/png,image/jpeg,image/webp,image/gif,image/svg+xml',
+    'mime' => 'image/*',
 ])
 
 @php
