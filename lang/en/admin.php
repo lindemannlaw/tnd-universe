@@ -69,6 +69,7 @@ return [
     'seo_geo_overview' => 'SEO / GEO',
     'translation_check' => 'Translations',
     'name' => 'Name',
+    'search' => 'Search',
     'sort' => 'Sort',
     'show' => 'Show',
     'inquiry_button_text' => 'Inquiry Button Text',

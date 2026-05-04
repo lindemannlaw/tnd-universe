@@ -46,7 +46,7 @@
                            name="search_query"
                            value="{{ $query }}"
                            class="form-control form-control-sm"
-                           placeholder="{{ __('fields.query') }}">
+                           placeholder="{{ __('admin.search') }}">
                     <x-admin.button
                         :type="'submit'"
                         :btn="'btn-outline-secondary'"
