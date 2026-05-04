@@ -43,6 +43,8 @@
     @endif
     <meta name="twitter:image" content="{{ config('app.url') }}/img/og-logo.png">
 
+    <x-public.structured-data :page="$page ?? null" />
+
     @include('public.fragments.favicon')
 
     <meta name="theme-color" content="#122F4D">
