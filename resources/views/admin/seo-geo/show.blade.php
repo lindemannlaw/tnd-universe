@@ -18,6 +18,10 @@
                 <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#pencil"/></svg>
                 Eintrag bearbeiten
             </a>
+            <button type="button" class="btn btn-sm btn-outline-info" id="btnLivePreview" title="Was steht aktuell auf der Live-Site?">
+                <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#globe"/></svg>
+                Live-Vorschau
+            </button>
             <button type="button" class="btn btn-sm btn-outline-primary" id="btnGenerate">
                 <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#stars"/></svg>
                 Alle Felder neu generieren
@@ -49,6 +53,29 @@
                 'es' => '🇪🇸', 'it' => '🇮🇹', 'pt' => '🇵🇹', 'ja' => '🇯🇵',
             ];
         @endphp
+
+        <div id="livePreviewCard" class="card mb-4 border-info" style="display:none;">
+            <div class="card-body">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="badge bg-info">
+                        <svg class="bi" width="14" height="14" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#globe"/></svg>
+                    </span>
+                    <h6 class="mb-0 fw-bold text-uppercase">Live-Vorschau</h6>
+                    <span class="text-muted small ms-2" id="livePreviewMeta"></span>
+                    <div class="ms-auto d-flex gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="btnLivePreviewRefresh" title="Cache leeren und neu laden">
+                            <svg class="bi" width="13" height="13" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#arrow-clockwise"/></svg>
+                            Neu laden
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="btnLivePreviewClose" title="Schließen">
+                            <svg class="bi" width="13" height="13" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#x-lg"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="text-muted small mb-2">Vergleich zwischen Backoffice-Wert und tatsächlich auf der Produktion ausgeliefertem HTML. Cache 60 Sek.</div>
+                <div id="livePreviewBody"></div>
+            </div>
+        </div>
 
         <div id="seoGeoFields">
             @foreach($fieldLabels as $field => $config)
@@ -479,6 +506,102 @@ document.addEventListener('DOMContentLoaded', function () {
             btn.disabled = false;
             btn.innerHTML = '<svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#globe2"/></svg> Alle Felder von EN übersetzen';
         }
+    });
+
+    // ── Live-Vorschau ─────────────────────────────────────────────────────
+    const LIVE_PREVIEW_URL = @json(route('admin.seo-geo.live-preview', ['type' => $type, 'id' => $modelId]));
+    const LOCALE_FLAGS = @json($localeFlags);
+
+    function escapeHtml(s) {
+        return String(s ?? '').replace(/[&<>"']/g, c => ({
+            '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
+        }[c]));
+    }
+
+    function getBackofficeValue(field, locale) {
+        const el = document.querySelector(`.seo-field-input[data-field="${field}"][data-locale="${locale}"]`);
+        return el ? el.value : '';
+    }
+
+    function renderLivePreview(data) {
+        const body = document.getElementById('livePreviewBody');
+        if (!data.supported) {
+            body.innerHTML = `<div class="alert alert-warning mb-0">${escapeHtml(data.message || 'Nicht unterstützt')}</div>`;
+            return;
+        }
+        const rows = Object.entries(data.results).map(([locale, r]) => {
+            const flag = LOCALE_FLAGS[locale] || '';
+            const boTitle = getBackofficeValue('seo_title', locale).trim();
+            const boDesc  = getBackofficeValue('seo_description', locale).trim();
+            const liveTitle = (r.title || '').trim();
+            const liveDesc  = (r.description || '').trim();
+
+            const titleMatch = boTitle && liveTitle && boTitle === liveTitle;
+            const descMatch  = boDesc && liveDesc && boDesc === liveDesc;
+            const httpOk     = r.status >= 200 && r.status < 400;
+
+            const badge = (ok, label) => ok
+                ? `<span class="badge bg-success-subtle text-success border border-success-subtle">✓ ${label}</span>`
+                : `<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">≠ ${label}</span>`;
+
+            const errorRow = r.error
+                ? `<div class="text-danger small mt-1">Fehler: ${escapeHtml(r.error)}</div>`
+                : '';
+
+            return `
+                <div class="border rounded p-2 mb-2">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge bg-light text-dark border" style="min-width:48px;">${flag} ${locale.toUpperCase()}</span>
+                        <a href="${escapeHtml(r.url)}" target="_blank" rel="noopener" class="small text-decoration-none">${escapeHtml(r.url)}</a>
+                        <span class="badge ${httpOk ? 'bg-success' : 'bg-danger'} ms-auto">HTTP ${r.status || '?'}</span>
+                        ${badge(titleMatch, 'Title')}
+                        ${badge(descMatch, 'Description')}
+                    </div>
+                    <div class="row g-2 small">
+                        <div class="col-md-6">
+                            <div class="text-muted text-uppercase" style="font-size:.7em;">Backoffice — Title</div>
+                            <div class="font-monospace">${escapeHtml(boTitle) || '<em class="text-muted">leer</em>'}</div>
+                            <div class="text-muted text-uppercase mt-2" style="font-size:.7em;">Backoffice — Description</div>
+                            <div class="font-monospace">${escapeHtml(boDesc) || '<em class="text-muted">leer</em>'}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="text-muted text-uppercase" style="font-size:.7em;">Live — Title</div>
+                            <div class="font-monospace">${escapeHtml(liveTitle) || '<em class="text-muted">leer</em>'}</div>
+                            <div class="text-muted text-uppercase mt-2" style="font-size:.7em;">Live — Description</div>
+                            <div class="font-monospace">${escapeHtml(liveDesc) || '<em class="text-muted">leer</em>'}</div>
+                        </div>
+                    </div>
+                    ${errorRow}
+                </div>
+            `;
+        }).join('');
+        body.innerHTML = rows || '<div class="text-muted">Keine Sprachen konfiguriert.</div>';
+    }
+
+    async function loadLivePreview(refresh) {
+        const card = document.getElementById('livePreviewCard');
+        const body = document.getElementById('livePreviewBody');
+        const meta = document.getElementById('livePreviewMeta');
+        card.style.display = '';
+        body.innerHTML = '<div class="text-muted py-3"><span class="spinner-border spinner-border-sm me-2"></span>Lädt Live-HTML…</div>';
+        meta.textContent = '';
+
+        try {
+            const url = LIVE_PREVIEW_URL + (refresh ? '?refresh=1' : '');
+            const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            const data = await res.json();
+            if (data.error) throw new Error(data.error);
+            renderLivePreview(data);
+            meta.textContent = 'Geladen ' + new Date().toLocaleTimeString();
+        } catch (err) {
+            body.innerHTML = `<div class="alert alert-danger mb-0">Fehler: ${escapeHtml(err.message)}</div>`;
+        }
+    }
+
+    document.getElementById('btnLivePreview')?.addEventListener('click', () => loadLivePreview(false));
+    document.getElementById('btnLivePreviewRefresh')?.addEventListener('click', () => loadLivePreview(true));
+    document.getElementById('btnLivePreviewClose')?.addEventListener('click', () => {
+        document.getElementById('livePreviewCard').style.display = 'none';
     });
 
     // ── Toast helper ──────────────────────────────────────────────────────

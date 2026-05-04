@@ -12,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
@@ -344,6 +345,113 @@ class SeoGeoController extends Controller
         if ($filled === $totalSlots) return 'complete';
         if ($filled === 0) return 'empty';
         return 'partial';
+    }
+
+    public function livePreview(Request $request, string $type, int $id, ?string $refresh = null): JsonResponse
+    {
+        $model = $this->registry->resolveModel($type, $id);
+        if (!$model) return response()->json(['error' => 'Not found'], 404);
+
+        $path = $this->resolvePublicPath($type, $model);
+        if ($path === null) {
+            return response()->json([
+                'supported' => false,
+                'message' => 'Dieser Inhaltstyp hat keine direkte öffentliche URL für eine Live-Vorschau.',
+            ]);
+        }
+
+        $base          = rtrim((string) config('app.url'), '/');
+        $defaultLocale = (string) config('app.fallback_locale', 'en');
+        $hideDefault   = (bool) config('laravellocalization.hideDefaultLocaleInURL', true);
+        $locales       = supported_languages_keys();
+        $force         = $request->boolean('refresh');
+
+        $results = [];
+        foreach ($locales as $locale) {
+            $url      = $this->buildLocalizedUrl($base, $path, $locale, $defaultLocale, $hideDefault);
+            $cacheKey = 'seo:live-preview:' . md5($url);
+
+            if ($force) Cache::forget($cacheKey);
+
+            $data = Cache::remember($cacheKey, 60, function () use ($url) {
+                try {
+                    $response = Http::withHeaders([
+                        'User-Agent' => 'TNDBackofficeBot/1.0 (+https://tnduniverse.com)',
+                        'Accept'     => 'text/html,application/xhtml+xml',
+                    ])->timeout(10)->get($url);
+
+                    $html        = (string) $response->body();
+                    $title       = null;
+                    $description = null;
+
+                    if (preg_match('/<title[^>]*>(.*?)<\/title>/is', $html, $m)) {
+                        $title = html_entity_decode(trim($m[1]), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                    }
+                    if (preg_match('/<meta[^>]+name=["\']description["\'][^>]+content=["\']([^"\']*)["\']/i', $html, $m)) {
+                        $description = html_entity_decode(trim($m[1]), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                    }
+
+                    return [
+                        'status'      => $response->status(),
+                        'title'       => $title,
+                        'description' => $description,
+                        'fetched_at'  => now()->toIso8601String(),
+                        'error'       => null,
+                    ];
+                } catch (\Throwable $e) {
+                    return [
+                        'status'      => 0,
+                        'title'       => null,
+                        'description' => null,
+                        'fetched_at'  => now()->toIso8601String(),
+                        'error'       => $e->getMessage(),
+                    ];
+                }
+            });
+
+            $results[$locale] = array_merge(['url' => $url], $data);
+        }
+
+        return response()->json([
+            'supported' => true,
+            'results'   => $results,
+        ]);
+    }
+
+    private function resolvePublicPath(string $type, $model): ?string
+    {
+        return match ($type) {
+            'page' => $this->resolvePagePath($model->slug ?? ''),
+            'project'      => filled($model->slug ?? null) ? '/portfolio/' . $model->slug : null,
+            'service'      => filled($model->slug ?? null) ? '/services/'  . $model->slug : null,
+            'news_article' => filled($model->slug ?? null) ? '/news/'      . $model->slug : null,
+            default        => null,
+        };
+    }
+
+    private function resolvePagePath(string $slug): ?string
+    {
+        if ($slug === '') return null;
+
+        if (in_array($slug, static_page_editable_slugs(), true)) {
+            return static_page_url($slug);
+        }
+
+        return match ($slug) {
+            'home'                                => '/',
+            'about', 'services', 'portfolio',
+            'news', 'contacts', 'imprint',
+            'privacy-notice', 'terms-of-use'      => '/' . $slug,
+            default                               => null,
+        };
+    }
+
+    private function buildLocalizedUrl(string $base, string $path, string $locale, string $defaultLocale, bool $hideDefault): string
+    {
+        if ($locale === $defaultLocale && $hideDefault) {
+            return $path === '/' ? $base . '/' : $base . $path;
+        }
+        return $path === '/' ? $base . '/' . $locale : $base . '/' . $locale . $path;
     }
 
     public function triggerCrawl(): JsonResponse

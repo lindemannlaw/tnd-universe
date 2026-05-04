@@ -226,6 +226,7 @@ Route::group([
     Route::group(['prefix' => 'seo-geo'], function () {
         Route::get('/', [\App\Http\Controllers\Admin\SeoGeoController::class, 'index'])->name('admin.seo-geo.index');
         Route::get('/{type}/{id}', [\App\Http\Controllers\Admin\SeoGeoController::class, 'show'])->name('admin.seo-geo.show');
+        Route::get('/{type}/{id}/live-preview', [\App\Http\Controllers\Admin\SeoGeoController::class, 'livePreview'])->name('admin.seo-geo.live-preview');
         Route::post('/generate', [\App\Http\Controllers\Admin\SeoGeoController::class, 'generate'])->name('admin.seo-geo.generate');
         Route::post('/apply', [\App\Http\Controllers\Admin\SeoGeoController::class, 'apply'])->name('admin.seo-geo.apply');
         Route::post('/save-field', [\App\Http\Controllers\Admin\SeoGeoController::class, 'saveField'])->name('admin.seo-geo.save-field');
