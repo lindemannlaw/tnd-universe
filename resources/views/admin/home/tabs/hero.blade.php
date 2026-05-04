@@ -7,8 +7,8 @@
             :name="'hero_image'"
             :placeholder="__('admin.bg_image') . ' ( 3 / 2 )'"
             :ratio="'3x2'"
-            :src="$page->hasAttachedMedia('hero-image') ? $page->firstAttachedMediaUrl('hero-image', 'md-webp') : null"
-            :required="!$page->hasAttachedMedia('hero-image')"
+            :src="$page->hasMedia('hero-image') ? $page->getFirstMediaUrl('hero-image', 'md-webp') : null"
+            :required="!$page->hasMedia('hero-image')"
         />
     </div>
 

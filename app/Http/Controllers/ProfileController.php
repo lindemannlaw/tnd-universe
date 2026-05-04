@@ -29,12 +29,10 @@ class ProfileController extends Controller
         $user = $request->user()->fill($request->validated());
 
         if ($request->hasFile('avatar')) {
-            $user->detachAttachedCollection($user->mediaCollection);
             $user->clearMediaCollection($user->mediaCollection);
 
-            $newAvatar = $user->addMediaFromRequest('avatar')
+            $user->addMediaFromRequest('avatar')
                 ->toMediaCollection($user->mediaCollection);
-            $user->attachMedia($newAvatar->id, $user->mediaCollection);
         }
 
         if ($request->user()->isDirty('email')) {

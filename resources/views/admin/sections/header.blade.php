@@ -11,8 +11,8 @@
 
         <!-- picture -->
         <picture class="p-3 pt-4 ps-4 border border-secondary border-opacity-50 rounded-circle overflow-hidden position-relative bg-light">
-            @if($user->hasAttachedMedia($user->mediaCollection))
-                <img src="{{ $user->firstAttachedMediaUrl($user->mediaCollection, 'avatar') }}" alt="Avatar" class="img-cover position-absolute top-0 start-0">
+            @if($user->hasMedia($user->mediaCollection))
+                <img src="{{ $user->getFirstMediaUrl($user->mediaCollection, 'avatar') }}" alt="Avatar" class="img-cover position-absolute top-0 start-0">
             @else
                 <div class="d-flex align-items-center text-center position-absolute top-50 start-50 translate-middle fw-bold">
                     <span>{{ strtoupper(substr($user->first_name, 0, 1)) }}</span>

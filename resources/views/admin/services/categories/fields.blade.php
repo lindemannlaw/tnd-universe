@@ -8,8 +8,8 @@
             :placeholder="__('admin.image') . ' ( 1 / 1 )'"
             :ratio="'1x1'"
             :fit="'contain'"
-            :src="isset($category) && $category->hasAttachedMedia($category->mediaHero) ? $category->firstAttachedMediaUrl($category->mediaHero, 'md-webp') : null"
-            :required="isset($category) ? !$category->hasAttachedMedia($category->mediaHero) : true"
+            :src="isset($category) && $category->hasMedia($category->mediaHero) ? $category->getFirstMediaUrl($category->mediaHero, 'md-webp') : null"
+            :required="isset($category) ? !$category->hasMedia($category->mediaHero) : true"
         />
     </div>
 

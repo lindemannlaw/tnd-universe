@@ -22,7 +22,7 @@
                 <div class="d-flex flex-column gap-3 border border-dark border-opacity-25 rounded shadow-md overflow-hidden hover-container text-center p-3 g-col-12 g-col-sm-6 g-col-md-4 g-col-lg-3 g-col-hd-2">
                     <x-admin.picture
                         class="rounded-circle overflow-hidden w-50 mx-auto border border-dark border-opacity-25"
-                        :src="$manager->hasAttachedMedia($manager->mediaCollection) ? $manager->firstAttachedMediaUrl($manager->mediaCollection, 'avatar') : null"
+                        :src="$manager->hasMedia($manager->mediaCollection) ? $manager->getFirstMediaUrl($manager->mediaCollection, 'avatar') : null"
                         :ratio="'1x1'"
                     />
 

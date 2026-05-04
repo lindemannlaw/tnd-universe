@@ -5,8 +5,8 @@
             <x-admin.picture
                 :fit="'contain'"
                 :position="'center '"
-                :src="$leader->hasAttachedMedia($leader->mediaPhoto)
-                    ? $leader->firstAttachedMediaUrl($leader->mediaPhoto, 'md-webp')
+                :src="$leader->hasMedia($leader->mediaPhoto)
+                    ? $leader->getFirstMediaUrl($leader->mediaPhoto, 'md-webp')
                     : null"
                 :ratio="'1x1'"
             />

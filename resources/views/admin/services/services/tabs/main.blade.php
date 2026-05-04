@@ -6,8 +6,8 @@
             :placeholder="__('admin.hero_image') . ' ( 16 / 9 )'"
             :ratio="'16x9'"
             :fit="'contain'"
-            :src="!(isset($isClone) && $isClone) && isset($service) && $service->hasAttachedMedia($service->mediaHero) ? $service->firstAttachedMediaUrl($service->mediaHero, 'md-webp') : null"
-            :required="!(isset($isClone) && $isClone) && isset($service) ? !$service->hasAttachedMedia($service->mediaHero) : true"
+            :src="!(isset($isClone) && $isClone) && isset($service) && $service->hasMedia($service->mediaHero) ? $service->getFirstMediaUrl($service->mediaHero, 'md-webp') : null"
+            :required="!(isset($isClone) && $isClone) && isset($service) ? !$service->hasMedia($service->mediaHero) : true"
         />
     </div>
 

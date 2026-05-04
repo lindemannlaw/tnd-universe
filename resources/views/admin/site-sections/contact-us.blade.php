@@ -38,8 +38,8 @@
                     :name="'bg_image'"
                     :placeholder="__('admin.bg_image') . ' ( 16 / 9 )'"
                     :ratio="'16x9'"
-                    :src="$section->hasAttachedMedia('bg-image') ? $section->firstAttachedMediaUrl('bg-image', 'md-webp') : null"
-                    :required="!$section->hasAttachedMedia('bg-image')"
+                    :src="$section->hasMedia('bg-image') ? $section->getFirstMediaUrl('bg-image', 'md-webp') : null"
+                    :required="!$section->hasMedia('bg-image')"
                 />
             </div>
 

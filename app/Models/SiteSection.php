@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\HasModelMedia;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\HasMedia;
@@ -12,7 +11,7 @@ use Spatie\Translatable\HasTranslations;
 
 class SiteSection extends Model implements HasMedia
 {
-    use HasFactory, InteractsWithMedia, HasTranslations, HasModelMedia;
+    use HasFactory, InteractsWithMedia, HasTranslations;
 
     public string $mediaCollection = 'sections';
 
