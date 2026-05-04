@@ -4,14 +4,14 @@
     $mimeFilter = $mimeFilter ?? null;
 @endphp
 
-<div class="modal-dialog modal-dialog-centered modal-xl" data-media-picker-modal data-field="{{ $field }}">
+<div class="modal-dialog modal-fullscreen" data-media-picker-modal data-field="{{ $field }}">
     <div class="modal-content">
         <div class="modal-header gap-2">
             <h1 class="modal-title fs-5 me-auto">{{ __('admin.media') }}</h1>
             <button type="button" class="btn-close ms-0" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
 
-        <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+        <div class="modal-body" style="overflow-y: auto;">
             <div class="d-flex flex-column gap-3">
                 <form
                     data-picker-upload

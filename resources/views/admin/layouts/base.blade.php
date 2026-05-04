@@ -47,6 +47,6 @@
          data-bs-backdrop="static"
          aria-labelledby="media-picker-modal"
          aria-hidden="true"
-         style="z-index: 1265"></div>
+         style="z-index: 2050"></div>
 </body>
 </html>
