@@ -10,6 +10,14 @@
         $page_seo_description = isset($page->seo_description) && filled($page->seo_description) ? $page->seo_description : null;
         $page_seo_keywords = isset($page->seo_keywords) && filled($page->seo_keywords) ? $page->seo_keywords : null;
     @endphp
+    <!-- LOCALE-DEBUG app=@php echo app()->getLocale(); @endphp seg1=@php echo request()->segment(1); @endphp llcurr=@php echo \Mcamara\LaravelLocalization\Facades\LaravelLocalization::getCurrentLocale(); @endphp -->
+    @php
+        if (isset($page) && $page) {
+            $debugDeTitle = $page->getTranslation('seo_title', 'de', false);
+            $debugEnTitle = $page->getTranslation('seo_title', 'en', false);
+        }
+    @endphp
+    <!-- DB-DEBUG de_title=@php echo isset($debugDeTitle) ? mb_substr($debugDeTitle,0,40) : 'NA'; @endphp | en_title=@php echo isset($debugEnTitle) ? mb_substr($debugEnTitle,0,40) : 'NA'; @endphp -->
 
     <title>{{ $page_seo_title }}</title>
 
