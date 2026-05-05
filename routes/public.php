@@ -1,6 +1,16 @@
 <?php
 
+/**
+ * Öffentliche Web-Routen (innerhalb des Locale-Prefix aus web.php).
+ *
+ * Reihenfolge: feste Pfade zuerst, parametrisierte Gruppen, zuletzt die Catch-alls
+ * (`/{portfolioAlias}/{projectSlug}` dann `/{pageAlias}`), damit keine falsche Route matched.
+ */
+use App\Http\Controllers\Public\StaticPageAliasController;
 use Illuminate\Support\Facades\Route;
+
+/** Ein Segment-Pfad ohne reservierte System-Segmente (für Portfolio-Alias + Seiten-Catch-all identisch). */
+$publicSingleSegmentReserved = '^(?!services$|portfolio$|news$|admin$|storage$|api$|sitemap\.xml$|sitemap-pages\.xml$|sitemap-projects\.xml$|sitemap-services\.xml$|sitemap-news\.xml$)[a-z0-9-]+$';
 
 Route::get('/', [App\Http\Controllers\Public\HomePageController::class, 'index'])->name('public.home');
 Route::get('/about', [App\Http\Controllers\Public\AboutPageController::class, 'index'])->name('public.about');
@@ -32,11 +42,11 @@ Route::get('/imprint', [App\Http\Controllers\Public\ImprintPageController::class
 Route::get('/privacy-notice', [App\Http\Controllers\Public\PrivacyNoticePageController::class, 'index'])->name('public.privacy-notice');
 Route::get('/terms-of-use', [App\Http\Controllers\Public\TermsOfUsePageController::class, 'index'])->name('public.terms-of-use');
 Route::get('/{portfolioAlias}/{projectSlug}', [App\Http\Controllers\Public\Portfolio\ProjectPageController::class, 'indexByAlias'])
-    ->where('portfolioAlias', '^(?!services$|portfolio$|news$|admin$|storage$|api$|sitemap\.xml$|sitemap-pages\.xml$|sitemap-projects\.xml$|sitemap-services\.xml$|sitemap-news\.xml$)[a-z0-9-]+$')
+    ->where('portfolioAlias', $publicSingleSegmentReserved)
     ->where('projectSlug', '^[a-z0-9-]+$')
     ->name('public.portfolio.project.alias');
-Route::get('/{pageAlias}', '\App\Http\Controllers\Public\StaticPageAliasController')
-    ->where('pageAlias', '^(?!services$|portfolio$|news$|admin$|storage$|api$|sitemap\.xml$|sitemap-pages\.xml$|sitemap-projects\.xml$|sitemap-services\.xml$|sitemap-news\.xml$)[a-z0-9-]+$');
+Route::get('/{pageAlias}', StaticPageAliasController::class)
+    ->where('pageAlias', $publicSingleSegmentReserved);
 
 Route::group([
     'middleware' => [App\Http\Middleware\ThrottleEmails::class],

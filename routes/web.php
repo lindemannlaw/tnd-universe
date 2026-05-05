@@ -1,12 +1,17 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+/**
+ * Web-Routen: Sitemaps (ohne Locale), lokalisierter Haupt-Block (auth, admin, public),
+ * danach externe Tool-Proxies (Visitenkarten o. Ä. — nicht Teil des TND-Site-Kerns).
+ */
+use App\Http\Controllers\Public\SitemapController;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 
-Route::get('/sitemap.xml', [App\Http\Controllers\Public\SitemapController::class, 'index'])
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])
     ->name('public.sitemap');
-Route::get('/sitemap-{type}.xml', [App\Http\Controllers\Public\SitemapController::class, 'type'])
+Route::get('/sitemap-{type}.xml', [SitemapController::class, 'type'])
     ->where('type', '[a-z_]+')
     ->name('public.sitemap.type');
 
@@ -21,13 +26,11 @@ Route::group([
         require __DIR__ . '/admin.php';
     });
 
-    Route::group(['namespace' => 'Public'], function () {
-        require __DIR__ . '/public.php';
-    });
+    require __DIR__.'/public.php';
 
 });
 
-// Visitenkarten-Tool Proxy
+// --- Externe Proxies (z. B. Visitenkarten); CSRF-Ausnahme in bootstrap/app.php ---
 Route::post('/tools/proxy/claude', function (Request $request) {
     $response = \Illuminate\Support\Facades\Http::timeout(60)
         ->withHeaders([

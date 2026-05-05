@@ -7,8 +7,8 @@
 .phpunit.result.cache
 /.fleet
 /.idea
-/.nova
 /.phpunit.cache
+/.nova
 /.vscode
 /.zed
 /auth.json
@@ -31,4 +31,14 @@ composer.phar
 .env.save
 .ftp-deploy-sync-state.json
 .ftp-deploy-sync-state-prelive.json
+
+# Frontend-Build lokal/npm (wie auf origin/main vereinbart)
 /public/build
+
+# macOS AppleDouble / Metadaten (häufig per SMB/USB kopiert)
+**/._*
+._*
+
+# Lokale SQL-Dumps / Release-Artefakte (nicht ins Repo)
+/live.sql
+/release-*.tar.gz
