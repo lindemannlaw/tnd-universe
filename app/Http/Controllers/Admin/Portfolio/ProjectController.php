@@ -556,6 +556,20 @@ class ProjectController extends Controller
                             }
                         }
 
+                        // Diagnostic: trace why floating_gallery items might be dropped.
+                        // Remove after the media-picker save flow is verified end-to-end.
+                        Log::info('[debug-fg-item] floating_gallery item resolution', [
+                            'locale'      => $locale,
+                            'block_index' => $blockIndex,
+                            'item_index'  => $itemIndex,
+                            'media_id'    => $mediaId,
+                            'old_image'   => $oldImage,
+                            'has_file'    => (bool) $file,
+                            'media_found' => isset($media) && $media !== null,
+                            'final_image' => $image,
+                            'item_keys'   => is_array($item) ? array_keys($item) : null,
+                        ]);
+
                         if (!$image) {
                             continue;
                         }
