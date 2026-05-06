@@ -90,6 +90,7 @@ class StoreRequest extends FormRequest
             $rules['description_blocks.' . $locale . '.*.items.*.col_start'] = ['nullable', 'integer', 'min:1', 'max:12'];
             $rules['description_blocks.' . $locale . '.*.items.*.image'] = ['nullable', 'string'];
             $rules['description_blocks.' . $locale . '.*.items.*.image_file'] = ['nullable', 'image', 'mimes:jpg,png,webp', 'max:20480'];
+            $rules['description_blocks.' . $locale . '.*.items.*.image_file_media_id'] = ['nullable', 'integer', 'exists:media,id'];
             $rules['location.' . $locale] = $isSource ? ['required', 'string', 'max:255'] : ['nullable', 'string', 'max:255'];
             $rules['tags.' . $locale . '.*'] = ['nullable', 'string', 'max:255'];
             $rules['property_details.' . $locale . '.*'] = ['nullable', 'string', 'max:255'];

@@ -483,12 +483,18 @@ class ProjectController extends Controller
                             $colSpan = 12 - $colStart + 1;
                         }
 
-                        $imgFile = data_get($request->file('description_blocks'), "{$locale}.{$blockIndex}.items.{$itemIndex}.image_file");
-                        $imgOld  = data_get($item, 'image');
-                        $imgUrl  = is_string($imgOld) ? $imgOld : null;
+                        $imgFile    = data_get($request->file('description_blocks'), "{$locale}.{$blockIndex}.items.{$itemIndex}.image_file");
+                        $imgMediaId = data_get($request->input('description_blocks'), "{$locale}.{$blockIndex}.items.{$itemIndex}.image_file_media_id");
+                        $imgOld     = data_get($item, 'image');
+                        $imgUrl     = is_string($imgOld) ? $imgOld : null;
                         if ($imgFile) {
                             $path   = $imgFile->store('projects/description-blocks', 'public');
                             $imgUrl = Storage::url($path);
+                        } elseif ($imgMediaId) {
+                            $media = Media::find((int) $imgMediaId);
+                            if ($media) {
+                                $imgUrl = $media->getUrl();
+                            }
                         }
 
                         $imgAlignment = data_get($item, 'image_alignment', 'top');
@@ -535,13 +541,19 @@ class ProjectController extends Controller
                     $preparedItems = [];
 
                     foreach ($items as $itemIndex => $item) {
-                        $file = data_get($request->file('description_blocks'), "{$locale}.{$blockIndex}.items.{$itemIndex}.image_file");
+                        $file     = data_get($request->file('description_blocks'), "{$locale}.{$blockIndex}.items.{$itemIndex}.image_file");
+                        $mediaId  = data_get($request->input('description_blocks'), "{$locale}.{$blockIndex}.items.{$itemIndex}.image_file_media_id");
                         $oldImage = data_get($item, 'image');
-                        $image = is_string($oldImage) ? $oldImage : null;
+                        $image    = is_string($oldImage) ? $oldImage : null;
 
                         if ($file) {
                             $path = $file->store('projects/description-blocks', 'public');
                             $image = Storage::url($path);
+                        } elseif ($mediaId) {
+                            $media = Media::find((int) $mediaId);
+                            if ($media) {
+                                $image = $media->getUrl();
+                            }
                         }
 
                         if (!$image) {
