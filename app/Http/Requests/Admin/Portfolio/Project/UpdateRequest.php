@@ -96,7 +96,10 @@ class UpdateRequest extends FormRequest
             $rules['description_blocks.' . $locale . '.*.items.*.col_span'] = ['nullable', 'integer', 'min:1', 'max:12'];
             $rules['description_blocks.' . $locale . '.*.items.*.col_start'] = ['nullable', 'integer', 'min:1', 'max:12'];
             $rules['description_blocks.' . $locale . '.*.items.*.image'] = ['nullable', 'string', 'max:2048'];
-            $rules['description_blocks.' . $locale . '.*.items.*.image_file'] = ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,gif', 'max:10240'];
+            // Legacy field: pre-refactor `<x-admin.field.image>` rendered `<input type="file" name="image_file">`.
+            // The component now emits only `image_file_media_id` (see commit f261af1). We keep the key permissive
+            // so any stale-form/proxy-injected value doesn't trip validation; the controller ignores non-files here.
+            $rules['description_blocks.' . $locale . '.*.items.*.image_file'] = ['nullable'];
             $rules['description_blocks.' . $locale . '.*.items.*.image_file_media_id'] = ['nullable', 'integer', 'exists:media,id'];
             // text_column_row item fields
             $rules['description_blocks.' . $locale . '.*.items.*.headline_color'] = ['nullable', 'string', 'in:emerald-950,emerald-900,emerald-800,primary,gold-bright'];
