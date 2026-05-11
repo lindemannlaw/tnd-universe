@@ -178,12 +178,32 @@
         @if($hasGeoColumns)
             <div class="card mb-4" data-field-card="geo_coords">
                 <div class="card-body">
-                    <div class="d-flex align-items-center gap-2 mb-3">
+                    <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
                         <span class="badge bg-success">
                             <svg class="bi" width="14" height="14" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#geo-alt"/></svg>
                         </span>
                         <h6 class="mb-0 fw-bold text-uppercase">GEO Coordinates</h6>
                         <span class="text-muted small ms-2">Single source of truth — used for meta geo.position, ICBM and Schema.org JSON-LD.</span>
+
+                        <div class="d-flex justify-content-end gap-2 flex-grow-1">
+                            <button type="button"
+                                    class="btn btn-sm btn-dark"
+                                    id="btnGeocode"
+                                    title="Auto-fill from GEO TEXT (EN) via OpenStreetMap geocoder">
+                                <svg class="bi" width="13" height="13" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#stars"/></svg>
+                                Auto-fill aus GEO TEXT
+                            </button>
+                            <a id="btnOpenMaps"
+                               href="#"
+                               target="_blank"
+                               rel="noopener"
+                               class="btn btn-sm btn-outline-secondary"
+                               style="display:none;"
+                               title="Auf Google Maps öffnen">
+                                <svg class="bi" width="13" height="13" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#map"/></svg>
+                                Auf Google Maps öffnen
+                            </a>
+                        </div>
                     </div>
 
                     @php
@@ -208,6 +228,20 @@
                                     data-original="{{ $geo[$key] }}"
                                     placeholder="{{ $cfg['placeholder'] }}"
                                 >
+                                @if($key === 'geo_region')
+                                    <div class="form-text d-flex align-items-center gap-2 flex-wrap" style="font-size:.75em;">
+                                        <span class="text-muted">Aufgelöst:</span>
+                                        <span id="geoRegionLabel" class="fw-semibold text-body">—</span>
+                                        <a href="https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements"
+                                           target="_blank"
+                                           rel="noopener"
+                                           class="ms-auto text-decoration-none text-muted"
+                                           title="Liste aller ISO-3166-1 alpha-2 Codes">
+                                            ISO-3166-Liste
+                                            <svg class="bi" width="11" height="11" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#box-arrow-up-right"/></svg>
+                                        </a>
+                                    </div>
+                                @endif
                             </div>
                             <div class="field-actions gap-1 align-items-start mt-1"
                                  id="actions-geo-{{ $key }}"
@@ -244,6 +278,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const GENERATE_URL  = @json(route('admin.seo-geo.generate'));
     const SAVE_FIELD_URL= @json(route('admin.seo-geo.save-field'));
     const SAVE_GEO_URL  = @json(route('admin.seo-geo.save-geo'));
+    const GEOCODE_URL   = @json(route('admin.seo-geo.geocode'));
     const GOOGLE_REINDEX_URL = @json(route('admin.seo-geo.google-reindex', ['type' => $type, 'id' => $modelId]));
     const CSRF          = document.querySelector('meta[name="csrf-token"]')?.content;
 
@@ -690,13 +725,111 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    // ── Geo coords: helpers (region label + maps link) ───────────────────
+    let regionLabeler = null;
+    try {
+        regionLabeler = new Intl.DisplayNames(['en'], { type: 'region' });
+    } catch (_) { /* older browsers — graceful degradation */ }
+
+    function updateRegionLabel() {
+        const el = document.getElementById('geoRegionLabel');
+        const input = document.querySelector('.geo-field-input[data-geo-field="geo_region"]');
+        if (!el || !input) return;
+
+        const raw = (input.value || '').trim().toUpperCase();
+        if (!raw) { el.textContent = '—'; el.classList.remove('text-danger'); el.classList.add('text-body'); return; }
+
+        const base = raw.split('-')[0]; // accept "VG" or "VG-04"
+        let label = null;
+        if (regionLabeler && /^[A-Z]{2}$/.test(base)) {
+            try { label = regionLabeler.of(base) || null; } catch (_) {}
+        }
+        if (label && label !== base) {
+            el.textContent = label;
+            el.classList.remove('text-danger');
+            el.classList.add('text-body');
+        } else {
+            el.textContent = 'unbekannter Code';
+            el.classList.add('text-danger');
+            el.classList.remove('text-body');
+        }
+    }
+
+    function updateMapsLink() {
+        const lat = document.querySelector('.geo-field-input[data-geo-field="lat"]')?.value.trim();
+        const lon = document.querySelector('.geo-field-input[data-geo-field="lon"]')?.value.trim();
+        const link = document.getElementById('btnOpenMaps');
+        if (!link) return;
+        if (lat && lon && !isNaN(parseFloat(lat)) && !isNaN(parseFloat(lon))) {
+            link.href = `https://www.google.com/maps?q=${encodeURIComponent(lat)},${encodeURIComponent(lon)}`;
+            link.style.display = '';
+        } else {
+            link.style.display = 'none';
+        }
+    }
+
+    updateRegionLabel();
+    updateMapsLink();
+
     // ── Geo coords: dirty detection + save ───────────────────────────────
     document.querySelectorAll('.geo-field-input').forEach(el => {
         el.addEventListener('input', () => {
             const dirty = el.value !== el.dataset.original;
             const actions = document.getElementById(`actions-geo-${el.dataset.geoField}`);
             if (actions) actions.style.display = dirty ? 'flex' : 'none';
+            if (el.dataset.geoField === 'geo_region') updateRegionLabel();
+            if (el.dataset.geoField === 'lat' || el.dataset.geoField === 'lon') updateMapsLink();
         });
+    });
+
+    // ── Geo coords: auto-fill from GEO TEXT via geocoder ─────────────────
+    document.getElementById('btnGeocode')?.addEventListener('click', async () => {
+        const btn = document.getElementById('btnGeocode');
+        const geoTextEn = document.querySelector('.seo-field-input[data-field="geo_text"][data-locale="en"]');
+        const query = (geoTextEn?.value || '').trim();
+        if (!query) {
+            showToast('GEO TEXT (EN) ist leer — bitte zuerst eine Ortsbeschreibung eingeben.', 'bg-warning');
+            return;
+        }
+
+        btn.disabled = true;
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Suche…';
+
+        try {
+            const res = await fetch(GEOCODE_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
+                body: JSON.stringify({ query }),
+            });
+            const data = await res.json();
+            if (data.error) throw new Error(data.error);
+            if (!data.found) {
+                showToast(data.message || 'Keine Übereinstimmung gefunden.', 'bg-warning');
+                return;
+            }
+
+            // Round coords to 7 decimals to match render-side formatting
+            const round7 = v => Math.round(v * 1e7) / 1e7;
+            const fills = {
+                lat: String(round7(data.lat)),
+                lon: String(round7(data.lon)),
+                geo_region: data.geo_region || '',
+            };
+            Object.entries(fills).forEach(([field, value]) => {
+                const input = document.querySelector(`.geo-field-input[data-geo-field="${field}"]`);
+                if (!input || !value) return;
+                input.value = value;
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+            });
+
+            showToast(`Gefunden: ${data.display_name || 'OK'} — bitte prüfen und speichern.`, 'bg-success');
+        } catch (err) {
+            showToast('Geocoder-Fehler: ' + err.message, 'bg-danger');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = orig;
+        }
     });
 
     document.addEventListener('click', async (e) => {
@@ -730,6 +863,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 const actions = document.getElementById(`actions-geo-${key}`);
                 if (actions) actions.style.display = 'none';
             });
+            updateRegionLabel();
+            updateMapsLink();
             showToast('Geo-Koordinaten gespeichert!', 'bg-success');
         } catch (err) {
             showToast('Fehler: ' + err.message, 'bg-danger');
