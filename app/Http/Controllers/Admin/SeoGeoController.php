@@ -300,9 +300,54 @@ class SeoGeoController extends Controller
     public function geocode(Request $request): JsonResponse
     {
         $request->validate([
-            'query' => 'required|string|min:2|max:500',
+            'query' => 'required|string|min:2|max:2000',
         ]);
 
+        $query = trim((string) $request->input('query'));
+
+        // 1. URL? (e.g. maps.app.goo.gl, google.com/maps, goo.gl/maps)
+        if (preg_match('#https?://\S+#', $query, $m)) {
+            $coords = $this->coordsFromMapsUrl($m[0]);
+            if ($coords) {
+                return response()->json([
+                    'found' => true,
+                    'lat' => $coords['lat'],
+                    'lon' => $coords['lon'],
+                    'geo_region' => $this->countryCodeFromCoords($coords['lat'], $coords['lon']),
+                    'source' => 'maps-url',
+                    'display_name' => $coords['display_name'] ?? null,
+                ]);
+            }
+        }
+
+        // 2. DMS? e.g. 18°27'08.6"N 64°26'26.5"W
+        $dms = $this->coordsFromDms($query);
+        if ($dms) {
+            return response()->json([
+                'found' => true,
+                'lat' => $dms['lat'],
+                'lon' => $dms['lon'],
+                'geo_region' => $this->countryCodeFromCoords($dms['lat'], $dms['lon']),
+                'source' => 'dms',
+            ]);
+        }
+
+        // 3. Plain decimal "lat, lon"
+        if (preg_match('/^\s*(-?\d{1,3}(?:\.\d+)?)\s*[,;\s]\s*(-?\d{1,3}(?:\.\d+)?)\s*$/', $query, $m)) {
+            $lat = (float) $m[1];
+            $lon = (float) $m[2];
+            if ($lat >= -90 && $lat <= 90 && $lon >= -180 && $lon <= 180) {
+                return response()->json([
+                    'found' => true,
+                    'lat' => $lat,
+                    'lon' => $lon,
+                    'geo_region' => $this->countryCodeFromCoords($lat, $lon),
+                    'source' => 'decimal',
+                ]);
+            }
+        }
+
+        // 4. Fall back to Nominatim place-name search
         try {
             $response = Http::withHeaders([
                 'User-Agent' => 'TND-Universe-Admin/1.0 (+'.config('app.url').')',
@@ -310,7 +355,7 @@ class SeoGeoController extends Controller
             ])
                 ->timeout(10)
                 ->get('https://nominatim.openstreetmap.org/search', [
-                    'q' => $request->input('query'),
+                    'q' => $query,
                     'format' => 'json',
                     'limit' => 1,
                     'addressdetails' => 1,
@@ -326,7 +371,7 @@ class SeoGeoController extends Controller
             if (! is_array($results) || empty($results)) {
                 return response()->json([
                     'found' => false,
-                    'message' => 'No location matched. Try a clearer query (city, country).',
+                    'message' => 'No location matched. Try a place name, Google Maps URL, or "lat, lon".',
                 ]);
             }
 
@@ -339,10 +384,141 @@ class SeoGeoController extends Controller
                 'lon' => (float) $first['lon'],
                 'geo_region' => $countryCode ?: null,
                 'display_name' => $first['display_name'] ?? null,
+                'source' => 'nominatim',
             ]);
         } catch (\Throwable $e) {
             Log::error('[SeoGeo] geocode failed', ['message' => $e->getMessage()]);
             return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Try to extract decimal lat/lon from a Google Maps URL (short or full).
+     */
+    private function coordsFromMapsUrl(string $url): ?array
+    {
+        try {
+            $response = Http::withHeaders([
+                'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) TND-Universe-Admin/1.0',
+                'Accept' => 'text/html,*/*;q=0.5',
+                'Accept-Language' => 'en-US,en;q=0.9',
+            ])
+                ->timeout(10)
+                ->withOptions(['allow_redirects' => ['max' => 5, 'track_redirects' => true]])
+                ->get($url);
+
+            $body = (string) $response->body();
+            $finalUrl = $response->effectiveUri()?->__toString() ?? $url;
+
+            // Scan both the final URL and the page body for known coord patterns.
+            $haystacks = [$finalUrl, $body];
+
+            $patterns = [
+                // /@LAT,LON,ZOOMz/ — view URL
+                '#/@(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)(?:,\d+(?:\.\d+)?z)?#',
+                // !3d{lat}!4d{lon} — marker encoding (most reliable)
+                '#!3d(-?\d{1,3}\.\d+)!4d(-?\d{1,3}\.\d+)#',
+                // ?q=LAT,LON or &q=LAT,LON
+                '#[?&]q=(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)#',
+                // /place/.../LAT,LON
+                '#/(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)(?:[,/&?]|$)#',
+            ];
+
+            foreach ($haystacks as $hay) {
+                foreach ($patterns as $p) {
+                    if (preg_match($p, $hay, $m)) {
+                        $lat = (float) $m[1];
+                        $lon = (float) $m[2];
+                        if ($lat >= -90 && $lat <= 90 && $lon >= -180 && $lon <= 180 && ! ($lat == 0 && $lon == 0)) {
+                            return [
+                                'lat' => $lat,
+                                'lon' => $lon,
+                                'display_name' => $this->extractPlaceNameFromMapsUrl($finalUrl),
+                            ];
+                        }
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning('[SeoGeo] coordsFromMapsUrl failed', ['url' => $url, 'message' => $e->getMessage()]);
+        }
+
+        return null;
+    }
+
+    private function extractPlaceNameFromMapsUrl(string $url): ?string
+    {
+        if (preg_match('#/place/([^/]+)/#', $url, $m)) {
+            return rawurldecode($m[1]);
+        }
+        return null;
+    }
+
+    /**
+     * Parse DMS notation like: 18°27'08.6"N 64°26'26.5"W
+     */
+    private function coordsFromDms(string $input): ?array
+    {
+        $pattern = '/(\d{1,3})\s*°\s*(\d{1,2})\s*[\'’]\s*(\d{1,2}(?:\.\d+)?)\s*[\"”″]?\s*([NSEW])/iu';
+        if (! preg_match_all($pattern, $input, $matches, PREG_SET_ORDER) || count($matches) < 2) {
+            return null;
+        }
+
+        $lat = null;
+        $lon = null;
+        foreach ($matches as $m) {
+            $deg = (float) $m[1];
+            $min = (float) $m[2];
+            $sec = (float) $m[3];
+            $hem = strtoupper($m[4]);
+            $dec = $deg + $min / 60.0 + $sec / 3600.0;
+            if ($hem === 'S' || $hem === 'W') {
+                $dec = -$dec;
+            }
+            if ($hem === 'N' || $hem === 'S') {
+                $lat = $dec;
+            } else {
+                $lon = $dec;
+            }
+        }
+
+        if ($lat === null || $lon === null) {
+            return null;
+        }
+        if ($lat < -90 || $lat > 90 || $lon < -180 || $lon > 180) {
+            return null;
+        }
+
+        return [
+            'lat' => round($lat, 7),
+            'lon' => round($lon, 7),
+        ];
+    }
+
+    /**
+     * Best-effort reverse geocode to ISO 3166-1 alpha-2 via Nominatim.
+     */
+    private function countryCodeFromCoords(float $lat, float $lon): ?string
+    {
+        try {
+            $response = Http::withHeaders([
+                'User-Agent' => 'TND-Universe-Admin/1.0 (+'.config('app.url').')',
+                'Accept' => 'application/json',
+            ])
+                ->timeout(8)
+                ->get('https://nominatim.openstreetmap.org/reverse', [
+                    'lat' => $lat,
+                    'lon' => $lon,
+                    'format' => 'json',
+                    'zoom' => 3,
+                    'addressdetails' => 1,
+                ]);
+            if (! $response->successful()) return null;
+            $data = $response->json();
+            $code = strtoupper((string) ($data['address']['country_code'] ?? ''));
+            return $code ?: null;
+        } catch (\Throwable $e) {
+            return null;
         }
     }
 

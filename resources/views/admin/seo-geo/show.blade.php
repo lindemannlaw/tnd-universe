@@ -214,6 +214,30 @@
                         ];
                     @endphp
 
+                    <div class="d-flex align-items-start gap-2 mb-3 pb-3 border-bottom" id="row-geo-resolve">
+                        <span class="badge bg-light text-dark border mt-1" style="min-width: 130px; font-size: .75em;">
+                            Aus URL / DMS / Coords
+                        </span>
+                        <div class="flex-grow-1">
+                            <input
+                                type="text"
+                                class="form-control form-control-sm"
+                                id="geoResolveInput"
+                                placeholder="https://maps.app.goo.gl/...   ·   18°27'08.6&quot;N 64°26'26.5&quot;W   ·   18.4524, -64.4407"
+                            >
+                            <div class="form-text" style="font-size:.7em;">
+                                Akzeptiert Google-Maps-Links (auch Kurzlinks), DMS-Notation oder reine Dezimal-Koordinaten.
+                            </div>
+                        </div>
+                        <button type="button"
+                                class="btn btn-sm btn-dark mt-1"
+                                id="btnGeoResolve"
+                                title="Eingabe in Latitude / Longitude / Region auflösen">
+                            <svg class="bi" width="13" height="13" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#magic"/></svg>
+                            Auflösen
+                        </button>
+                    </div>
+
                     @foreach($geoFields as $key => $cfg)
                         <div class="d-flex align-items-start gap-2 mb-2" id="row-geo-{{ $key }}">
                             <span class="badge bg-light text-dark border mt-1" style="min-width: 130px; font-size: .75em;">
@@ -782,19 +806,17 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // ── Geo coords: auto-fill from GEO TEXT via geocoder ─────────────────
-    document.getElementById('btnGeocode')?.addEventListener('click', async () => {
-        const btn = document.getElementById('btnGeocode');
-        const geoTextEn = document.querySelector('.seo-field-input[data-field="geo_text"][data-locale="en"]');
-        const query = (geoTextEn?.value || '').trim();
+    // ── Geo coords: resolve from arbitrary query string ──────────────────
+    async function resolveGeoQuery(query, triggerBtn) {
         if (!query) {
-            showToast('GEO TEXT (EN) ist leer — bitte zuerst eine Ortsbeschreibung eingeben.', 'bg-warning');
-            return;
+            showToast('Eingabe ist leer.', 'bg-warning');
+            return false;
         }
-
-        btn.disabled = true;
-        const orig = btn.innerHTML;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Suche…';
+        const orig = triggerBtn ? triggerBtn.innerHTML : null;
+        if (triggerBtn) {
+            triggerBtn.disabled = true;
+            triggerBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Suche…';
+        }
 
         try {
             const res = await fetch(GEOCODE_URL, {
@@ -806,10 +828,9 @@ document.addEventListener('DOMContentLoaded', function () {
             if (data.error) throw new Error(data.error);
             if (!data.found) {
                 showToast(data.message || 'Keine Übereinstimmung gefunden.', 'bg-warning');
-                return;
+                return false;
             }
 
-            // Round coords to 7 decimals to match render-side formatting
             const round7 = v => Math.round(v * 1e7) / 1e7;
             const fills = {
                 lat: String(round7(data.lat)),
@@ -823,12 +844,49 @@ document.addEventListener('DOMContentLoaded', function () {
                 input.dispatchEvent(new Event('input', { bubbles: true }));
             });
 
-            showToast(`Gefunden: ${data.display_name || 'OK'} — bitte prüfen und speichern.`, 'bg-success');
+            const sourceLabel = {
+                'maps-url': 'aus Google-Maps-Link',
+                'dms': 'aus DMS-Notation',
+                'decimal': 'aus Koordinaten-Eingabe',
+                'nominatim': 'via Nominatim',
+            }[data.source] || '';
+            const hint = data.display_name ? ` — ${data.display_name}` : '';
+            showToast(`Aufgelöst ${sourceLabel}${hint}. Bitte prüfen und speichern.`, 'bg-success');
+            return true;
         } catch (err) {
             showToast('Geocoder-Fehler: ' + err.message, 'bg-danger');
+            return false;
         } finally {
-            btn.disabled = false;
-            btn.innerHTML = orig;
+            if (triggerBtn) {
+                triggerBtn.disabled = false;
+                if (orig !== null) triggerBtn.innerHTML = orig;
+            }
+        }
+    }
+
+    // ── Geo coords: auto-fill from GEO TEXT ──────────────────────────────
+    document.getElementById('btnGeocode')?.addEventListener('click', async () => {
+        const btn = document.getElementById('btnGeocode');
+        const geoTextEn = document.querySelector('.seo-field-input[data-field="geo_text"][data-locale="en"]');
+        const query = (geoTextEn?.value || '').trim();
+        if (!query) {
+            showToast('GEO TEXT (EN) ist leer — bitte zuerst eine Ortsbeschreibung eingeben.', 'bg-warning');
+            return;
+        }
+        await resolveGeoQuery(query, btn);
+    });
+
+    // ── Geo coords: resolve from pasted URL / DMS / coords ───────────────
+    const geoResolveInput = document.getElementById('geoResolveInput');
+    document.getElementById('btnGeoResolve')?.addEventListener('click', async () => {
+        const btn = document.getElementById('btnGeoResolve');
+        const ok = await resolveGeoQuery(geoResolveInput.value.trim(), btn);
+        if (ok && geoResolveInput) geoResolveInput.value = '';
+    });
+    geoResolveInput?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            document.getElementById('btnGeoResolve')?.click();
         }
     });
 
