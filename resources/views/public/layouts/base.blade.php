@@ -25,14 +25,19 @@
             && filled($page->lat ?? null)
             && filled($page->lon ?? null);
         $geoRegion = $page->geo_region ?? null;
-        $geoPlacename = isset($page->location)
-            ? (is_string($page->location) ? $page->location : null)
+        $geoPlacenameRaw = isset($page->location) && is_string($page->location)
+            ? $page->location
             : null;
+        $geoPlacename = $geoPlacenameRaw
+            ? trim(rtrim(explode(',', $geoPlacenameRaw, 2)[0], " \t\n\r\0\x0B."))
+            : null;
+        $geoLat = $hasGeoCoords ? round((float) $page->lat, 7) : null;
+        $geoLon = $hasGeoCoords ? round((float) $page->lon, 7) : null;
     @endphp
 
     @if($hasGeoCoords)
-        <meta name="geo.position" content="{{ $page->lat }};{{ $page->lon }}">
-        <meta name="ICBM" content="{{ $page->lat }}, {{ $page->lon }}">
+        <meta name="geo.position" content="{{ $geoLat }};{{ $geoLon }}">
+        <meta name="ICBM" content="{{ $geoLat }}, {{ $geoLon }}">
     @endif
     @if(filled($geoRegion))
         <meta name="geo.region" content="{{ $geoRegion }}">

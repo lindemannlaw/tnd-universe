@@ -89,6 +89,11 @@
             $heroImageUrl = null;
         }
 
+        $rawLocality = is_string($page->location) ? $page->location : null;
+        $addressLocality = $rawLocality
+            ? trim(rtrim(explode(',', $rawLocality, 2)[0], " \t\n\r\0\x0B."))
+            : null;
+
         $residence = array_filter([
             '@type' => 'SingleFamilyResidence',
             '@id' => $currentUrl . '#residence',
@@ -98,14 +103,13 @@
             'image' => $heroImageUrl ?: null,
             'address' => array_filter([
                 '@type' => 'PostalAddress',
-                'addressLocality' => is_string($page->location) ? $page->location : null,
-                'addressRegion' => $page->geo_region,
+                'addressLocality' => $addressLocality,
                 'addressCountry' => $page->geo_region,
             ]),
             'geo' => [
                 '@type' => 'GeoCoordinates',
-                'latitude' => (float) $page->lat,
-                'longitude' => (float) $page->lon,
+                'latitude' => round((float) $page->lat, 7),
+                'longitude' => round((float) $page->lon, 7),
             ],
         ]);
 
