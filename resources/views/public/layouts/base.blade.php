@@ -70,24 +70,64 @@
         <link rel="alternate" hreflang="x-default" href="{{ localized_url($fallbackLocale) }}">
     @endif
 
-    <meta property="og:locale" content="{{ app()->getLocale() }}">
+    @php
+        // og:locale needs xx_XX format (e.g. en_US, de_DE). Pull from
+        // laravellocalization's "regional" field; fall back to bare code.
+        $ogLocaleOf = function ($code) {
+            $entry = config("laravellocalization.supportedLocales.$code");
+            return $entry['regional'] ?? $code;
+        };
+
+        // Per-page hero image as social card. Falls back to site logo when
+        // the page has no hero or doesn't expose Spatie Media at all.
+        $ogImageUrl = config('app.url') . '/img/og-logo.png';
+        if (isset($page) && is_object($page) && method_exists($page, 'getFirstMediaUrl')) {
+            $heroCollection = $page->mediaHero ?? 'hero';
+            try {
+                $candidate = $page->getFirstMediaUrl($heroCollection, 'lg-webp')
+                    ?: $page->getFirstMediaUrl($heroCollection);
+                if (filled($candidate)) {
+                    $ogImageUrl = $candidate;
+                }
+            } catch (\Throwable $e) {
+                // keep logo fallback
+            }
+        }
+
+        // og:type — "article" for individual content detail pages, else "website".
+        $ogType = 'website';
+        if (isset($page) && is_object($page) && (
+            $page instanceof \App\Models\Project
+            || $page instanceof \App\Models\NewsArticle
+            || $page instanceof \App\Models\Service
+        )) {
+            $ogType = 'article';
+        }
+    @endphp
+
+    <meta property="og:locale" content="{{ $ogLocaleOf(app()->getLocale()) }}">
+    @foreach($publishedLocales as $lang)
+        @if($lang !== app()->getLocale())
+            <meta property="og:locale:alternate" content="{{ $ogLocaleOf($lang) }}">
+        @endif
+    @endforeach
     <meta property="og:title" content="{{ $page_seo_title }}">
     @if($page_seo_description)
         <meta property="og:description" content="{{ $page_seo_description }}">
     @endif
-    <meta property="og:image" content="{{ config('app.url') }}/img/og-logo.png">
+    <meta property="og:image" content="{{ $ogImageUrl }}">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:url" content="{{ url()->current() }}">
     <meta property="og:site_name" content="{{ config('app.name') }}">
-    <meta property="og:type" content="website">
+    <meta property="og:type" content="{{ $ogType }}">
 
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{{ $page_seo_title }}">
     @if($page_seo_description)
         <meta name="twitter:description" content="{{ $page_seo_description }}">
     @endif
-    <meta name="twitter:image" content="{{ config('app.url') }}/img/og-logo.png">
+    <meta name="twitter:image" content="{{ $ogImageUrl }}">
 
     <x-public.structured-data :page="$page ?? null" />
 
