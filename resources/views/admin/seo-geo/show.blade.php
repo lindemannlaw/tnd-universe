@@ -11,30 +11,28 @@
 @endphp
 
 @section('panel')
-    <div id="mainPanel" class="main-panel d-flex align-items-center px-3 px-sm-4 py-2 border-bottom border-dark border-opacity-25 shadow-sm bg-white gap-3">
-        <div class="d-flex align-items-center" style="flex: 1 1 0; min-width: 0;">
-            <a href="{{ route('admin.seo-geo.index') }}" class="btn btn-sm btn-outline-secondary">
-                <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#arrow-left"/></svg>
-                Zurück
-            </a>
-        </div>
-        <div class="fs-4 lh-1 fw-semibold text-center" style="flex: 2 1 0; min-width: 0;">
+    <div id="mainPanel" class="main-panel d-flex flex-wrap align-items-center px-3 px-sm-4 py-2 border-bottom border-dark border-opacity-25 shadow-sm bg-white gap-2 gap-md-3">
+        <a href="{{ route('admin.seo-geo.index') }}" class="btn btn-sm btn-outline-secondary flex-shrink-0">
+            <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#arrow-left"/></svg>
+            Zurück
+        </a>
+        <div class="fs-5 lh-1 fw-semibold text-start text-truncate flex-grow-1" title="SEO &amp; GEO — {{ $title }}">
             SEO &amp; GEO — {{ $title }}
         </div>
-        <div class="d-flex align-items-center justify-content-end gap-3 overflow-x-auto" style="flex: 1 1 0; min-width: 0;">
-            <a href="{{ $editUrl }}" class="btn btn-sm btn-outline-secondary">
+        <div class="d-flex align-items-center flex-wrap justify-content-end gap-2">
+            <a href="{{ $editUrl }}" class="btn btn-sm btn-outline-secondary flex-shrink-0" title="Eintrag bearbeiten">
                 <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#pencil"/></svg>
-                Eintrag bearbeiten
+                Bearbeiten
             </a>
-            <button type="button" class="btn btn-sm btn-outline-info" id="btnLivePreview" title="Was steht aktuell auf der Live-Site?">
+            <button type="button" class="btn btn-sm btn-outline-info flex-shrink-0" id="btnLivePreview" title="Was steht aktuell auf der Live-Site?">
                 <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#globe"/></svg>
                 Live-Vorschau
             </button>
             @if(!empty($searchConsoleUrls))
-                <div class="btn-group">
+                <div class="btn-group flex-shrink-0">
                     <button type="button" class="btn btn-sm btn-outline-warning dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="In Google Search Console öffnen → 'Indexierung beantragen' klicken">
                         <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#google"/></svg>
-                        Bei Google neu indexieren
+                        Google reindex
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end">
                         @foreach($searchConsoleUrls as $locale => $scUrl)
@@ -47,13 +45,13 @@
                     </ul>
                 </div>
             @endif
-            <button type="button" class="btn btn-sm btn-outline-primary" id="btnGenerate">
+            <button type="button" class="btn btn-sm btn-outline-primary flex-shrink-0" id="btnGenerate" title="Alle Felder neu generieren">
                 <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#stars"/></svg>
-                Alle Felder neu generieren
+                Alle generieren
             </button>
-            <button type="button" class="btn btn-sm btn-outline-secondary" id="btnTranslateFromEn">
+            <button type="button" class="btn btn-sm btn-outline-secondary flex-shrink-0" id="btnTranslateFromEn" title="Alle Felder von EN übersetzen">
                 <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#globe2"/></svg>
-                Alle Felder von EN übersetzen
+                Aus EN übersetzen
             </button>
         </div>
     </div>
