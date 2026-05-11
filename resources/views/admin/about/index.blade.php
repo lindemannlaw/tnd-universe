@@ -44,7 +44,7 @@
 
                 <x-admin.tabs.nav-item
                     :target="'seo-pane'"
-                    :title="__('admin.seo')"
+                    :title="'URL / Slug'"
                 />
             </x-slot:nav>
 
