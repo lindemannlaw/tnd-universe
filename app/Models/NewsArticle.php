@@ -32,6 +32,9 @@ class NewsArticle extends Model implements HasMedia
         'seo_description',
         'seo_keywords',
         'geo_text',
+        'lat',
+        'lon',
+        'geo_region',
 
         'link_top_active',
         'link_top_text',

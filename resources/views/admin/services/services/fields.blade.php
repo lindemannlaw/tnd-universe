@@ -15,11 +15,6 @@
             :target="'info-section'"
             :title="__('admin.info')"
         />--}}
-
-        <x-admin.tabs.nav-item
-            :target="'seo-section'"
-            :title="__('admin.seo')"
-        />
     </x-slot:nav>
 
     <x-slot:content>
@@ -34,9 +29,5 @@
         {{--<x-admin.tabs.pane :id="'info-section'">
             @include('admin.services.services.tabs.info')
         </x-admin.tabs.pane>--}}
-
-        <x-admin.tabs.pane :id="'seo-section'">
-            @include('admin.services.services.tabs.seo')
-        </x-admin.tabs.pane>
     </x-slot:content>
 </x-admin.tabs.wrapper>

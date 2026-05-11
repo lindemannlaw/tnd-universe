@@ -27,6 +27,9 @@ class ServiceCategory extends Model implements HasMedia
         'seo_description',
         'seo_keywords',
         'geo_text',
+        'lat',
+        'lon',
+        'geo_region',
 
         'active',
         'sort',

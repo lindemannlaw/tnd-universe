@@ -28,6 +28,9 @@ class Service extends Model implements HasMedia
         'seo_description',
         'seo_keywords',
         'geo_text',
+        'lat',
+        'lon',
+        'geo_region',
 
         'details',
         'service_category_id',

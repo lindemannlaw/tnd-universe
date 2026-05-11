@@ -175,6 +175,55 @@
             @endforeach
         </div>
 
+        @if($hasGeoColumns)
+            <div class="card mb-4" data-field-card="geo_coords">
+                <div class="card-body">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <span class="badge bg-success">
+                            <svg class="bi" width="14" height="14" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#geo-alt"/></svg>
+                        </span>
+                        <h6 class="mb-0 fw-bold text-uppercase">GEO Coordinates</h6>
+                        <span class="text-muted small ms-2">Single source of truth — used for meta geo.position, ICBM and Schema.org JSON-LD.</span>
+                    </div>
+
+                    @php
+                        $geoFields = [
+                            'lat' => ['label' => 'Latitude',  'placeholder' => 'e.g. 18.4524'],
+                            'lon' => ['label' => 'Longitude', 'placeholder' => 'e.g. -64.4407'],
+                            'geo_region' => ['label' => 'Geo Region (ISO 3166)', 'placeholder' => 'e.g. VG, CH, US'],
+                        ];
+                    @endphp
+
+                    @foreach($geoFields as $key => $cfg)
+                        <div class="d-flex align-items-start gap-2 mb-2" id="row-geo-{{ $key }}">
+                            <span class="badge bg-light text-dark border mt-1" style="min-width: 130px; font-size: .75em;">
+                                {{ $cfg['label'] }}
+                            </span>
+                            <div class="flex-grow-1">
+                                <input
+                                    type="text"
+                                    class="form-control form-control-sm geo-field-input"
+                                    value="{{ $geo[$key] }}"
+                                    data-geo-field="{{ $key }}"
+                                    data-original="{{ $geo[$key] }}"
+                                    placeholder="{{ $cfg['placeholder'] }}"
+                                >
+                            </div>
+                            <div class="field-actions gap-1 align-items-start mt-1"
+                                 id="actions-geo-{{ $key }}"
+                                 style="display:none;">
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-success btn-save-geo"
+                                        title="Save geo coordinates">
+                                    <svg class="bi" width="13" height="13" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#floppy"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
         {{-- Toast --}}
         <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100;">
             <div id="seoGeoToast" class="toast align-items-center text-white bg-success border-0" role="alert">
@@ -194,6 +243,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const ID            = @json($modelId);
     const GENERATE_URL  = @json(route('admin.seo-geo.generate'));
     const SAVE_FIELD_URL= @json(route('admin.seo-geo.save-field'));
+    const SAVE_GEO_URL  = @json(route('admin.seo-geo.save-geo'));
     const GOOGLE_REINDEX_URL = @json(route('admin.seo-geo.google-reindex', ['type' => $type, 'id' => $modelId]));
     const CSRF          = document.querySelector('meta[name="csrf-token"]')?.content;
 
@@ -637,6 +687,55 @@ document.addEventListener('DOMContentLoaded', function () {
         } finally {
             btn.disabled = false;
             btn.innerHTML = originalHtml;
+        }
+    });
+
+    // ── Geo coords: dirty detection + save ───────────────────────────────
+    document.querySelectorAll('.geo-field-input').forEach(el => {
+        el.addEventListener('input', () => {
+            const dirty = el.value !== el.dataset.original;
+            const actions = document.getElementById(`actions-geo-${el.dataset.geoField}`);
+            if (actions) actions.style.display = dirty ? 'flex' : 'none';
+        });
+    });
+
+    document.addEventListener('click', async (e) => {
+        const btn = e.target.closest('.btn-save-geo');
+        if (!btn) return;
+
+        const inputs = document.querySelectorAll('.geo-field-input');
+        const payload = { type: TYPE, id: ID };
+        inputs.forEach(input => { payload[input.dataset.geoField] = input.value; });
+
+        btn.disabled = true;
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+        try {
+            const res = await fetch(SAVE_GEO_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
+                body: JSON.stringify(payload),
+            });
+            const data = await res.json();
+            if (data.error) throw new Error(data.error);
+
+            // Mark every geo input clean using the persisted values
+            const values = data.values || {};
+            inputs.forEach(input => {
+                const key = input.dataset.geoField;
+                const persisted = values[key] ?? input.value;
+                input.value = persisted === null ? '' : persisted;
+                input.dataset.original = input.value;
+                const actions = document.getElementById(`actions-geo-${key}`);
+                if (actions) actions.style.display = 'none';
+            });
+            showToast('Geo-Koordinaten gespeichert!', 'bg-success');
+        } catch (err) {
+            showToast('Fehler: ' + err.message, 'bg-danger');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = orig;
         }
     });
 
