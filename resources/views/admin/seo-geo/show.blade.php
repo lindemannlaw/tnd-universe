@@ -832,14 +832,14 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             const round7 = v => Math.round(v * 1e7) / 1e7;
-            const fills = {
-                lat: String(round7(data.lat)),
-                lon: String(round7(data.lon)),
-                geo_region: data.geo_region || '',
-            };
+            const fills = {};
+            if (data.lat !== null && data.lat !== undefined) fills.lat = String(round7(data.lat));
+            if (data.lon !== null && data.lon !== undefined) fills.lon = String(round7(data.lon));
+            if (data.geo_region) fills.geo_region = data.geo_region;
+
             Object.entries(fills).forEach(([field, value]) => {
                 const input = document.querySelector(`.geo-field-input[data-geo-field="${field}"]`);
-                if (!input || !value) return;
+                if (!input || value === '' || value === null || value === undefined) return;
                 input.value = value;
                 input.dispatchEvent(new Event('input', { bubbles: true }));
             });
@@ -849,9 +849,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 'dms': 'aus DMS-Notation',
                 'decimal': 'aus Koordinaten-Eingabe',
                 'nominatim': 'via Nominatim',
+                'region-inference': 'nur Region (aus Text-Erkennung)',
             }[data.source] || '';
             const hint = data.display_name ? ` — ${data.display_name}` : '';
-            showToast(`Aufgelöst ${sourceLabel}${hint}. Bitte prüfen und speichern.`, 'bg-success');
+            const toastClass = data.partial ? 'bg-warning' : 'bg-success';
+            const msg = data.partial
+                ? (data.message || `Nur Region erkannt — Koordinaten manuell ergänzen.`)
+                : `Aufgelöst ${sourceLabel}${hint}. Bitte prüfen und speichern.`;
+            showToast(msg, toastClass);
             return true;
         } catch (err) {
             showToast('Geocoder-Fehler: ' + err.message, 'bg-danger');
