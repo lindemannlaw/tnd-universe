@@ -2,58 +2,37 @@
 
 @section('title', 'SEO & GEO — ' . $title . ' - ' . config('app.name'))
 
-@php
-    $localeFlags = [
-        'de' => '🇩🇪', 'fr' => '🇫🇷', 'pl' => '🇵🇱', 'el' => '🇬🇷',
-        'ru' => '🇷🇺', 'ar' => '🇸🇦', 'zh' => '🇨🇳', 'en' => '🇬🇧',
-        'es' => '🇪🇸', 'it' => '🇮🇹', 'pt' => '🇵🇹', 'ja' => '🇯🇵',
-    ];
-@endphp
-
 @section('panel')
-    <div id="mainPanel" class="main-panel d-flex align-items-center px-3 px-sm-4 py-2 border-bottom border-dark border-opacity-25 shadow-sm bg-white gap-3">
-        <div class="d-flex align-items-center" style="flex: 1 1 0; min-width: 0;">
-            <a href="{{ route('admin.seo-geo.index') }}" class="btn btn-sm btn-outline-secondary">
-                <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#arrow-left"/></svg>
-                Zurück
-            </a>
-        </div>
-        <div class="fs-4 lh-1 fw-semibold text-center" style="flex: 2 1 0; min-width: 0;">
+    <div id="mainPanel" class="main-panel d-flex flex-wrap align-items-center px-3 px-sm-4 py-2 border-bottom border-dark border-opacity-25 shadow-sm bg-white gap-2 gap-md-3">
+        <a href="{{ route('admin.seo-geo.index') }}" class="btn btn-sm btn-outline-secondary flex-shrink-0">
+            <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#arrow-left"/></svg>
+            Zurück
+        </a>
+        <div class="fs-5 lh-1 fw-semibold text-start text-truncate flex-grow-1" title="SEO &amp; GEO — {{ $title }}">
             SEO &amp; GEO — {{ $title }}
         </div>
-        <div class="d-flex align-items-center justify-content-end gap-3 overflow-x-auto" style="flex: 1 1 0; min-width: 0;">
-            <a href="{{ $editUrl }}" class="btn btn-sm btn-outline-secondary">
+        <div class="d-flex align-items-center flex-wrap justify-content-end gap-2">
+            <a href="{{ $editUrl }}" class="btn btn-sm btn-outline-secondary flex-shrink-0" title="Eintrag bearbeiten">
                 <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#pencil"/></svg>
-                Eintrag bearbeiten
+                Bearbeiten
             </a>
-            <button type="button" class="btn btn-sm btn-outline-info" id="btnLivePreview" title="Was steht aktuell auf der Live-Site?">
+            <button type="button" class="btn btn-sm btn-outline-info flex-shrink-0" id="btnLivePreview" title="Was steht aktuell auf der Live-Site?">
                 <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#globe"/></svg>
                 Live-Vorschau
             </button>
-            @if(!empty($searchConsoleUrls))
-                <div class="btn-group">
-                    <button type="button" class="btn btn-sm btn-outline-warning dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="In Google Search Console öffnen → 'Indexierung beantragen' klicken">
-                        <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#google"/></svg>
-                        Bei Google neu indexieren
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        @foreach($searchConsoleUrls as $locale => $scUrl)
-                            <li>
-                                <a class="dropdown-item" href="{{ $scUrl }}" target="_blank" rel="noopener">
-                                    {{ $localeFlags[$locale] ?? '' }} {{ strtoupper($locale) }}
-                                </a>
-                            </li>
-                        @endforeach
-                    </ul>
-                </div>
+            @if($canGoogleReindex)
+                <button type="button" class="btn btn-sm btn-outline-warning flex-shrink-0" id="btnGoogleReindex" title="Pingt alle Sprachen dieser Seite via Google Indexing API">
+                    <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#google"/></svg>
+                    Google reindex
+                </button>
             @endif
-            <button type="button" class="btn btn-sm btn-outline-primary" id="btnGenerate">
+            <button type="button" class="btn btn-sm btn-outline-primary flex-shrink-0" id="btnGenerate" title="Alle Felder neu generieren">
                 <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#stars"/></svg>
-                Alle Felder neu generieren
+                Alle generieren
             </button>
-            <button type="button" class="btn btn-sm btn-outline-secondary" id="btnTranslateFromEn">
+            <button type="button" class="btn btn-sm btn-outline-secondary flex-shrink-0" id="btnTranslateFromEn" title="Alle Felder von EN übersetzen">
                 <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#globe2"/></svg>
-                Alle Felder von EN übersetzen
+                Aus EN übersetzen
             </button>
         </div>
     </div>
@@ -71,6 +50,11 @@
                 'seo_description' => ['label' => 'META DESCRIPTION',             'maxLen' => 160, 'type' => 'textarea'],
                 'seo_keywords'    => ['label' => 'META KEYWORDS',                'maxLen' => null,'type' => 'input'],
                 'geo_text'        => ['label' => 'GEO TEXT (AI-ZITIERBARKEIT)', 'maxLen' => null,'type' => 'textarea'],
+            ];
+            $localeFlags = [
+                'de' => '🇩🇪', 'fr' => '🇫🇷', 'pl' => '🇵🇱', 'el' => '🇬🇷',
+                'ru' => '🇷🇺', 'ar' => '🇸🇦', 'zh' => '🇨🇳', 'en' => '🇬🇧',
+                'es' => '🇪🇸', 'it' => '🇮🇹', 'pt' => '🇵🇹', 'ja' => '🇯🇵',
             ];
         @endphp
 
@@ -210,6 +194,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const ID            = @json($modelId);
     const GENERATE_URL  = @json(route('admin.seo-geo.generate'));
     const SAVE_FIELD_URL= @json(route('admin.seo-geo.save-field'));
+    const GOOGLE_REINDEX_URL = @json(route('admin.seo-geo.google-reindex', ['type' => $type, 'id' => $modelId]));
     const CSRF          = document.querySelector('meta[name="csrf-token"]')?.content;
 
     // ── Auto-resize all textareas ─────────────────────────────────────────
@@ -622,6 +607,37 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('btnLivePreviewRefresh')?.addEventListener('click', () => loadLivePreview(true));
     document.getElementById('btnLivePreviewClose')?.addEventListener('click', () => {
         document.getElementById('livePreviewCard').style.display = 'none';
+    });
+
+    // ── Google reindex (single-click push of all locales via Indexing API) ─
+    document.getElementById('btnGoogleReindex')?.addEventListener('click', async () => {
+        const btn = document.getElementById('btnGoogleReindex');
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Pinge Google…';
+
+        try {
+            const res = await fetch(GOOGLE_REINDEX_URL, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' },
+            });
+            const data = await res.json();
+
+            if (data.status === 'success') {
+                showToast(`Google: ${data.submitted}/${data.urls_count} URL(s) gepingt` + (data.skipped ? ` (${data.skipped} Tagesquota)` : ''), 'bg-success');
+            } else if (data.status === 'not_configured') {
+                showToast('Google Indexing API nicht konfiguriert (siehe docs/google-search-console-setup.md)', 'bg-warning');
+            } else if (data.status === 'unsupported') {
+                showToast(data.message || 'Diese Seite hat keine öffentliche URL.', 'bg-warning');
+            } else {
+                showToast('Google reindex fehlgeschlagen: ' + (data.message || 'Unbekannter Fehler'), 'bg-danger');
+            }
+        } catch (e) {
+            showToast('Netzwerkfehler beim Google reindex: ' + e.message, 'bg-danger');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+        }
     });
 
     // ── Toast helper ──────────────────────────────────────────────────────

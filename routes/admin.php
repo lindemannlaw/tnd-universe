@@ -14,7 +14,7 @@ Route::get('/ui', [\App\Http\Controllers\Admin\UIController::class, 'index'])->n
 /* PROFILE */
 Route::group([
     'middleware' => [\Spatie\Permission\Middleware\RoleOrPermissionMiddleware::using([\App\Enums\RolesEnum::SUPERADMIN->value, \App\Enums\RolesEnum::ADMIN->value])],
-    'prefix' => 'profile'
+    'prefix' => 'profile',
 ], function () {
 
     Route::get('/', [\App\Http\Controllers\Admin\ProfileController::class, 'index'])->name('admin.profile');
@@ -25,7 +25,7 @@ Route::group([
 /* MANAGERS */
 Route::group([
     'middleware' => [\Spatie\Permission\Middleware\RoleOrPermissionMiddleware::using([\App\Enums\RolesEnum::SUPERADMIN->value, \App\Enums\RolesEnum::ADMIN->value])],
-    'prefix' => 'managers'
+    'prefix' => 'managers',
 ], function () {
 
     Route::get('/', [\App\Http\Controllers\Admin\ManagerController::class, 'index'])->name('admin.manager');
@@ -39,7 +39,7 @@ Route::group([
 });
 
 Route::group([
-    'middleware' => [\Spatie\Permission\Middleware\RoleOrPermissionMiddleware::using([\App\Enums\PermissionsEnum::CANALL->value])]
+    'middleware' => [\Spatie\Permission\Middleware\RoleOrPermissionMiddleware::using([\App\Enums\PermissionsEnum::CANALL->value])],
 ], function () {
 
     /* HOME */
@@ -176,7 +176,6 @@ Route::group([
 
         });
 
-
         Route::group(['prefix' => 'contact-us'], function () {
 
             Route::get('/', [\App\Http\Controllers\Admin\SiteSections\ContactUsSectionController::class, 'index'])->name('admin.site-sections.contact-us');
@@ -231,6 +230,7 @@ Route::group([
         Route::post('/apply', [\App\Http\Controllers\Admin\SeoGeoController::class, 'apply'])->name('admin.seo-geo.apply');
         Route::post('/save-field', [\App\Http\Controllers\Admin\SeoGeoController::class, 'saveField'])->name('admin.seo-geo.save-field');
         Route::post('/trigger-crawl', [\App\Http\Controllers\Admin\SeoGeoController::class, 'triggerCrawl'])->name('admin.seo-geo.trigger-crawl');
+        Route::post('/{type}/{id}/google-reindex', [\App\Http\Controllers\Admin\SeoGeoController::class, 'googleReindex'])->name('admin.seo-geo.google-reindex');
     });
 
     /* TRANSLATION CHECK */
@@ -242,13 +242,13 @@ Route::group([
 
     /* MEDIA */
     Route::group(['prefix' => 'media'], function () {
-        Route::get('/',                  [\App\Http\Controllers\Admin\MediaController::class, 'index'])->name('admin.media.index');
-        Route::get('/picker',            [\App\Http\Controllers\Admin\MediaController::class, 'picker'])->name('admin.media.picker');
-        Route::get('/picker/list',       [\App\Http\Controllers\Admin\MediaController::class, 'pickerList'])->name('admin.media.picker.list');
-        Route::post('/upload',           [\App\Http\Controllers\Admin\MediaController::class, 'upload'])->name('admin.media.upload');
-        Route::get('/{media}',           [\App\Http\Controllers\Admin\MediaController::class, 'show'])->name('admin.media.show');
-        Route::get('/{media}/download',  [\App\Http\Controllers\Admin\MediaController::class, 'download'])->name('admin.media.download');
-        Route::post('/{media}/replace',  [\App\Http\Controllers\Admin\MediaController::class, 'replace'])->name('admin.media.replace');
+        Route::get('/', [\App\Http\Controllers\Admin\MediaController::class, 'index'])->name('admin.media.index');
+        Route::get('/picker', [\App\Http\Controllers\Admin\MediaController::class, 'picker'])->name('admin.media.picker');
+        Route::get('/picker/list', [\App\Http\Controllers\Admin\MediaController::class, 'pickerList'])->name('admin.media.picker.list');
+        Route::post('/upload', [\App\Http\Controllers\Admin\MediaController::class, 'upload'])->name('admin.media.upload');
+        Route::get('/{media}', [\App\Http\Controllers\Admin\MediaController::class, 'show'])->name('admin.media.show');
+        Route::get('/{media}/download', [\App\Http\Controllers\Admin\MediaController::class, 'download'])->name('admin.media.download');
+        Route::post('/{media}/replace', [\App\Http\Controllers\Admin\MediaController::class, 'replace'])->name('admin.media.replace');
         Route::delete('/{media}/delete', [\App\Http\Controllers\Admin\MediaController::class, 'destroy'])->name('admin.media.delete');
     });
 

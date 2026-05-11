@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\DeepLTranslationService;
+use App\Services\GoogleIndexingApiService;
 use App\Services\IndexNowService;
 use App\Services\SeoGenerationService;
 use App\Services\SitemapGeneratorService;
@@ -24,6 +25,7 @@ class SeoGeoController extends Controller
         private DeepLTranslationService $deepl,
         private SitemapGeneratorService $sitemap,
         private IndexNowService $indexNow,
+        private GoogleIndexingApiService $googleIndexing,
     ) {}
 
     public function index(Request $request): View
@@ -148,18 +150,16 @@ class SeoGeoController extends Controller
             'locales' => $locales,
             'seoFields' => $seoFields,
             'editUrl' => $this->resolveEditUrl($type, $model),
-            'searchConsoleUrls' => $this->buildSearchConsoleUrls($type, $model, $locales),
+            'canGoogleReindex' => $this->resolvePublicPath($type, $model) !== null,
         ]);
     }
 
     /**
-     * Build Google Search Console URL Inspection links per locale so admins can
-     * one-click "Indexierung beantragen" for the public URL of a content row.
+     * Build all locale public URLs for a model (used by googleReindex).
      *
-     * @param  array<int, string>  $locales
-     * @return array<string, string> locale => SC inspection URL (empty when path is not public)
+     * @return array<string, string> locale => public URL
      */
-    private function buildSearchConsoleUrls(string $type, $model, array $locales): array
+    private function buildPublicUrlsForLocales(string $type, $model): array
     {
         $path = $this->resolvePublicPath($type, $model);
         if ($path === null) {
@@ -169,17 +169,10 @@ class SeoGeoController extends Controller
         $base = rtrim((string) config('app.url'), '/');
         $defaultLocale = (string) config('app.fallback_locale', 'en');
         $hideDefault = (bool) config('laravellocalization.hideDefaultLocaleInURL', true);
-        $resourceId = (string) config('services.google.search_console_resource_id', '');
-
-        if ($resourceId === '') {
-            return [];
-        }
 
         $urls = [];
-        foreach ($locales as $locale) {
-            $publicUrl = $this->buildLocalizedUrl($base, $path, $locale, $defaultLocale, $hideDefault);
-            $urls[$locale] = 'https://search.google.com/search-console/inspect?'
-                .http_build_query(['resource_id' => $resourceId, 'id' => $publicUrl]);
+        foreach (supported_languages_keys() as $locale) {
+            $urls[$locale] = $this->buildLocalizedUrl($base, $path, $locale, $defaultLocale, $hideDefault);
         }
 
         return $urls;
@@ -544,6 +537,37 @@ class SeoGeoController extends Controller
                 'message' => 'Sitemap-Cache geleert. '.count($urls).' URL(s) bereit.',
             ],
             'indexnow' => $indexNowResult,
+        ]);
+    }
+
+    /**
+     * Push all locale URLs of a single model to Google's Indexing API in one shot.
+     * No further user action required (no Search Console step).
+     */
+    public function googleReindex(string $type, int $id): JsonResponse
+    {
+        $model = $this->registry->resolveModel($type, $id);
+        if (! $model) {
+            return response()->json(['error' => 'Not found'], 404);
+        }
+
+        $urls = $this->buildPublicUrlsForLocales($type, $model);
+        if (empty($urls)) {
+            return response()->json([
+                'status' => 'unsupported',
+                'message' => 'Dieser Inhaltstyp hat keine direkte öffentliche URL.',
+            ], 422);
+        }
+
+        $result = $this->googleIndexing->submit(array_values($urls), 'URL_UPDATED');
+
+        return response()->json([
+            'status' => $result['status'],
+            'submitted' => $result['submitted'] ?? 0,
+            'skipped' => $result['skipped'] ?? 0,
+            'urls_count' => count($urls),
+            'locales' => array_keys($urls),
+            'message' => $result['message'] ?? '',
         ]);
     }
 }
