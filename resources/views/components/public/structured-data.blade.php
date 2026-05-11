@@ -41,6 +41,10 @@
         'publisher' => ['@id' => $siteUrl . '/#organization'],
     ];
 
+    $pageDateModified = isset($page) && is_object($page) && isset($page->updated_at)
+        ? optional($page->updated_at)->toAtomString()
+        : null;
+
     $graph[] = array_filter([
         '@type' => 'WebPage',
         '@id' => $currentUrl . '#webpage',
@@ -50,6 +54,7 @@
         'inLanguage' => $locale,
         'isPartOf' => ['@id' => $siteUrl . '/#website'],
         'about' => ['@id' => $siteUrl . '/#organization'],
+        'dateModified' => $pageDateModified,
     ]);
 
     if (! $isHome && isset($page)) {
@@ -81,18 +86,51 @@
         && filled($page->lat)
         && filled($page->lon)
     ) {
-        $heroImageUrl = null;
+        // Collect images: hero first, then gallery. lg-webp preferred,
+        // raw URL as fallback. Deduplicated, hero stays first.
+        $images = [];
         try {
-            $heroImageUrl = $page->getFirstMediaUrl($page->mediaHero, 'lg-webp')
+            $hero = $page->getFirstMediaUrl($page->mediaHero, 'lg-webp')
                 ?: $page->getFirstMediaUrl($page->mediaHero);
-        } catch (\Throwable $e) {
-            $heroImageUrl = null;
-        }
+            if (filled($hero)) $images[] = $hero;
+        } catch (\Throwable $e) {}
+
+        try {
+            foreach ($page->getMedia($page->mediaGallery ?? 'gallery') as $media) {
+                $url = $media->getFullUrl('lg-webp') ?: $media->getFullUrl();
+                if (filled($url)) $images[] = $url;
+            }
+        } catch (\Throwable $e) {}
+
+        $images = array_values(array_unique($images));
+        $heroImageUrl = $images[0] ?? null;
 
         $rawLocality = is_string($page->location) ? $page->location : null;
         $addressLocality = $rawLocality
             ? trim(rtrim(explode(',', $rawLocality, 2)[0], " \t\n\r\0\x0B."))
             : null;
+
+        // floorSize: parse digits from $page->area (e.g. "470 m²" → 470).
+        $floorSize = null;
+        if (filled($page->area ?? null) && preg_match('/(\d+(?:[.,]\d+)?)/', (string) $page->area, $mm)) {
+            $floorSize = [
+                '@type' => 'QuantitativeValue',
+                'value' => (float) str_replace(',', '.', $mm[1]),
+                'unitCode' => 'MTK', // square meters (UN/CEFACT)
+                'unitText' => 'm²',
+            ];
+        }
+
+        // numberOfRooms: peek into translatable property_details for a "bedrooms" key,
+        // falling back to "rooms" if present. Empty if neither is set.
+        $numberOfRooms = null;
+        $details = is_array($page->property_details ?? null) ? $page->property_details : [];
+        foreach (['bedrooms', 'rooms', 'number_of_rooms'] as $k) {
+            if (! empty($details[$k]) && preg_match('/(\d+)/', (string) $details[$k], $mm)) {
+                $numberOfRooms = (int) $mm[1];
+                break;
+            }
+        }
 
         $residence = array_filter([
             '@type' => 'SingleFamilyResidence',
@@ -100,7 +138,7 @@
             'name' => (string) $page->title,
             'description' => $pageDescription,
             'url' => $currentUrl,
-            'image' => $heroImageUrl ?: null,
+            'image' => count($images) > 1 ? $images : ($heroImageUrl ?: null),
             'address' => array_filter([
                 '@type' => 'PostalAddress',
                 'addressLocality' => $addressLocality,
@@ -111,6 +149,8 @@
                 'latitude' => rtrim(rtrim(sprintf('%.7F', (float) $page->lat), '0'), '.'),
                 'longitude' => rtrim(rtrim(sprintf('%.7F', (float) $page->lon), '0'), '.'),
             ],
+            'floorSize' => $floorSize,
+            'numberOfRooms' => $numberOfRooms,
         ]);
 
         $graph[] = $residence;
@@ -121,9 +161,15 @@
             'url' => $currentUrl,
             'name' => (string) $page->title,
             'description' => $pageDescription,
-            'image' => $heroImageUrl ?: null,
+            'image' => count($images) > 1 ? $images : ($heroImageUrl ?: null),
             'about' => ['@id' => $currentUrl . '#residence'],
             'datePosted' => optional($page->created_at)->toAtomString(),
+            'dateModified' => $pageDateModified,
+            'offers' => [
+                '@type' => 'Offer',
+                'availability' => 'https://schema.org/InStock',
+                'url' => $currentUrl,
+            ],
         ]);
     }
 
