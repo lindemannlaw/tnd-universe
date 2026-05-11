@@ -39,7 +39,7 @@
                 <x-admin.tabs.nav-item
                     :is-active="true"
                     :target="'seo-pane'"
-                    :title="__('admin.seo')"
+                    :title="'Hero / URL / Titel'"
                 />
 
                 <x-admin.tabs.nav-item
