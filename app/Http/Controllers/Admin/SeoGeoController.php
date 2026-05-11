@@ -140,6 +140,13 @@ class SeoGeoController extends Controller
             return response()->json(['fields' => $fields, 'title' => $title]);
         }
 
+        $hasGeoColumns = $this->modelHasGeoCoords($model);
+        $geo = [
+            'lat' => $hasGeoColumns ? ($model->lat ?? '') : '',
+            'lon' => $hasGeoColumns ? ($model->lon ?? '') : '',
+            'geo_region' => $hasGeoColumns ? ($model->geo_region ?? '') : '',
+        ];
+
         return view('admin.seo-geo.show', [
             'model' => $model,
             'type' => $type,
@@ -151,7 +158,17 @@ class SeoGeoController extends Controller
             'seoFields' => $seoFields,
             'editUrl' => $this->resolveEditUrl($type, $model),
             'canGoogleReindex' => $this->resolvePublicPath($type, $model) !== null,
+            'geo' => $geo,
+            'hasGeoColumns' => $hasGeoColumns,
         ]);
+    }
+
+    private function modelHasGeoCoords($model): bool
+    {
+        $fillable = method_exists($model, 'getFillable') ? $model->getFillable() : [];
+        return in_array('lat', $fillable, true)
+            && in_array('lon', $fillable, true)
+            && in_array('geo_region', $fillable, true);
     }
 
     /**
@@ -275,6 +292,47 @@ class SeoGeoController extends Controller
         } catch (\Throwable $e) {
             DB::rollBack();
             Log::error('[SeoGeo] saveField failed', ['message' => $e->getMessage()]);
+
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function saveGeo(Request $request): JsonResponse
+    {
+        $request->validate([
+            'type' => 'required|string',
+            'id' => 'required|integer',
+            'lat' => 'nullable|numeric|between:-90,90',
+            'lon' => 'nullable|numeric|between:-180,180',
+            'geo_region' => 'nullable|string|max:8',
+        ]);
+
+        $model = $this->registry->resolveModel($request->type, $request->id);
+        if (! $model) {
+            return response()->json(['error' => 'Not found'], 404);
+        }
+
+        $fillable = method_exists($model, 'getFillable') ? $model->getFillable() : [];
+
+        try {
+            foreach (['lat', 'lon', 'geo_region'] as $col) {
+                if (in_array($col, $fillable, true) || $model->getConnection()->getSchemaBuilder()->hasColumn($model->getTable(), $col)) {
+                    $value = $request->input($col);
+                    $model->{$col} = ($value === '' || $value === null) ? null : $value;
+                }
+            }
+            $model->save();
+
+            return response()->json([
+                'success' => true,
+                'values' => [
+                    'lat' => $model->lat,
+                    'lon' => $model->lon,
+                    'geo_region' => $model->geo_region,
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('[SeoGeo] saveGeo failed', ['message' => $e->getMessage()]);
 
             return response()->json(['error' => $e->getMessage()], 500);
         }

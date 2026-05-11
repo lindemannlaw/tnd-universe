@@ -22,6 +22,9 @@ class NewsCategory extends Model
         'seo_description',
         'seo_keywords',
         'geo_text',
+        'lat',
+        'lon',
+        'geo_region',
 
         'active',
         'sort',
