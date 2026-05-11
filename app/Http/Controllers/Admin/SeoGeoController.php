@@ -297,6 +297,55 @@ class SeoGeoController extends Controller
         }
     }
 
+    public function geocode(Request $request): JsonResponse
+    {
+        $request->validate([
+            'query' => 'required|string|min:2|max:500',
+        ]);
+
+        try {
+            $response = Http::withHeaders([
+                'User-Agent' => 'TND-Universe-Admin/1.0 (+'.config('app.url').')',
+                'Accept' => 'application/json',
+            ])
+                ->timeout(10)
+                ->get('https://nominatim.openstreetmap.org/search', [
+                    'q' => $request->input('query'),
+                    'format' => 'json',
+                    'limit' => 1,
+                    'addressdetails' => 1,
+                ]);
+
+            if (! $response->successful()) {
+                return response()->json([
+                    'error' => 'Geocoding service returned HTTP '.$response->status(),
+                ], 502);
+            }
+
+            $results = $response->json();
+            if (! is_array($results) || empty($results)) {
+                return response()->json([
+                    'found' => false,
+                    'message' => 'No location matched. Try a clearer query (city, country).',
+                ]);
+            }
+
+            $first = $results[0];
+            $countryCode = strtoupper((string) ($first['address']['country_code'] ?? ''));
+
+            return response()->json([
+                'found' => true,
+                'lat' => (float) $first['lat'],
+                'lon' => (float) $first['lon'],
+                'geo_region' => $countryCode ?: null,
+                'display_name' => $first['display_name'] ?? null,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('[SeoGeo] geocode failed', ['message' => $e->getMessage()]);
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
     public function saveGeo(Request $request): JsonResponse
     {
         $request->validate([
