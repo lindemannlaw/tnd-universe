@@ -42,3 +42,6 @@ composer.phar
 # Lokale SQL-Dumps / Release-Artefakte (nicht ins Repo)
 /live.sql
 /release-*.tar.gz
+
+# Google Indexing API service-account credentials (deploy manually, never commit)
+/storage/app/google-indexing-credentials.json

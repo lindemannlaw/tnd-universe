@@ -2,6 +2,14 @@
 
 @section('title', 'SEO & GEO — ' . $title . ' - ' . config('app.name'))
 
+@php
+    $localeFlags = [
+        'de' => '🇩🇪', 'fr' => '🇫🇷', 'pl' => '🇵🇱', 'el' => '🇬🇷',
+        'ru' => '🇷🇺', 'ar' => '🇸🇦', 'zh' => '🇨🇳', 'en' => '🇬🇧',
+        'es' => '🇪🇸', 'it' => '🇮🇹', 'pt' => '🇵🇹', 'ja' => '🇯🇵',
+    ];
+@endphp
+
 @section('panel')
     <div id="mainPanel" class="main-panel d-flex align-items-center px-3 px-sm-4 py-2 border-bottom border-dark border-opacity-25 shadow-sm bg-white gap-3">
         <div class="d-flex align-items-center" style="flex: 1 1 0; min-width: 0;">
@@ -22,6 +30,23 @@
                 <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#globe"/></svg>
                 Live-Vorschau
             </button>
+            @if(!empty($searchConsoleUrls))
+                <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-outline-warning dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="In Google Search Console öffnen → 'Indexierung beantragen' klicken">
+                        <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#google"/></svg>
+                        Bei Google neu indexieren
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        @foreach($searchConsoleUrls as $locale => $scUrl)
+                            <li>
+                                <a class="dropdown-item" href="{{ $scUrl }}" target="_blank" rel="noopener">
+                                    {{ $localeFlags[$locale] ?? '' }} {{ strtoupper($locale) }}
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
             <button type="button" class="btn btn-sm btn-outline-primary" id="btnGenerate">
                 <svg class="bi" width="16" height="16" fill="currentColor"><use xlink:href="/img/icons/bootstrap-icons.svg#stars"/></svg>
                 Alle Felder neu generieren
@@ -46,11 +71,6 @@
                 'seo_description' => ['label' => 'META DESCRIPTION',             'maxLen' => 160, 'type' => 'textarea'],
                 'seo_keywords'    => ['label' => 'META KEYWORDS',                'maxLen' => null,'type' => 'input'],
                 'geo_text'        => ['label' => 'GEO TEXT (AI-ZITIERBARKEIT)', 'maxLen' => null,'type' => 'textarea'],
-            ];
-            $localeFlags = [
-                'de' => '🇩🇪', 'fr' => '🇫🇷', 'pl' => '🇵🇱', 'el' => '🇬🇷',
-                'ru' => '🇷🇺', 'ar' => '🇸🇦', 'zh' => '🇨🇳', 'en' => '🇬🇧',
-                'es' => '🇪🇸', 'it' => '🇮🇹', 'pt' => '🇵🇹', 'ja' => '🇯🇵',
             ];
         @endphp
 

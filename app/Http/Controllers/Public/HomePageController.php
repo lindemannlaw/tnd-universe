@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Public\Concerns\EmitsSeoHeaders;
 use App\Models\NewsArticle;
 use App\Models\NewsCategory;
 use App\Models\Page;
@@ -10,11 +11,15 @@ use App\Models\Project;
 use App\Models\ServiceCategory;
 use App\Models\SiteSection;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Response;
 use Illuminate\View\View;
 
 class HomePageController extends Controller
 {
-    public function index(): View|RedirectResponse {
+    use EmitsSeoHeaders;
+
+    public function index(): Response|View|RedirectResponse
+    {
         if ($redirect = static_page_canonical_redirect('home')) {
             return $redirect;
         }
@@ -31,6 +36,10 @@ class HomePageController extends Controller
         $whoWeAreSection = SiteSection::where('slug', 'who-we-are')->first();
         $contactUsSection = SiteSection::where('slug', 'contact-us')->first();
 
-        return view('public.pages.home', compact('page', 'serviceCategories', 'projects', 'newsCategories', 'newsArticles', 'whoWeAreSection', 'contactUsSection'));
+        return $this->seoResponse(
+            'public.pages.home',
+            compact('page', 'serviceCategories', 'projects', 'newsCategories', 'newsArticles', 'whoWeAreSection', 'contactUsSection'),
+            $page?->updated_at,
+        );
     }
 }

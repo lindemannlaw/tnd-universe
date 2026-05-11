@@ -3,14 +3,18 @@
 namespace App\Http\Controllers\Public\Services;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Public\Concerns\EmitsSeoHeaders;
 use App\Models\Service;
 use App\Models\SiteSection;
-use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\View\View;
 
 class ServicePageController extends Controller
 {
-    public function index(Service $service): View {
+    use EmitsSeoHeaders;
+
+    public function index(Service $service): Response|View
+    {
         $page = $service;
         $info = [
             [
@@ -44,6 +48,10 @@ class ServicePageController extends Controller
         ];
         $contactUsSection = SiteSection::where('slug', 'contact-us')->first();
 
-        return view('public.pages.services.service', compact('page', 'service', 'info', 'contactUsSection'));
+        return $this->seoResponse(
+            'public.pages.services.service',
+            compact('page', 'service', 'info', 'contactUsSection'),
+            $service->updated_at,
+        );
     }
 }

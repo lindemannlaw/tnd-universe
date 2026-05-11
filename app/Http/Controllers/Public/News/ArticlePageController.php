@@ -3,14 +3,17 @@
 namespace App\Http\Controllers\Public\News;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Public\Concerns\EmitsSeoHeaders;
 use App\Models\NewsArticle;
-use App\Models\Page;
-use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\View\View;
 
 class ArticlePageController extends Controller
 {
-    public function index(NewsArticle $newsArticle): View {
+    use EmitsSeoHeaders;
+
+    public function index(NewsArticle $newsArticle): Response|View
+    {
 
         $relatedArticles = NewsArticle::query()
             ->whereKeyNot($newsArticle->id)
@@ -19,9 +22,13 @@ class ArticlePageController extends Controller
             ->limit(4)
             ->get();
 
-        return view('public.pages.news.article', [
-            'article' => $newsArticle,
-            'relatedArticles' => $relatedArticles,
-        ]);
+        return $this->seoResponse(
+            'public.pages.news.article',
+            [
+                'article' => $newsArticle,
+                'relatedArticles' => $relatedArticles,
+            ],
+            $newsArticle->updated_at,
+        );
     }
 }

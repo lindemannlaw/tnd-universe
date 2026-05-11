@@ -32,10 +32,10 @@ class SeoGeoController extends Controller
         $seoFields = TranslatableModelRegistry::SEO_FIELDS;
         $totalSlots = count($seoFields) * count($locales);
 
-        $typeFilter   = $request->get('type', 'all');
-        $rawStatus    = $request->get('status', 'all');
+        $typeFilter = $request->get('type', 'all');
+        $rawStatus = $request->get('status', 'all');
         $statusFilter = is_array($rawStatus) ? array_values($rawStatus) : [$rawStatus];
-        $idFilter     = $request->get('id', null);
+        $idFilter = $request->get('id', null);
 
         $allItems = $this->registry->allSeoItems();
 
@@ -47,7 +47,9 @@ class SeoGeoController extends Controller
             foreach ($seoFields as $field) {
                 foreach ($locales as $locale) {
                     $val = $item['model']->getTranslation($field, $locale, false);
-                    if (filled($val)) $filled++;
+                    if (filled($val)) {
+                        $filled++;
+                    }
                 }
                 // Preview the default locale value
                 $seoPreview[$field] = $item['model']->getTranslation($field, config('app.fallback_locale'), false) ?: '';
@@ -58,9 +60,13 @@ class SeoGeoController extends Controller
             $item['percent'] = $totalSlots > 0 ? (int) round($filled / $totalSlots * 100) : 0;
             $item['seo'] = $seoPreview;
 
-            if ($item['percent'] === 100) $item['status'] = 'complete';
-            elseif ($item['percent'] === 0) $item['status'] = 'empty';
-            else $item['status'] = 'partial';
+            if ($item['percent'] === 100) {
+                $item['status'] = 'complete';
+            } elseif ($item['percent'] === 0) {
+                $item['status'] = 'empty';
+            } else {
+                $item['status'] = 'partial';
+            }
 
             return $item;
         }, $allItems);
@@ -72,7 +78,7 @@ class SeoGeoController extends Controller
         if ($idFilter) {
             $items = array_filter($items, fn ($i) => $i['id'] == $idFilter);
         }
-        if (!in_array('all', $statusFilter)) {
+        if (! in_array('all', $statusFilter)) {
             $items = array_values(array_filter($items, fn ($i) => in_array($i['status'], $statusFilter)));
         }
 
@@ -92,24 +98,26 @@ class SeoGeoController extends Controller
             ->pluck('id', 'slug')->all();
 
         return view('admin.seo-geo.index', [
-            'items'        => array_values($items),
-            'types'        => $types,
-            'typeFilter'   => $typeFilter,
-            'idFilter'     => $idFilter,
+            'items' => array_values($items),
+            'types' => $types,
+            'typeFilter' => $typeFilter,
+            'idFilter' => $idFilter,
             'statusFilter' => $statusFilter,
-            'complete'     => $complete,
-            'partial'      => $partial,
-            'empty'        => $empty,
-            'total'        => count($allItems),
-            'navPages'     => $navPages,
-            'navSections'  => $navSections,
+            'complete' => $complete,
+            'partial' => $partial,
+            'empty' => $empty,
+            'total' => count($allItems),
+            'navPages' => $navPages,
+            'navSections' => $navSections,
         ]);
     }
 
     public function show(Request $request, string $type, int $id): View|JsonResponse
     {
         $model = $this->registry->resolveModel($type, $id);
-        if (!$model) abort(404);
+        if (! $model) {
+            abort(404);
+        }
 
         $meta = $this->registry->resolve($type);
         $locales = supported_languages_keys();
@@ -131,28 +139,64 @@ class SeoGeoController extends Controller
         }
 
         return view('admin.seo-geo.show', [
-            'model'    => $model,
-            'type'     => $type,
+            'model' => $model,
+            'type' => $type,
             'typeLabel' => $this->registry->label($type),
-            'modelId'  => $id,
-            'title'    => $title,
-            'fields'   => $fields,
-            'locales'  => $locales,
+            'modelId' => $id,
+            'title' => $title,
+            'fields' => $fields,
+            'locales' => $locales,
             'seoFields' => $seoFields,
-            'editUrl'  => $this->resolveEditUrl($type, $model),
+            'editUrl' => $this->resolveEditUrl($type, $model),
+            'searchConsoleUrls' => $this->buildSearchConsoleUrls($type, $model, $locales),
         ]);
+    }
+
+    /**
+     * Build Google Search Console URL Inspection links per locale so admins can
+     * one-click "Indexierung beantragen" for the public URL of a content row.
+     *
+     * @param  array<int, string>  $locales
+     * @return array<string, string> locale => SC inspection URL (empty when path is not public)
+     */
+    private function buildSearchConsoleUrls(string $type, $model, array $locales): array
+    {
+        $path = $this->resolvePublicPath($type, $model);
+        if ($path === null) {
+            return [];
+        }
+
+        $base = rtrim((string) config('app.url'), '/');
+        $defaultLocale = (string) config('app.fallback_locale', 'en');
+        $hideDefault = (bool) config('laravellocalization.hideDefaultLocaleInURL', true);
+        $resourceId = (string) config('services.google.search_console_resource_id', '');
+
+        if ($resourceId === '') {
+            return [];
+        }
+
+        $urls = [];
+        foreach ($locales as $locale) {
+            $publicUrl = $this->buildLocalizedUrl($base, $path, $locale, $defaultLocale, $hideDefault);
+            $urls[$locale] = 'https://search.google.com/search-console/inspect?'
+                .http_build_query(['resource_id' => $resourceId, 'id' => $publicUrl]);
+        }
+
+        return $urls;
     }
 
     public function generate(Request $request): JsonResponse
     {
         $request->validate([
-            'type'   => 'required|string',
-            'id'     => 'required|integer',
+            'type' => 'required|string',
+            'id' => 'required|integer',
             'locale' => 'required|string|max:5',
         ]);
 
         $model = $this->registry->resolveModel($request->type, $request->id);
-        if (!$model) return response()->json(['error' => 'Not found'], 404);
+        if (! $model) {
+            return response()->json(['error' => 'Not found'], 404);
+        }
 
         $meta = $this->registry->resolve($request->type);
         $locale = $request->locale;
@@ -170,10 +214,10 @@ class SeoGeoController extends Controller
         };
 
         $context = [
-            'title'             => $model->getTranslation($meta['titleField'], $locale, false)
+            'title' => $model->getTranslation($meta['titleField'], $locale, false)
                                    ?: $model->getTranslation($meta['titleField'], 'en', false),
             'short_description' => in_array('short_description', $translatables) ? $getT('short_description') : '',
-            'location'          => in_array('location', $translatables)          ? $getT('location')          : '',
+            'location' => in_array('location', $translatables) ? $getT('location') : '',
         ];
 
         // Add property details for projects
@@ -193,20 +237,22 @@ class SeoGeoController extends Controller
     public function saveField(Request $request): JsonResponse
     {
         $request->validate([
-            'type'      => 'required|string',
-            'id'        => 'required|integer',
-            'field'     => ['required', 'string', \Illuminate\Validation\Rule::in(TranslatableModelRegistry::SEO_FIELDS)],
-            'locale'    => 'required|string|max:5',
-            'value'     => 'nullable|string',
+            'type' => 'required|string',
+            'id' => 'required|integer',
+            'field' => ['required', 'string', \Illuminate\Validation\Rule::in(TranslatableModelRegistry::SEO_FIELDS)],
+            'locale' => 'required|string|max:5',
+            'value' => 'nullable|string',
             'translate' => 'sometimes|boolean',
         ]);
 
         $model = $this->registry->resolveModel($request->type, $request->id);
-        if (!$model) return response()->json(['error' => 'Not found'], 404);
+        if (! $model) {
+            return response()->json(['error' => 'Not found'], 404);
+        }
 
-        $field     = $request->field;
-        $locale    = $request->locale;
-        $value     = $request->value ?? '';
+        $field = $request->field;
+        $locale = $request->locale;
+        $value = $request->value ?? '';
         $translate = (bool) $request->input('translate', false);
 
         try {
@@ -216,8 +262,8 @@ class SeoGeoController extends Controller
             $translations = [$locale => $value];
 
             if ($translate && $this->deepl->isConfigured() && filled($value)) {
-                $allLocales   = supported_languages_keys();
-                $otherLocales = array_values(array_filter($allLocales, fn($l) => $l !== $locale));
+                $allLocales = supported_languages_keys();
+                $otherLocales = array_values(array_filter($allLocales, fn ($l) => $l !== $locale));
                 $items = [['text' => $value, 'isHtml' => false]];
 
                 foreach ($otherLocales as $targetLang) {
@@ -236,6 +282,7 @@ class SeoGeoController extends Controller
         } catch (\Throwable $e) {
             DB::rollBack();
             Log::error('[SeoGeo] saveField failed', ['message' => $e->getMessage()]);
+
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
@@ -243,14 +290,16 @@ class SeoGeoController extends Controller
     public function apply(Request $request): JsonResponse
     {
         $request->validate([
-            'type'    => 'required|string',
-            'id'      => 'required|integer',
-            'locale'  => 'required|string|max:5',
-            'fields'  => 'required|array',
+            'type' => 'required|string',
+            'id' => 'required|integer',
+            'locale' => 'required|string|max:5',
+            'fields' => 'required|array',
         ]);
 
         $model = $this->registry->resolveModel($request->type, $request->id);
-        if (!$model) return response()->json(['error' => 'Not found'], 404);
+        if (! $model) {
+            return response()->json(['error' => 'Not found'], 404);
+        }
 
         $sourceLang = $request->locale;
         $allLocales = supported_languages_keys();
@@ -267,7 +316,7 @@ class SeoGeoController extends Controller
             }
 
             // Translate to all other languages via DeepL
-            if ($this->deepl->isConfigured() && !empty($otherLocales)) {
+            if ($this->deepl->isConfigured() && ! empty($otherLocales)) {
                 $sourceTexts = [];
                 $fieldOrder = [];
                 foreach ($request->fields as $field => $value) {
@@ -295,6 +344,7 @@ class SeoGeoController extends Controller
         } catch (\Throwable $e) {
             DB::rollBack();
             Log::error('[SeoGeo] Apply failed', ['message' => $e->getMessage()]);
+
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
@@ -302,31 +352,31 @@ class SeoGeoController extends Controller
     private function resolveEditUrl(string $type, $model): string
     {
         return match ($type) {
-            'project'          => route('admin.portfolio.projects',  ['edit' => $model->id]),
-            'service'          => route('admin.services.services',   ['edit' => $model->id]),
+            'project' => route('admin.portfolio.projects', ['edit' => $model->id]),
+            'service' => route('admin.services.services', ['edit' => $model->id]),
             'service_category' => route('admin.services.categories', ['edit' => $model->id]),
-            'news_article'     => route('admin.news.articles',       ['edit' => $model->id]),
-            'news_category'    => route('admin.news.categories',     ['edit' => $model->id]),
-            'page'             => $this->resolvePageEditUrl($model),
-            default            => route('admin.seo-geo.index'),
+            'news_article' => route('admin.news.articles', ['edit' => $model->id]),
+            'news_category' => route('admin.news.categories', ['edit' => $model->id]),
+            'page' => $this->resolvePageEditUrl($model),
+            default => route('admin.seo-geo.index'),
         };
     }
 
     private function resolvePageEditUrl($model): string
     {
         $slugRouteMap = [
-            'home'           => 'admin.home.page',
-            'about'          => 'admin.about.page',
-            'contacts'       => 'admin.contacts.page',
-            'imprint'        => 'admin.imprint.page',
+            'home' => 'admin.home.page',
+            'about' => 'admin.about.page',
+            'contacts' => 'admin.contacts.page',
+            'imprint' => 'admin.imprint.page',
             'privacy-notice' => 'admin.privacy-notice.page',
-            'terms-of-use'   => 'admin.terms-of-use.page',
-            'services'       => 'admin.services.page',
-            'portfolio'      => 'admin.portfolio.page',
-            'news'           => 'admin.news.page',
+            'terms-of-use' => 'admin.terms-of-use.page',
+            'services' => 'admin.services.page',
+            'portfolio' => 'admin.portfolio.page',
+            'news' => 'admin.news.page',
         ];
 
-        $slug      = $model->slug ?? '';
+        $slug = $model->slug ?? '';
         $routeName = $slugRouteMap[$slug] ?? null;
 
         return $routeName && \Illuminate\Support\Facades\Route::has($routeName)
@@ -339,18 +389,27 @@ class SeoGeoController extends Controller
         $filled = 0;
         foreach ($seoFields as $field) {
             foreach ($locales as $locale) {
-                if (filled($item['model']->getTranslation($field, $locale, false))) $filled++;
+                if (filled($item['model']->getTranslation($field, $locale, false))) {
+                    $filled++;
+                }
             }
         }
-        if ($filled === $totalSlots) return 'complete';
-        if ($filled === 0) return 'empty';
+        if ($filled === $totalSlots) {
+            return 'complete';
+        }
+        if ($filled === 0) {
+            return 'empty';
+        }
+
         return 'partial';
     }
 
     public function livePreview(Request $request, string $type, int $id, ?string $refresh = null): JsonResponse
     {
         $model = $this->registry->resolveModel($type, $id);
-        if (!$model) return response()->json(['error' => 'Not found'], 404);
+        if (! $model) {
+            return response()->json(['error' => 'Not found'], 404);
+        }
 
         $path = $this->resolvePublicPath($type, $model);
         if ($path === null) {
@@ -360,28 +419,30 @@ class SeoGeoController extends Controller
             ]);
         }
 
-        $base          = rtrim((string) config('app.url'), '/');
+        $base = rtrim((string) config('app.url'), '/');
         $defaultLocale = (string) config('app.fallback_locale', 'en');
-        $hideDefault   = (bool) config('laravellocalization.hideDefaultLocaleInURL', true);
-        $locales       = supported_languages_keys();
-        $force         = $request->boolean('refresh');
+        $hideDefault = (bool) config('laravellocalization.hideDefaultLocaleInURL', true);
+        $locales = supported_languages_keys();
+        $force = $request->boolean('refresh');
 
         $results = [];
         foreach ($locales as $locale) {
-            $url      = $this->buildLocalizedUrl($base, $path, $locale, $defaultLocale, $hideDefault);
-            $cacheKey = 'seo:live-preview:' . md5($url);
+            $url = $this->buildLocalizedUrl($base, $path, $locale, $defaultLocale, $hideDefault);
+            $cacheKey = 'seo:live-preview:'.md5($url);
 
-            if ($force) Cache::forget($cacheKey);
+            if ($force) {
+                Cache::forget($cacheKey);
+            }
 
             $data = Cache::remember($cacheKey, 60, function () use ($url) {
                 try {
                     $response = Http::withHeaders([
                         'User-Agent' => 'TNDBackofficeBot/1.0 (+https://tnduniverse.com)',
-                        'Accept'     => 'text/html,application/xhtml+xml',
+                        'Accept' => 'text/html,application/xhtml+xml',
                     ])->timeout(10)->get($url);
 
-                    $html        = (string) $response->body();
-                    $title       = null;
+                    $html = (string) $response->body();
+                    $title = null;
                     $description = null;
 
                     if (preg_match('/<title[^>]*>(.*?)<\/title>/is', $html, $m)) {
@@ -398,19 +459,19 @@ class SeoGeoController extends Controller
                     }
 
                     return [
-                        'status'      => $response->status(),
-                        'title'       => $title,
+                        'status' => $response->status(),
+                        'title' => $title,
                         'description' => $description,
-                        'fetched_at'  => now()->toIso8601String(),
-                        'error'       => null,
+                        'fetched_at' => now()->toIso8601String(),
+                        'error' => null,
                     ];
                 } catch (\Throwable $e) {
                     return [
-                        'status'      => 0,
-                        'title'       => null,
+                        'status' => 0,
+                        'title' => null,
                         'description' => null,
-                        'fetched_at'  => now()->toIso8601String(),
-                        'error'       => $e->getMessage(),
+                        'fetched_at' => now()->toIso8601String(),
+                        'error' => $e->getMessage(),
                     ];
                 }
             });
@@ -420,7 +481,7 @@ class SeoGeoController extends Controller
 
         return response()->json([
             'supported' => true,
-            'results'   => $results,
+            'results' => $results,
         ]);
     }
 
@@ -428,36 +489,39 @@ class SeoGeoController extends Controller
     {
         return match ($type) {
             'page' => $this->resolvePagePath($model->slug ?? ''),
-            'project'      => filled($model->slug ?? null) ? '/portfolio/' . $model->slug : null,
-            'service'      => filled($model->slug ?? null) ? '/services/'  . $model->slug : null,
-            'news_article' => filled($model->slug ?? null) ? '/news/'      . $model->slug : null,
-            default        => null,
+            'project' => filled($model->slug ?? null) ? '/portfolio/'.$model->slug : null,
+            'service' => filled($model->slug ?? null) ? '/services/'.$model->slug : null,
+            'news_article' => filled($model->slug ?? null) ? '/news/'.$model->slug : null,
+            default => null,
         };
     }
 
     private function resolvePagePath(string $slug): ?string
     {
-        if ($slug === '') return null;
+        if ($slug === '') {
+            return null;
+        }
 
         if (in_array($slug, static_page_editable_slugs(), true)) {
             return static_page_url($slug);
         }
 
         return match ($slug) {
-            'home'                                => '/',
+            'home' => '/',
             'about', 'services', 'portfolio',
             'news', 'contacts', 'imprint',
-            'privacy-notice', 'terms-of-use'      => '/' . $slug,
-            default                               => null,
+            'privacy-notice', 'terms-of-use' => '/'.$slug,
+            default => null,
         };
     }
 
     private function buildLocalizedUrl(string $base, string $path, string $locale, string $defaultLocale, bool $hideDefault): string
     {
         if ($locale === $defaultLocale && $hideDefault) {
-            return $path === '/' ? $base . '/' : $base . $path;
+            return $path === '/' ? $base.'/' : $base.$path;
         }
-        return $path === '/' ? $base . '/' . $locale : $base . '/' . $locale . $path;
+
+        return $path === '/' ? $base.'/'.$locale : $base.'/'.$locale.$path;
     }
 
     public function triggerCrawl(): JsonResponse
@@ -467,17 +531,17 @@ class SeoGeoController extends Controller
             Cache::forget("sitemap:{$type}");
         }
 
-        $sitemapUrl = rtrim((string) config('app.url'), '/') . '/sitemap.xml';
+        $sitemapUrl = rtrim((string) config('app.url'), '/').'/sitemap.xml';
 
-        $urls           = $this->sitemap->allPublicUrls();
+        $urls = $this->sitemap->allPublicUrls();
         $indexNowResult = $this->indexNow->submit($urls);
 
         return response()->json([
             'sitemap' => [
-                'status'     => 'success',
-                'url'        => $sitemapUrl,
+                'status' => 'success',
+                'url' => $sitemapUrl,
                 'urls_count' => count($urls),
-                'message'    => 'Sitemap-Cache geleert. ' . count($urls) . ' URL(s) bereit.',
+                'message' => 'Sitemap-Cache geleert. '.count($urls).' URL(s) bereit.',
             ],
             'indexnow' => $indexNowResult,
         ]);

@@ -40,7 +40,7 @@ return [
     ],
 
     'openai' => [
-        'api_key'   => env('OPENAI_API_KEY', ''),
+        'api_key' => env('OPENAI_API_KEY', ''),
         'seo_model' => env('OPENAI_SEO_MODEL', 'gpt-4o-mini'),
     ],
 
@@ -50,8 +50,17 @@ return [
     ],
 
     'indexnow' => [
-        'key'  => env('INDEXNOW_KEY'),
+        'key' => env('INDEXNOW_KEY'),
         'host' => env('INDEXNOW_HOST', 'tnduniverse.com'),
+    ],
+
+    'google' => [
+        'search_console_resource_id' => env('GOOGLE_SC_RESOURCE_ID', 'sc-domain:tnduniverse.com'),
+        'indexing_api' => [
+            'enabled' => env('GOOGLE_INDEXING_API_ENABLED', false),
+            'credentials_path' => env('GOOGLE_INDEXING_API_CREDENTIALS', storage_path('app/google-indexing-credentials.json')),
+            'daily_quota' => (int) env('GOOGLE_INDEXING_API_DAILY_QUOTA', 180),
+        ],
     ],
 
 ];

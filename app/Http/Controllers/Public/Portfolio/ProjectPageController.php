@@ -3,14 +3,19 @@
 namespace App\Http\Controllers\Public\Portfolio;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Public\Concerns\EmitsSeoHeaders;
 use App\Models\Project;
 use App\Models\ProjectSlugRedirect;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Response;
 use Illuminate\View\View;
 
 class ProjectPageController extends Controller
 {
-    public function index(string $projectSlug): View|RedirectResponse {
+    use EmitsSeoHeaders;
+
+    public function index(string $projectSlug): Response|View|RedirectResponse
+    {
         $project = $this->resolveProjectOrRedirect($projectSlug);
         if ($project instanceof RedirectResponse) {
             return $project;
@@ -25,7 +30,7 @@ class ProjectPageController extends Controller
         return $this->renderProjectPage($project);
     }
 
-    public function indexByAlias(string $portfolioAlias, string $projectSlug): View|RedirectResponse
+    public function indexByAlias(string $portfolioAlias, string $projectSlug): Response|View|RedirectResponse
     {
         if ($portfolioAlias !== static_page_path('portfolio')) {
             abort(404);
@@ -60,16 +65,20 @@ class ProjectPageController extends Controller
         abort(404);
     }
 
-    private function renderProjectPage(Project $project): View
+    private function renderProjectPage(Project $project): Response|View
     {
         $page = $project;
         $projects = Project::where('id', '!=', $project->id)
-        ->where('active', 1)
-        ->latest()
-        ->orderByDesc('sort')
-        ->take(4)
-        ->get();
+            ->where('active', 1)
+            ->latest()
+            ->orderByDesc('sort')
+            ->take(4)
+            ->get();
 
-        return view('public.pages.portfolio.project', compact('page', 'project', 'projects'));
+        return $this->seoResponse(
+            'public.pages.portfolio.project',
+            compact('page', 'project', 'projects'),
+            $project->updated_at,
+        );
     }
 }

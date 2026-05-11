@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Services\GoogleIndexingApiService;
 use App\Services\IndexNowService;
 use App\Services\SitemapGeneratorService;
 use Illuminate\Database\Eloquent\Model;
@@ -13,8 +14,8 @@ class SeoModelObserver
     public function __construct(
         private readonly SitemapGeneratorService $generator,
         private readonly IndexNowService $indexNow,
-    ) {
-    }
+        private readonly GoogleIndexingApiService $googleIndexing,
+    ) {}
 
     public function saved(Model $model): void
     {
@@ -31,6 +32,12 @@ class SeoModelObserver
             } catch (\Throwable $e) {
                 Log::warning('[SeoModelObserver] IndexNow submit failed', ['message' => $e->getMessage()]);
             }
+
+            try {
+                $this->googleIndexing->submit($urls, 'URL_UPDATED');
+            } catch (\Throwable $e) {
+                Log::warning('[SeoModelObserver] Google Indexing API submit failed', ['message' => $e->getMessage()]);
+            }
         })->afterResponse();
     }
 
@@ -44,11 +51,11 @@ class SeoModelObserver
         Cache::forget('sitemap:index');
 
         $type = match (true) {
-            $model instanceof \App\Models\Project     => 'projects',
-            $model instanceof \App\Models\Service     => 'services',
+            $model instanceof \App\Models\Project => 'projects',
+            $model instanceof \App\Models\Service => 'services',
             $model instanceof \App\Models\NewsArticle => 'news',
-            $model instanceof \App\Models\Page        => 'pages',
-            default                                   => null,
+            $model instanceof \App\Models\Page => 'pages',
+            default => null,
         };
 
         if ($type !== null) {
