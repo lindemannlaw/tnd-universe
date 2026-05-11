@@ -368,23 +368,40 @@ class SeoGeoController extends Controller
             }
 
             $results = $response->json();
-            if (! is_array($results) || empty($results)) {
+            if (is_array($results) && ! empty($results)) {
+                $first = $results[0];
+                $countryCode = strtoupper((string) ($first['address']['country_code'] ?? ''));
+
                 return response()->json([
-                    'found' => false,
-                    'message' => 'No location matched. Try a place name, Google Maps URL, or "lat, lon".',
+                    'found' => true,
+                    'lat' => (float) $first['lat'],
+                    'lon' => (float) $first['lon'],
+                    'geo_region' => $countryCode ?: null,
+                    'display_name' => $first['display_name'] ?? null,
+                    'source' => 'nominatim',
                 ]);
             }
 
-            $first = $results[0];
-            $countryCode = strtoupper((string) ($first['address']['country_code'] ?? ''));
+            // Nominatim matched nothing. Last-chance fallback: scan the text
+            // for a country name (EN + DE + common aliases) and at least
+            // return that region code so the user has *something* to work
+            // with even when the geocoder couldn't pin down a position.
+            $inferredRegion = $this->inferCountryCodeFromText($query);
+            if ($inferredRegion !== null) {
+                return response()->json([
+                    'found' => true,
+                    'partial' => true,
+                    'lat' => null,
+                    'lon' => null,
+                    'geo_region' => $inferredRegion,
+                    'source' => 'region-inference',
+                    'message' => 'Nur Region erkannt — Koordinaten bitte manuell ergänzen (oder einen Google-Maps-Link einfügen).',
+                ]);
+            }
 
             return response()->json([
-                'found' => true,
-                'lat' => (float) $first['lat'],
-                'lon' => (float) $first['lon'],
-                'geo_region' => $countryCode ?: null,
-                'display_name' => $first['display_name'] ?? null,
-                'source' => 'nominatim',
+                'found' => false,
+                'message' => 'No location matched. Try a place name, Google Maps URL, or "lat, lon".',
             ]);
         } catch (\Throwable $e) {
             Log::error('[SeoGeo] geocode failed', ['message' => $e->getMessage()]);
@@ -500,6 +517,97 @@ class SeoGeoController extends Controller
             'lat' => round($lat, 7),
             'lon' => round($lon, 7),
         ];
+    }
+
+    /**
+     * Scan free-text for a recognizable country name (EN/DE display names
+     * + a small alias list) and return ISO 3166-1 alpha-2 if found.
+     *
+     * Used as a last-chance fallback when Nominatim returns nothing for a
+     * verbose paragraph — at least the region is then derivable so the
+     * user can save it and add coordinates manually.
+     */
+    private function inferCountryCodeFromText(string $text): ?string
+    {
+        // Common aliases / abbreviations that Locale::getDisplayRegion won't
+        // resolve. Checked first because they're short and unambiguous.
+        $aliases = [
+            'BVI' => 'VG', 'B.V.I.' => 'VG',
+            'USA' => 'US', 'U.S.A.' => 'US', 'U.S.' => 'US',
+            'UK' => 'GB', 'U.K.' => 'GB',
+            'UAE' => 'AE', 'U.A.E.' => 'AE',
+            'Czechia' => 'CZ',
+            'Holland' => 'NL',
+            'Burma' => 'MM',
+        ];
+        foreach ($aliases as $alias => $code) {
+            if (preg_match('/\b' . preg_quote($alias, '/') . '\b/iu', $text)) {
+                return $code;
+            }
+        }
+
+        if (! class_exists(\Locale::class)) {
+            return null;
+        }
+
+        // ISO 3166-1 alpha-2. Full list so e.g. "Liechtenstein" or "Andorra"
+        // are matchable even though they're rare in our corpus.
+        $codes = [
+            'AD','AE','AF','AG','AI','AL','AM','AO','AR','AT','AU','AW','AX','AZ',
+            'BA','BB','BD','BE','BF','BG','BH','BI','BJ','BL','BM','BN','BO','BQ','BR','BS','BT','BW','BY','BZ',
+            'CA','CC','CD','CF','CG','CH','CI','CK','CL','CM','CN','CO','CR','CU','CV','CW','CX','CY','CZ',
+            'DE','DJ','DK','DM','DO','DZ',
+            'EC','EE','EG','EH','ER','ES','ET',
+            'FI','FJ','FK','FM','FO','FR',
+            'GA','GB','GD','GE','GF','GG','GH','GI','GL','GM','GN','GP','GQ','GR','GT','GU','GW','GY',
+            'HK','HN','HR','HT','HU',
+            'ID','IE','IL','IM','IN','IO','IQ','IR','IS','IT',
+            'JE','JM','JO','JP',
+            'KE','KG','KH','KI','KM','KN','KP','KR','KW','KY','KZ',
+            'LA','LB','LC','LI','LK','LR','LS','LT','LU','LV','LY',
+            'MA','MC','MD','ME','MF','MG','MH','MK','ML','MM','MN','MO','MP','MQ','MR','MS','MT','MU','MV','MW','MX','MY','MZ',
+            'NA','NC','NE','NF','NG','NI','NL','NO','NP','NR','NU','NZ',
+            'OM',
+            'PA','PE','PF','PG','PH','PK','PL','PM','PN','PR','PS','PT','PW','PY',
+            'QA',
+            'RE','RO','RS','RU','RW',
+            'SA','SB','SC','SD','SE','SG','SH','SI','SJ','SK','SL','SM','SN','SO','SR','SS','ST','SV','SX','SY','SZ',
+            'TC','TD','TG','TH','TJ','TK','TL','TM','TN','TO','TR','TT','TV','TW','TZ',
+            'UA','UG','US','UY','UZ',
+            'VA','VC','VE','VG','VI','VN','VU',
+            'WF','WS',
+            'YE','YT',
+            'ZA','ZM','ZW',
+        ];
+
+        // Build the candidate set across the locales we publish, then check
+        // each name with a word-boundary regex. Longer names checked first so
+        // "United States" wins over "States" or "United Kingdom" wins over "Kingdom".
+        $candidates = [];
+        $locales = ['en', 'de', 'fr', 'pl', 'el', 'ru', 'ar', 'zh'];
+        foreach ($codes as $code) {
+            foreach ($locales as $loc) {
+                try {
+                    $name = \Locale::getDisplayRegion('-' . $code, $loc);
+                } catch (\Throwable $e) {
+                    $name = '';
+                }
+                if (filled($name) && $name !== $code && strlen($name) >= 3) {
+                    $candidates[] = ['name' => $name, 'code' => $code];
+                }
+            }
+        }
+
+        usort($candidates, fn ($a, $b) => mb_strlen($b['name']) <=> mb_strlen($a['name']));
+
+        foreach ($candidates as $c) {
+            $pattern = '/(?<![\p{L}])' . preg_quote($c['name'], '/') . '(?![\p{L}])/iu';
+            if (preg_match($pattern, $text)) {
+                return $c['code'];
+            }
+        }
+
+        return null;
     }
 
     /**
