@@ -411,21 +411,28 @@ class SeoGeoController extends Controller
             $finalUrl = $response->effectiveUri()?->__toString() ?? $url;
 
             // Scan both the final URL and the page body for known coord patterns.
+            // Patterns ordered by RELIABILITY — the place-marker encoding
+            // (!3d!4d) refers to the actual pin, while /@LAT,LON is just the
+            // viewport center the user happened to be looking at and can be
+            // hundreds of meters off the actual place.
             $haystacks = [$finalUrl, $body];
 
             $patterns = [
-                // /@LAT,LON,ZOOMz/ — view URL
-                '#/@(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)(?:,\d+(?:\.\d+)?z)?#',
-                // !3d{lat}!4d{lon} — marker encoding (most reliable)
+                // 1. !3d{lat}!4d{lon} — Google Maps place-marker encoding (most reliable)
                 '#!3d(-?\d{1,3}\.\d+)!4d(-?\d{1,3}\.\d+)#',
-                // ?q=LAT,LON or &q=LAT,LON
+                // 2. ?q=LAT,LON or &q=LAT,LON — explicit query
                 '#[?&]q=(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)#',
-                // /place/.../LAT,LON
-                '#/(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)(?:[,/&?]|$)#',
+                // 3. /place/Name/LAT,LON — embedded coords in /place/ path
+                '#/place/[^/]+/(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)(?:[,/&?]|$)#',
+                // 4. /@LAT,LON,ZOOMz/ — viewport center (least reliable, last resort)
+                '#/@(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)(?:,\d+(?:\.\d+)?z)?#',
             ];
 
-            foreach ($haystacks as $hay) {
-                foreach ($patterns as $p) {
+            // Outer loop: patterns in priority order. Inner loop: haystacks.
+            // This guarantees a higher-priority pattern beats a lower-priority
+            // match even when the lower one appears earlier in the same string.
+            foreach ($patterns as $p) {
+                foreach ($haystacks as $hay) {
                     if (preg_match($p, $hay, $m)) {
                         $lat = (float) $m[1];
                         $lon = (float) $m[2];
