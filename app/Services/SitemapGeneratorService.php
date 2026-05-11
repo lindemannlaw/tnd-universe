@@ -125,10 +125,16 @@ class SitemapGeneratorService
                 $xml .= '    <loc>' . htmlspecialchars($loc, ENT_XML1) . "</loc>\n";
                 $xml .= "    <lastmod>{$lastmod}</lastmod>\n";
 
+                $hreflangAliases = config('seo.hreflang_aliases', []);
                 foreach ($locales as $alt) {
                     $altUrl = $this->localizedUrl($base, $alt, $defaultLocale, $path);
                     $xml .= '    <xhtml:link rel="alternate" hreflang="' . $alt . '" href="'
                           . htmlspecialchars($altUrl, ENT_XML1) . '" />' . "\n";
+
+                    foreach (($hreflangAliases[$alt] ?? []) as $aliasTag) {
+                        $xml .= '    <xhtml:link rel="alternate" hreflang="' . $aliasTag . '" href="'
+                              . htmlspecialchars($altUrl, ENT_XML1) . '" />' . "\n";
+                    }
                 }
                 $defaultUrl = $this->localizedUrl($base, $defaultLocale, $defaultLocale, $path);
                 $xml .= '    <xhtml:link rel="alternate" hreflang="x-default" href="'

@@ -75,6 +75,54 @@
         ];
     }
 
+    if (
+        isset($page)
+        && $page instanceof \App\Models\Project
+        && filled($page->lat)
+        && filled($page->lon)
+    ) {
+        $heroImageUrl = null;
+        try {
+            $heroImageUrl = $page->getFirstMediaUrl($page->mediaHero, 'lg-webp')
+                ?: $page->getFirstMediaUrl($page->mediaHero);
+        } catch (\Throwable $e) {
+            $heroImageUrl = null;
+        }
+
+        $residence = array_filter([
+            '@type' => 'SingleFamilyResidence',
+            '@id' => $currentUrl . '#residence',
+            'name' => (string) $page->title,
+            'description' => $pageDescription,
+            'url' => $currentUrl,
+            'image' => $heroImageUrl ?: null,
+            'address' => array_filter([
+                '@type' => 'PostalAddress',
+                'addressLocality' => is_string($page->location) ? $page->location : null,
+                'addressRegion' => $page->geo_region,
+                'addressCountry' => $page->geo_region,
+            ]),
+            'geo' => [
+                '@type' => 'GeoCoordinates',
+                'latitude' => (float) $page->lat,
+                'longitude' => (float) $page->lon,
+            ],
+        ]);
+
+        $graph[] = $residence;
+
+        $graph[] = array_filter([
+            '@type' => 'RealEstateListing',
+            '@id' => $currentUrl . '#listing',
+            'url' => $currentUrl,
+            'name' => (string) $page->title,
+            'description' => $pageDescription,
+            'image' => $heroImageUrl ?: null,
+            'about' => ['@id' => $currentUrl . '#residence'],
+            'datePosted' => optional($page->created_at)->toAtomString(),
+        ]);
+    }
+
     $structuredData = [
         '@context' => 'https://schema.org',
         '@graph' => $graph,

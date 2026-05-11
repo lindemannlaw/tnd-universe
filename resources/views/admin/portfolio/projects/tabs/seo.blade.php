@@ -32,4 +32,26 @@
         :placeholder="__('admin.geo_text')"
         :required="false"
     />
+
+    <!-- geo coordinates -->
+    <x-admin.field.text
+        :name="'lat'"
+        :value="old('lat', isset($project) ? $project->lat : null)"
+        :placeholder="__('admin.lat')"
+        :required="false"
+    />
+
+    <x-admin.field.text
+        :name="'lon'"
+        :value="old('lon', isset($project) ? $project->lon : null)"
+        :placeholder="__('admin.lon')"
+        :required="false"
+    />
+
+    <x-admin.field.text
+        :name="'geo_region'"
+        :value="old('geo_region', isset($project) ? $project->geo_region : null)"
+        :placeholder="__('admin.geo_region')"
+        :required="false"
+    />
 </div>
