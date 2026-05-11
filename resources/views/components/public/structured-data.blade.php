@@ -108,8 +108,8 @@
             ]),
             'geo' => [
                 '@type' => 'GeoCoordinates',
-                'latitude' => round((float) $page->lat, 7),
-                'longitude' => round((float) $page->lon, 7),
+                'latitude' => rtrim(rtrim(sprintf('%.7F', (float) $page->lat), '0'), '.'),
+                'longitude' => rtrim(rtrim(sprintf('%.7F', (float) $page->lon), '0'), '.'),
             ],
         ]);
 
