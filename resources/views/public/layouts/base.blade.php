@@ -48,6 +48,20 @@
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
+    @php $seoVerification = config('seo.verification', []); @endphp
+    @if(filled($seoVerification['google'] ?? null))
+        <meta name="google-site-verification" content="{{ $seoVerification['google'] }}">
+    @endif
+    @if(filled($seoVerification['bing'] ?? null))
+        <meta name="msvalidate.01" content="{{ $seoVerification['bing'] }}">
+    @endif
+    @if(filled($seoVerification['yandex'] ?? null))
+        <meta name="yandex-verification" content="{{ $seoVerification['yandex'] }}">
+    @endif
+    @if(filled($seoVerification['pinterest'] ?? null))
+        <meta name="p:domain_verify" content="{{ $seoVerification['pinterest'] }}">
+    @endif
+
     <link href="{{ url()->current() }}" rel="canonical">
 
     @php
