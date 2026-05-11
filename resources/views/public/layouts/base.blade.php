@@ -24,6 +24,22 @@
 
     <link href="{{ url()->current() }}" rel="canonical">
 
+    @php
+        $publishedLocales = published_languages_keys();
+        $isDraftLocale = !in_array(current_locale(), $publishedLocales, true);
+        $fallbackLocale = config('app.fallback_locale', 'en');
+    @endphp
+
+    @if($isDraftLocale)
+        {{-- Draft locales are reachable but should not be indexed until published. --}}
+        <meta name="robots" content="noindex,follow">
+    @else
+        @foreach($publishedLocales as $lang)
+            <link rel="alternate" hreflang="{{ $lang }}" href="{{ localized_url($lang) }}">
+        @endforeach
+        <link rel="alternate" hreflang="x-default" href="{{ localized_url($fallbackLocale) }}">
+    @endif
+
     <meta property="og:locale" content="{{ app()->getLocale() }}">
     <meta property="og:title" content="{{ $page_seo_title }}">
     @if($page_seo_description)
