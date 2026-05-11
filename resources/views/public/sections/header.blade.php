@@ -26,7 +26,7 @@
             <ul>
                 @foreach(published_languages_keys() as $lang)
                     @if(current_locale() !== $lang)
-                        <li><a rel="alternate" hreflang="{{ $lang . '-CH' }}" href="{{ localized_url($lang) }}">{{ $lang }}</a></li>
+                        <li><a rel="alternate" hreflang="{{ $lang }}" href="{{ localized_url($lang) }}">{{ $lang }}</a></li>
                     @endif
                 @endforeach
             </ul>
