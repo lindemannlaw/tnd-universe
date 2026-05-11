@@ -61,6 +61,9 @@ class UpdateRequest extends FormRequest
         $rules['seo_description'] = ['nullable', 'array'];
         $rules['seo_keywords'] = ['nullable', 'array'];
         $rules['geo_text'] = ['nullable', 'array'];
+        $rules['lat'] = ['nullable', 'numeric', 'between:-90,90'];
+        $rules['lon'] = ['nullable', 'numeric', 'between:-180,180'];
+        $rules['geo_region'] = ['nullable', 'string', 'max:8'];
 
         // Only the source language is required; all other locales are optional
         // (translations are managed via the Translation Dashboard).

@@ -20,6 +20,27 @@
         <meta content="{{ $page_seo_keywords }}" name="keywords">
     @endif
 
+    @php
+        $hasGeoCoords = isset($page)
+            && filled($page->lat ?? null)
+            && filled($page->lon ?? null);
+        $geoRegion = $page->geo_region ?? null;
+        $geoPlacename = isset($page->location)
+            ? (is_string($page->location) ? $page->location : null)
+            : null;
+    @endphp
+
+    @if($hasGeoCoords)
+        <meta name="geo.position" content="{{ $page->lat }};{{ $page->lon }}">
+        <meta name="ICBM" content="{{ $page->lat }}, {{ $page->lon }}">
+    @endif
+    @if(filled($geoRegion))
+        <meta name="geo.region" content="{{ $geoRegion }}">
+    @endif
+    @if(filled($geoPlacename))
+        <meta name="geo.placename" content="{{ $geoPlacename }}">
+    @endif
+
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <link href="{{ url()->current() }}" rel="canonical">
@@ -34,8 +55,12 @@
         {{-- Draft locales are reachable but should not be indexed until published. --}}
         <meta name="robots" content="noindex,follow">
     @else
+        @php $hreflangAliases = config('seo.hreflang_aliases', []); @endphp
         @foreach($publishedLocales as $lang)
             <link rel="alternate" hreflang="{{ $lang }}" href="{{ localized_url($lang) }}">
+            @foreach(($hreflangAliases[$lang] ?? []) as $aliasTag)
+                <link rel="alternate" hreflang="{{ $aliasTag }}" href="{{ localized_url($lang) }}">
+            @endforeach
         @endforeach
         <link rel="alternate" hreflang="x-default" href="{{ localized_url($fallbackLocale) }}">
     @endif
