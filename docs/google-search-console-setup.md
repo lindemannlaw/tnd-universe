@@ -5,10 +5,12 @@ nutzt das Backoffice drei Mechanismen:
 
 1. **`Last-Modified`-HTTP-Header** auf allen öffentlichen Seiten
    (automatisch via `EmitsSeoHeaders`-Trait, erfordert kein Setup).
-2. **Search Console URL Inspection** — manueller Klick im Backoffice pro Sprache
-   (Button "Bei Google neu indexieren" im SEO-Editor).
-3. **Google Indexing API** — programmatisches Pingen analog zu IndexNow
-   bei jeder Speicherung im SEO-Editor (optional, Setup unten).
+2. **Google Indexing API** — programmatisches Pingen analog zu IndexNow:
+   automatisch bei jeder Speicherung im SEO-Editor und manuell auf Knopfdruck
+   ("Google reindex"-Button im SEO-Editor pingt alle Sprachen einer Seite
+   in einem Schritt).
+3. **Search Console** — manuelle Sitemap-Verwaltung und URL Inspection
+   (für Sonderfälle bei dringenden Änderungen).
 
 > **Caveat zur Indexing API:** Offiziell unterstützt Google sie nur für
 > `JobPosting` und `BroadcastEvent`. Andere Seitentypen werden in der Praxis
@@ -32,20 +34,10 @@ nutzt das Backoffice drei Mechanismen:
    "Bestätigen" klicken.
 4. Im SC-Menü links: **Sitemaps** → URL eintragen: `sitemap.xml` → "Senden".
    Status nach 24–48h prüfen ("Erfolgreich").
-5. **Resource ID notieren** für `.env`:
-   - Domain-Property → `sc-domain:tnduniverse.com`
-   - URL-Präfix-Property → `https://tnduniverse.com/`
-
-In `.env` (Production):
-
-```
-GOOGLE_SC_RESOURCE_ID=sc-domain:tnduniverse.com
-```
-
-Damit erscheint im SEO-Editor das Dropdown "Bei Google neu indexieren" und
-öffnet pro Sprache die Search Console URL Inspection in einem neuen Tab.
-Dort einmal "Indexierung beantragen" klicken — Google crawlt typischerweise
-innerhalb von Stunden bis 1–2 Tagen.
+Damit ist Search Console eingerichtet. Für Sonderfälle (z.B. dringend zu
+indexierende Einzel-URL) lässt sich dort weiterhin manuell "Indexierung
+beantragen" über die URL Inspection nutzen — der Standard-Workflow läuft
+aber komplett über die Indexing API (siehe nächster Abschnitt).
 
 ---
 
@@ -95,6 +87,10 @@ GOOGLE_INDEXING_API_CREDENTIALS=storage/app/google-indexing-credentials.json
 GOOGLE_INDEXING_API_DAILY_QUOTA=180
 ```
 
+Ist das aktiv, pingt der "Google reindex"-Button im SEO-Editor mit einem
+Klick alle Sprach-URLs der aktuellen Seite an Google. Toast-Feedback zeigt
+`N/M URL(s) gepingt` (M = Anzahl Sprachen).
+
 > **Quota:** Google erlaubt 200 publish-Requests pro Tag pro Projekt.
 > `GOOGLE_INDEXING_API_DAILY_QUOTA=180` lässt 20 Requests Sicherheitspuffer.
 > Bei Überschreitung wird übersprungen und geloggt — keine Fehler im Save-Flow.
@@ -122,8 +118,10 @@ Search Console prüfen, JSON-Pfad und Inhalt verifizieren.
 - Sitemap-Cache wird invalidiert
 - Live-HTML enthält neuen `Last-Modified`-Header
 
-**Manuell** (empfohlen für wichtige Änderungen):
-- Im SEO-Editor: "Bei Google neu indexieren" → Sprache wählen → in der sich
-  öffnenden Search Console "Indexierung beantragen" klicken.
+**Manuell** (für wichtige Änderungen oder wenn die Auto-API-Quota verbraucht ist):
+- Im SEO-Editor: ein Klick auf "Google reindex" → alle Sprachen werden via
+  Indexing API gepingt → Toast bestätigt.
+- Notfall-Fallback: direkt in Search Console → URL Inspection → URL eintragen
+  → "Indexierung beantragen".
 
 Effekt-Erwartung: Re-Crawl in Stunden bis 1–2 Tagen statt 1–3 Wochen.

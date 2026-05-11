@@ -55,7 +55,6 @@ return [
     ],
 
     'google' => [
-        'search_console_resource_id' => env('GOOGLE_SC_RESOURCE_ID', 'sc-domain:tnduniverse.com'),
         'indexing_api' => [
             'enabled' => env('GOOGLE_INDEXING_API_ENABLED', false),
             'credentials_path' => env('GOOGLE_INDEXING_API_CREDENTIALS', storage_path('app/google-indexing-credentials.json')),
