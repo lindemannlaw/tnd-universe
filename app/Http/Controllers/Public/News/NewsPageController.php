@@ -3,17 +3,21 @@
 namespace App\Http\Controllers\Public\News;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Public\Concerns\EmitsSeoHeaders;
 use App\Http\Requests\Public\News\UpdateRequest;
 use App\Models\NewsArticle;
 use App\Models\NewsCategory;
 use App\Models\Page;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\View\View;
 
 class NewsPageController extends Controller
 {
-    public function index(UpdateRequest $request): View|JsonResponse {
+    use EmitsSeoHeaders;
+
+    public function index(UpdateRequest $request): Response|View|JsonResponse
+    {
         $data = $request->validated();
 
         $page = Page::where('slug', 'news')->first();
@@ -35,7 +39,7 @@ class NewsPageController extends Controller
             $newsArticles = $query->paginate(12);
         }
 
-        if($request->ajax()) {
+        if ($request->ajax()) {
             $listHtml = view('public.pages.news.list', compact('newsArticles'))->render();
 
             $responseData = [
@@ -44,7 +48,7 @@ class NewsPageController extends Controller
                 'articles_list_html' => $listHtml,
             ];
 
-            if (!$limitArticles) {
+            if (! $limitArticles) {
                 $paginationHtml = view('public.pages.news.pagination', compact('newsArticles'))->render();
 
                 $responseData['pagination_html'] = $paginationHtml;
@@ -55,6 +59,10 @@ class NewsPageController extends Controller
             return response()->json($responseData);
         }
 
-        return view('public.pages.news.page', compact('page', 'newsCategories', 'newsArticles'));
+        return $this->seoResponse(
+            'public.pages.news.page',
+            compact('page', 'newsCategories', 'newsArticles'),
+            $page?->updated_at,
+        );
     }
 }

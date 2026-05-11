@@ -3,15 +3,19 @@
 namespace App\Http\Controllers\Public\Services;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Public\Concerns\EmitsSeoHeaders;
 use App\Models\Page;
 use App\Models\ServiceCategory;
 use App\Models\SiteSection;
-use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\View\View;
 
 class ServicesPageController extends Controller
 {
-    public function index(): View {
+    use EmitsSeoHeaders;
+
+    public function index(): Response|View
+    {
         $page = Page::where('slug', 'services')->first();
         $serviceCategories = ServiceCategory::whereHas('services', function ($query) {
             $query->where('active', 1);
@@ -20,6 +24,10 @@ class ServicesPageController extends Controller
         }])->where('active', 1)->orderByDesc('sort')->get();
         $contactUsSection = SiteSection::where('slug', 'contact-us')->first();
 
-        return view('public.pages.services.page', compact('page', 'serviceCategories', 'contactUsSection'));
+        return $this->seoResponse(
+            'public.pages.services.page',
+            compact('page', 'serviceCategories', 'contactUsSection'),
+            $page?->updated_at,
+        );
     }
 }
