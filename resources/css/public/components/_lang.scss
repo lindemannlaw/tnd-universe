@@ -15,7 +15,7 @@
         rotate: 45deg;
         position: absolute;
         top: calc(50% - 7px);
-        right: 0;
+        inset-inline-end: 0;
     }
 }
 
@@ -33,14 +33,14 @@
     min-width: 100%;
     position: absolute;
     top: 100%;
-    left: 50%;
+    inset-inline-start: 50%;
     translate: -50% 0;
     text-align: center;
     padding: .25em 0;
     background-color: var(--color-interaction-primary-default);
     border-radius: .25em;
     margin-top: 3em;
-    margin-left: -.625em;
+    margin-inline-start: -.625em;
     transition: var(--transition);
     transition-property: margin-top, opacity, visibility;
     opacity: 0;
