@@ -26,4 +26,20 @@ return [
         'yandex' => env('YANDEX_VERIFICATION'),
         'pinterest' => env('PINTEREST_VERIFICATION'),
     ],
+
+    /*
+     * Google tag IDs (gtag.js). Comma-separated list so a single page can
+     * carry both a GA4 measurement ID (G-XXXXXXX) and one or more Google
+     * Ads tags (AW-XXXXXXXXX). Example .env entry:
+     *
+     *   GOOGLE_TAG_IDS=AW-314748583,G-ABCDEF1234
+     *
+     * Privacy note: this script transfers visitor data to Google. For
+     * EU/CH visitors you must obtain consent before loading it — wire a
+     * consent banner upstream if you don't already have one.
+     */
+    'google_tag_ids' => array_values(array_filter(array_map(
+        'trim',
+        explode(',', (string) env('GOOGLE_TAG_IDS', ''))
+    ))),
 ];
