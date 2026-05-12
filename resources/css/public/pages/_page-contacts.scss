@@ -1,7 +1,7 @@
 @use '../functions/range';
 
 .contacts-page-head {
-    text-align: start;
+    text-align: left;
 }
 
 .contacts {
@@ -12,13 +12,13 @@
 .contacts-bg-image {
     width: range.build(800, 1400);
     position: absolute;
-    inset-inline-start: 40%;
+    left: 40%;
     bottom: 0;
     z-index: -1;
     mask-image: linear-gradient(to top, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 50%);
 
     @media (min-width: 768px) {
-        inset-inline-start: 34%;
+        left: 34%;
     }
 }
 

@@ -1,6 +1,5 @@
 <!doctype html>
-@php $__locale = app()->getLocale(); $__isRtl = in_array($__locale, ['ar', 'he', 'fa', 'ur'], true); @endphp
-<html lang="{{ $__locale }}" dir="{{ $__isRtl ? 'rtl' : 'ltr' }}">
+<html lang="{{ app()->getLocale() }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
