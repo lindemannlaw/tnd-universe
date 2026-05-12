@@ -64,7 +64,7 @@
     --btn-color: var(--color-interaction-primary-default);
 
     font-weight: var(--font-weight-semibold);
-    padding-right: 24px;
+    padding-inline-end: 24px;
 
     &::after {
         display: block;
@@ -80,7 +80,7 @@
         transition-property: translate, background-color;
         rotate: 45deg;
         position: absolute;
-        right: 0;
+        inset-inline-end: 0;
     }
 
     &:hover {
