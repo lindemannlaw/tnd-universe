@@ -238,7 +238,8 @@ class SitemapGeneratorService
     private function staticPagePath(string $slug): string
     {
         if (in_array($slug, static_page_editable_slugs(), true)) {
-            return static_page_url($slug);
+            $path = static_page_path($slug);
+            return $path === '' ? '/' : '/' . $path;
         }
 
         return match ($slug) {
