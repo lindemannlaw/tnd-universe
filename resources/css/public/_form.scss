@@ -13,7 +13,7 @@
         height: calc(100% + 24px);
         position: absolute;
         top: -12px;
-        inset-inline-start: -12px;
+        left: -12px;
         transition: var(--transition);
         transition-property: opacity, visibility;
         opacity: 0;
@@ -35,7 +35,7 @@
         mask-size: contain;
         position: absolute;
         top: 50%;
-        inset-inline-start: 50%;
+        left: 50%;
         translate: -50% -50%;
         transition: var(--transition);
         transition-property: opacity, visibility;
@@ -54,7 +54,7 @@
     }
 
     .btn-submit {
-        margin-inline-end: auto;
+        margin-right: auto;
     }
 
     &.sending {

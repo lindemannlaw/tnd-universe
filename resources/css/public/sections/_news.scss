@@ -104,7 +104,7 @@
         mask-position: center;
         position: absolute;
         top: 50%;
-        inset-inline-start: 50%;
+        left: 50%;
         translate: -50% -50%;
         z-index: 5;
         transition: var(--transition);
@@ -132,7 +132,7 @@
 
         position: absolute;
         top: 10%;
-        inset-inline-end: -8%;
+        right: -8%;
         transition: var(--transition);
         transition-property: opacity;
         opacity: 0;
@@ -182,7 +182,7 @@
             mask-size: contain;
             transition: var(--transition);
             transition-property: rotate, background-color;
-            margin-inline-start: auto;
+            margin-left: auto;
             margin-top: .2em;
         }
     }
@@ -207,7 +207,7 @@
             height: 1px;
             position: absolute;
             top: 0;
-            inset-inline-start: 0;
+            left: 0;
             transition: var(--transition);
             transition-property: opacity, visibility;
         }
@@ -276,7 +276,7 @@
         color: transparent;
         position: absolute;
         top: 0;
-        inset-inline-start: 0;
+        left: 0;
     }
 
     /*&:hover {

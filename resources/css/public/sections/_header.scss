@@ -7,12 +7,12 @@
     height: var(--header-height);
     position: fixed;
     top: 0;
-    inset-inline-start: 0;
+    left: 0;
     z-index: 120;
     color: var(--color-primary-brand-900-darker-silent);
     transition: var(--transition);
     transition-property: background-color, box-shadow;
-    padding-inline-end: var(--f-scrollbar-compensate, 0);
+    padding-right: var(--f-scrollbar-compensate, 0);
 
     &-container {
         transition: var(--transition);
@@ -43,7 +43,7 @@
             height: 140%;
             position: absolute;
             top: 0;
-            inset-inline-start: 0;
+            left: 0;
             z-index: -1;
             background: linear-gradient(to top, rgba(var(--color-black-rgb), 0) 0%, rgba(var(--color-black-rgb), .35) 100%);
             mask-image: linear-gradient(to top, rgba(var(--color-black-rgb), 0) 0%, rgba(var(--color-black-rgb), 1) 40%);
@@ -110,7 +110,7 @@
 .header-logo {
     --logo-size: #{range.build(160, 240)};
 
-    margin-inline-end: auto;
+    margin-right: auto;
     position: relative;
     translate: 0 -14%;
     color: var(--color-primary-brand-900-darker-silent);
@@ -270,7 +270,7 @@
 }
 
 .main-menu {
-    margin-inline-end: calc(range.build(10, 23) * -1);
+    margin-right: calc(range.build(10, 23) * -1);
 
     @media (max-width: 1259px) {
         width: 100vw;
@@ -280,20 +280,20 @@
         flex-direction: column;
         position: fixed;
         top: 0;
-        inset-inline-start: -100vw;
-        margin-inline-end: 0;
+        left: -100vw;
+        margin-right: 0;
         background-color: var(--color-white);
         box-shadow: 0 0 16px 0 rgba(var(--color-dark-rgb), .25);
         z-index: 10;
         padding-bottom: 20px;
         color: var(--color-primary-brand-900-darker-silent);
         transition: var(--transition);
-        transition-property: inset-inline-start;
+        transition-property: left;
     }
 }
 
 .is-opened-main-menu .main-menu {
-    inset-inline-start: 0;
+    left: 0;
 }
 
 .main-menu-head {
@@ -310,7 +310,7 @@
         width: 100%;
         box-shadow: 0 0 0 1px var(--color-gray-light);
         position: absolute;
-        inset-inline-start: 0;
+        left: 0;
         bottom: 0;
     }
 
@@ -523,8 +523,8 @@
         content: '';
         position: absolute;
         top: 0;
-        inset-inline-start: var(--pseudo-px);
-        inset-inline-end: var(--pseudo-px);
+        left: var(--pseudo-px);
+        right: var(--pseudo-px);
         bottom: 0;
         border-radius: var(--btn-size);
         transition: var(--transition);
@@ -542,7 +542,7 @@
 
     span {
         display: block;
-        padding-inline-start: range.build(30, 36);
+        padding-left: range.build(30, 36);
         position: relative;
 
         &::before,
@@ -554,7 +554,7 @@
             background-color: var(--color-primary-brand-900-darker-silent);
             position: absolute;
             top: 50%;
-            inset-inline-start: 0;
+            left: 0;
             transition: var(--transition);
             transition-property: translate, rotate;
         }

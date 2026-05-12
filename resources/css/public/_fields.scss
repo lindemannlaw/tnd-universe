@@ -41,7 +41,7 @@ textarea {
         height: var(--field-size);
         position: absolute;
         top: 0;
-        inset-inline-start: 0;
+        left: 0;
         padding: 0 var(--field-px);
         transition: var(--transition);
         transition-property: padding-bottom, font-size, color;
@@ -51,7 +51,7 @@ textarea {
         sup {
             color: var(--color-red);
             font-size: 1.25em;
-            margin-inline-start: .25em;
+            margin-left: .25em;
         }
     }
 }

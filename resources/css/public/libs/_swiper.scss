@@ -33,20 +33,12 @@
 }
 
 .swiper-button-prev {
-    inset-inline-start: 0;
+    left: 0;
     rotate: 180deg;
 }
 
 .swiper-button-next {
-    inset-inline-end: 0;
-}
-
-[dir="rtl"] .swiper-button-prev {
-    rotate: 0deg;
-}
-
-[dir="rtl"] .swiper-button-next {
-    rotate: 180deg;
+    right: 0;
 }
 
 .swiper-pagination {

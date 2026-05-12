@@ -10,7 +10,7 @@
 
     position: absolute;
     top: -60px;
-    inset-inline-end: 0;
+    right: 0;
     opacity: .2;
     pointer-events: none;
     z-index: -1;
@@ -98,7 +98,7 @@
         height: 100%;
         position: absolute;
         top: 0;
-        inset-inline-start: 0;
+        left: 0;
         background: linear-gradient(210deg, rgba(var(--color-black-rgb), 0) 30%, rgba(var(--color-black-rgb), .75) 100%);
     }
 
@@ -170,7 +170,7 @@
         color: var(--color-gold);
         position: absolute;
         top: var(--content-py);
-        inset-inline-end: var(--content-px);
+        right: var(--content-px);
         transition: var(--transition);
         transition-property: opacity, visibility, scale;
         opacity: 0;
@@ -302,7 +302,7 @@
         height: 100%;
         position: absolute;
         top: 0;
-        inset-inline-start: 0;
+        left: 0;
         z-index: 5;
     }
 
@@ -412,7 +412,7 @@
         height: 100%;
         position: absolute;
         top: 0;
-        inset-inline-start: 0;
+        left: 0;
     }
 
     &:hover {

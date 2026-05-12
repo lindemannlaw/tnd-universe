@@ -16,7 +16,7 @@
         height: 100%;
         position: absolute;
         top: 0;
-        inset-inline-start: 0;
+        left: 0;
         background: linear-gradient(to top, rgba(var(--color-black-rgb), 0.75) 0%, rgba(var(--color-black-rgb), 0) 75%);
 
         @media (max-width: 991px) {
