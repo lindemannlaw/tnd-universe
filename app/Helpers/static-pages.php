@@ -62,8 +62,14 @@ if (!function_exists('static_page_path')) {
 if (!function_exists('static_page_url')) {
     function static_page_url(string $slug): string
     {
-        $path = static_page_path($slug);
-        return $path === '' ? '/' : '/' . $path;
+        $path   = static_page_path($slug);
+        $prefix = current_url_locale_prefix();
+
+        if ($prefix === '') {
+            return $path === '' ? '/' : '/' . $path;
+        }
+
+        return $path === '' ? '/' . $prefix : '/' . $prefix . '/' . $path;
     }
 }
 
@@ -141,12 +147,6 @@ if (!function_exists('static_page_canonical_redirect')) {
             return null;
         }
 
-        $prefix    = current_url_locale_prefix();
-        $canonical = static_page_url($slug);
-        $target    = $prefix === ''
-            ? $canonical
-            : '/' . $prefix . ($canonical === '/' ? '' : $canonical);
-
-        return redirect($target, 301);
+        return redirect(static_page_url($slug), 301);
     }
 }
