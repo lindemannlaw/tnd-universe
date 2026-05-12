@@ -21,7 +21,7 @@ class ProjectPageController extends Controller
             return $project;
         }
 
-        $currentPrefix = trim((string) request()->segment(1), '/');
+        $currentPrefix  = explode('/', request_path_without_locale(), 2)[0] ?? '';
         $expectedPrefix = static_page_path('portfolio');
         if ($currentPrefix !== $expectedPrefix) {
             return redirect(portfolio_project_url($project), 301);
