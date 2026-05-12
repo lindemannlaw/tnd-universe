@@ -62,6 +62,20 @@
         <meta name="p:domain_verify" content="{{ $seoVerification['pinterest'] }}">
     @endif
 
+    @php $gtagIds = config('seo.google_tag_ids', []); @endphp
+    @if(! empty($gtagIds))
+        {{-- Google tag (gtag.js) — Ads / GA4 --}}
+        <script async src="https://www.googletagmanager.com/gtag/js?id={{ $gtagIds[0] }}"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            @foreach($gtagIds as $gid)
+                gtag('config', @json($gid));
+            @endforeach
+        </script>
+    @endif
+
     <link href="{{ url()->current() }}" rel="canonical">
 
     @php
