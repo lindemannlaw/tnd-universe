@@ -20,6 +20,10 @@
 }
 
 .lang p {
+    display: inline-flex;
+    align-items: center;
+    gap: .5em;
+
     @media (max-width: 424px) {
         font-size: 14px;
     }
@@ -51,7 +55,9 @@
 }
 
 .lang a {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: .5em;
     padding: .25em 1em;
     color: var(--color-white);
     transition: var(--transition);
@@ -60,6 +66,15 @@
     &:hover {
         background-color: var(--color-interaction-primary-hover);
     }
+}
+
+.lang-flag {
+    width: 20px;
+    height: 15px;
+    object-fit: cover;
+    border-radius: 2px;
+    flex: 0 0 auto;
+    display: block;
 }
 
 .lang:hover ul {
