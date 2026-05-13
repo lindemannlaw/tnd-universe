@@ -27,6 +27,47 @@ jobs:
           npm ci
           npm run build
 
+      # Assets first: upload public/build/ additively (no delete) so the new
+      # hashed CSS/JS files exist on the server BEFORE the Blade templates
+      # that reference them go live. Old hashed files coexist for the brief
+      # transition window — Vite's content-hashed filenames make this race-free.
+      # Old orphaned assets accumulate but are tiny (~200 KB per deploy) and
+      # can be reclaimed by a periodic manual cleanup if ever needed.
+      - name: Install lftp
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lftp
+
+      - name: Deploy public/build (additive, race-free)
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          REMOTE_BUILD_DIR: ${{ vars.DEPLOY_SERVER_DIR }}public/build/
+        run: |
+          # mirror -R = reverse (local -> remote). NO --delete flag means
+          # files only present remotely stay there — exactly what we want
+          # so in-flight requests referencing old hashes don't 404.
+          # Explicit FTPS (AUTH TLS on port 21) — matches the SamKirkland action's
+          # `protocol: ftps; port: 21` setting. Use ftp:// scheme + ssl-force,
+          # NOT ftps:// (which would default to implicit FTPS on port 990).
+          # Credentials passed via -u (lftp handles its own quoting), script via -e.
+          lftp \
+            -u "$FTP_USERNAME","$FTP_PASSWORD" \
+            -e "
+              set ftp:ssl-force true;
+              set ftp:ssl-protect-data true;
+              set ftp:ssl-protect-list true;
+              set ftp:ssl-auth TLS;
+              set ssl:verify-certificate no;
+              set ftp:passive-mode true;
+              set net:max-retries 3;
+              set net:reconnect-interval-base 5;
+              mirror -R --parallel=4 --no-perms --verbose ./public/build/ '$REMOTE_BUILD_DIR';
+              bye
+            " \
+            "ftp://$FTP_SERVER:21"
+
       - name: Deploy via FTP (attempt 1)
         id: ftp_deploy_1
         continue-on-error: true
@@ -88,20 +129,6 @@ jobs:
             storage/logs/**
             storage/framework/cache/**
             storage/framework/views/**
-
-      - name: Deploy public/build (clean slate, no delta state)
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
-          port: 21
-          timeout: 300000
-          local-dir: ./public/build/
-          server-dir: ${{ vars.DEPLOY_SERVER_DIR }}public/build/
-          log-level: verbose
-          dangerous-clean-slate: true
 
       - name: Run post-deploy commands
         run: |
