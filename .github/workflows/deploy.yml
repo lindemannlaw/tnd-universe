@@ -48,25 +48,32 @@ jobs:
           # mirror -R = reverse (local -> remote). NO --delete flag means
           # files only present remotely stay there — exactly what we want
           # so in-flight requests referencing old hashes don't 404.
+          #
           # Explicit FTPS (AUTH TLS on port 21) — matches the SamKirkland action's
           # `protocol: ftps; port: 21` setting. Use ftp:// scheme + ssl-force,
           # NOT ftps:// (which would default to implicit FTPS on port 990).
-          # Credentials passed via -u (lftp handles its own quoting), script via -e.
-          lftp \
-            -u "$FTP_USERNAME","$FTP_PASSWORD" \
-            -e "
-              set ftp:ssl-force true;
-              set ftp:ssl-protect-data true;
-              set ftp:ssl-protect-list true;
-              set ftp:ssl-auth TLS;
-              set ssl:verify-certificate no;
-              set ftp:passive-mode true;
-              set net:max-retries 3;
-              set net:reconnect-interval-base 5;
-              mirror -R --parallel=4 --no-perms --verbose ./public/build/ '$REMOTE_BUILD_DIR';
-              bye
-            " \
-            "ftp://$FTP_SERVER:21"
+          #
+          # IMPORTANT: SSL settings must be applied BEFORE `open`. With -e the
+          # script runs AFTER connecting, so SSL never takes effect and the
+          # connection fails ("mirror: Not connected"). Use -c with an explicit
+          # `open` so settings precede the connect handshake.
+          #
+          # cmd:fail-exit makes lftp return non-zero on any script error so a
+          # silent FTP failure doesn't masquerade as a successful deploy.
+          lftp -c "
+            set ftp:ssl-force true;
+            set ftp:ssl-protect-data true;
+            set ftp:ssl-protect-list true;
+            set ftp:ssl-auth TLS;
+            set ssl:verify-certificate no;
+            set ftp:passive-mode true;
+            set net:max-retries 3;
+            set net:reconnect-interval-base 5;
+            set cmd:fail-exit true;
+            open -u \"$FTP_USERNAME\",\"$FTP_PASSWORD\" \"ftp://$FTP_SERVER:21\";
+            mirror -R --parallel=4 --no-perms --verbose ./public/build/ \"$REMOTE_BUILD_DIR\";
+            bye
+          "
 
       - name: Deploy via FTP (attempt 1)
         id: ftp_deploy_1
