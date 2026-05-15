@@ -24,6 +24,14 @@
             :placeholder="__('admin.name')"
         />
 
+        <!-- subtitle -->
+        <x-admin.field.text
+            :name="'subtitle['. $lang .']'"
+            :value="old('subtitle.' . $lang, isset($leader) ? $leader->getTranslation('subtitle', $lang, false) : null)"
+            :placeholder="__('admin.subtitle')"
+            :required="false"
+        />
+
         <!-- position -->
         <x-admin.field.text
             :name="'position['. $lang .']'"

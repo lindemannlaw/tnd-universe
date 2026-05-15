@@ -31,7 +31,7 @@ class LeaderController extends Controller
         abort(404);
     }
 
-    private const CONTENT_FIELDS = ['name', 'position', 'info'];
+    private const CONTENT_FIELDS = ['name', 'position', 'subtitle', 'info'];
 
     public function store(StoreRequest $request): View|JsonResponse|string {
         $data = $request->validated();

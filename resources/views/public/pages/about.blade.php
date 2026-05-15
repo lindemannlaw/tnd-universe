@@ -59,6 +59,9 @@
 
                 <div class="leader-card-body">
                     <h3 class="leader-card-name">{{ $leader->name }}</h3>
+                    @if($leader->subtitle)
+                        <div class="leader-card-subtitle">{{ $leader->subtitle }}</div>
+                    @endif
                     <div class="leader-card-position">{{ $leader->position }}</div>
                     <ul class="leader-card-info">
                         @foreach($leader->info as $item)
