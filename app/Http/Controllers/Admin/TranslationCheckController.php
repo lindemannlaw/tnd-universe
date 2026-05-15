@@ -280,9 +280,9 @@ class TranslationCheckController extends Controller
             }
         }
 
-        // UI Strings (lang/*/base.php)
+        // UI Strings (lang/*/base.php, lang/*/public.php)
         if ($typeFilter === 'all' || $typeFilter === 'ui_string') {
-            $uiFiles = ['base'];
+            $uiFiles = ['base', 'public'];
             foreach ($uiFiles as $file) {
                 $sourcePath = lang_path("{$sourceLang}/{$file}.php");
                 $sourceData = file_exists($sourcePath) ? (require $sourcePath) : [];
@@ -547,19 +547,19 @@ class TranslationCheckController extends Controller
         $paths = [];
 
         foreach ($data as $key => $value) {
-            // Skip numeric-indexed arrays (phone lists, email lists, etc.)
-            if (is_int($key)) {
-                return [];
-            }
-
             $dotPath = $prefix === '' ? (string) $key : "{$prefix}.{$key}";
 
             if (is_string($value) && $value !== '') {
-                // Readable label: replace dots with " / " and title-case
-                $label = 'Content – ' . str_replace('.', ' / ', $dotPath);
+                // Readable label: replace dots with " / " and 1-index numeric segments
+                $segments = array_map(
+                    fn ($s) => ctype_digit($s) ? (string) ((int) $s + 1) : $s,
+                    explode('.', $dotPath)
+                );
+                $label = 'Content – ' . implode(' / ', $segments);
                 $paths[] = [$dotPath, $label];
             } elseif (is_array($value)) {
-                // Recurse only into associative arrays
+                // Recurse into both associative and numeric arrays so list-shaped
+                // content (phones, emails, …) becomes translatable per entry.
                 $nested = $this->extractJsonStringPaths($value, $dotPath);
                 $paths  = array_merge($paths, $nested);
             }
