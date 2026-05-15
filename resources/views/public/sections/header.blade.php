@@ -28,14 +28,12 @@
             </p>
             <ul>
                 @foreach(published_languages_keys() as $lang)
-                    @if(current_locale() !== $lang)
-                        <li>
-                            <a rel="alternate" hreflang="{{ $lang }}" href="{{ localized_url($lang) }}">
-                                <img src="{{ asset('img/flags/' . $lang . '.svg') }}" alt="" class="lang-flag" width="20" height="15">
-                                <span>{{ $lang }}</span>
-                            </a>
-                        </li>
-                    @endif
+                    <li @class(['is-active' => current_locale() === $lang])>
+                        <a rel="alternate" hreflang="{{ $lang }}" href="{{ localized_url($lang) }}">
+                            <img src="{{ asset('img/flags/' . $lang . '.svg') }}" alt="" class="lang-flag" width="20" height="15">
+                            <span>{{ $lang }}</span>
+                        </a>
+                    </li>
                 @endforeach
             </ul>
         </div>
