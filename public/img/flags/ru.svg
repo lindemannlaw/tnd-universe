@@ -1,17 +1,15 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" preserveAspectRatio="xMidYMid meet">
-  <rect width="640" height="480" fill="#1a4d80"/>
-  <circle cx="320" cy="240" r="170" fill="#3a8bc7"/>
-  <g fill="#4caf50">
-    <ellipse cx="245" cy="195" rx="60" ry="38"/>
-    <ellipse cx="370" cy="200" rx="78" ry="32"/>
-    <ellipse cx="265" cy="305" rx="48" ry="42"/>
-    <ellipse cx="375" cy="318" rx="52" ry="36"/>
-  </g>
-  <g fill="none" stroke="#ffffff" stroke-width="3" opacity="0.55">
-    <circle cx="320" cy="240" r="170"/>
-    <ellipse cx="320" cy="240" rx="170" ry="55"/>
-    <line x1="150" y1="240" x2="490" y2="240"/>
-    <line x1="320" y1="70" x2="320" y2="410"/>
-  </g>
+<svg width="20" height="15" viewBox="0 0 20 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_6983_2702)">
+<rect width="20" height="15" fill="white"/>
+<rect width="8.5" height="7.5" fill="#66A444"/>
+<rect x="11.5" width="8.5" height="7.5" fill="#B21E2A"/>
+<rect y="7.5" width="8.5" height="7.5" fill="#F4D816"/>
+<rect x="11.5" y="7.5" width="8.5" height="7.5" fill="#1B9CC5"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M18 5.69351H11.8067V0H8.19326V5.69351H2V9.30698H8.19326V15.0002H11.8067V9.30698H18V5.69351Z" fill="#FFFFFC"/>
+</g>
+<defs>
+<clipPath id="clip0_6983_2702">
+<rect width="20" height="15" fill="white"/>
+</clipPath>
+</defs>
 </svg>
