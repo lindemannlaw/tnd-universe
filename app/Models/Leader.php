@@ -18,6 +18,7 @@ class Leader extends Model implements HasMedia
     protected $fillable = [
         'name',
         'position',
+        'subtitle',
         'info',
 
         'active',
@@ -27,6 +28,7 @@ class Leader extends Model implements HasMedia
     public array $translatable = [
         'name',
         'position',
+        'subtitle',
         'info',
     ];
 
@@ -35,6 +37,7 @@ class Leader extends Model implements HasMedia
         return [
             'name' => 'json',
             'position' => 'json',
+            'subtitle' => 'json',
             'info' => 'json',
             'active' => 'boolean',
         ];

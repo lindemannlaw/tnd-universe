@@ -127,6 +127,12 @@
         }
     }
 
+    &-subtitle {
+        margin-top: range.build(8, 12, px, 768);
+        font-size: range.build(16, 18, px, 768);
+        color: var(--color-font-secondary);
+    }
+
     &-position {
         font-size: range.build(16, 18, px, 768);
         margin-top: range.build(16, 20, px, 768);

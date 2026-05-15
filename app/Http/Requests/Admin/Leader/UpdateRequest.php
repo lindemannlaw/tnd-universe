@@ -33,6 +33,7 @@ class UpdateRequest extends FormRequest
 
         $rules['name'] = ['required', 'array'];
         $rules['position'] = ['required', 'array'];
+        $rules['subtitle'] = ['nullable', 'array'];
         $rules['info'] = ['nullable', 'array'];
 
         foreach (supported_languages_keys() as $locale) {
@@ -40,6 +41,7 @@ class UpdateRequest extends FormRequest
 
             $rules['name.' . $locale] = [$isSource ? 'required' : 'nullable', 'string', 'max:255'];
             $rules['position.' . $locale] = [$isSource ? 'required' : 'nullable', 'string', 'max:255'];
+            $rules['subtitle.' . $locale] = ['nullable', 'string', 'max:255'];
 
             $rules['info.' . $locale] = ['nullable', 'array'];
             $rules['info.' . $locale . '*.head'] = ['nullable', 'string', 'max:255'];
