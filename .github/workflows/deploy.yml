@@ -39,6 +39,7 @@ jobs:
           sudo apt-get install -y -qq lftp
 
       - name: Deploy public/build (additive, race-free)
+        timeout-minutes: 5
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
           FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
@@ -60,6 +61,19 @@ jobs:
           #
           # cmd:fail-exit makes lftp return non-zero on any script error so a
           # silent FTP failure doesn't masquerade as a successful deploy.
+          # Sequential transfers (no --parallel): Plesk FTP typically allows
+          # only one concurrent session per user. Parallel sessions hang
+          # waiting for a free slot. The build dir is small (~4 MB), so
+          # sequential is fast enough and dramatically more reliable.
+          #
+          # Strict timeouts so a stuck transfer fails fast instead of
+          # hanging until the job timeout (we saw a 14-minute hang).
+          # net:idle = close idle connections after 30s
+          # net:timeout = abort a single op if no progress for 60s
+          # net:max-retries = retry transient failures up to 3 times
+          #
+          # Drop --verbose: lftp's verbose mode floods stderr with per-byte
+          # progress that slows the runner.
           lftp -c "
             set ftp:ssl-force true;
             set ftp:ssl-protect-data true;
@@ -67,11 +81,15 @@ jobs:
             set ftp:ssl-auth TLS;
             set ssl:verify-certificate no;
             set ftp:passive-mode true;
+            set ftp:use-mlsd no;
+            set net:idle 30;
+            set net:timeout 60;
             set net:max-retries 3;
             set net:reconnect-interval-base 5;
+            set net:reconnect-interval-multiplier 1;
             set cmd:fail-exit true;
             open -u \"$FTP_USERNAME\",\"$FTP_PASSWORD\" \"ftp://$FTP_SERVER:21\";
-            mirror -R --parallel=4 --no-perms --verbose ./public/build/ \"$REMOTE_BUILD_DIR\";
+            mirror -R --no-perms ./public/build/ \"$REMOTE_BUILD_DIR\";
             bye
           "
 
