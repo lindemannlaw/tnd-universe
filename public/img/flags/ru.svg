@@ -1,5 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-ru" viewBox="0 0 640 480">
-  <path fill="#fff" d="M0 0h640v160H0z"/>
-  <path fill="#0039a6" d="M0 160h640v160H0z"/>
-  <path fill="#d52b1e" d="M0 320h640v160H0z"/>
+<svg width="20" height="15" viewBox="0 0 20 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_6983_2702)">
+<rect width="20" height="15" fill="white"/>
+<rect width="8.5" height="7.5" fill="#66A444"/>
+<rect x="11.5" width="8.5" height="7.5" fill="#B21E2A"/>
+<rect y="7.5" width="8.5" height="7.5" fill="#F4D816"/>
+<rect x="11.5" y="7.5" width="8.5" height="7.5" fill="#1B9CC5"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M18 5.69351H11.8067V0H8.19326V5.69351H2V9.30698H8.19326V15.0002H11.8067V9.30698H18V5.69351Z" fill="#FFFFFC"/>
+</g>
+<defs>
+<clipPath id="clip0_6983_2702">
+<rect width="20" height="15" fill="white"/>
+</clipPath>
+</defs>
 </svg>
