@@ -8,15 +8,24 @@
                 </div>
 
                 <div class="contact-section-links">
-                    @foreach(data_get($contactUsSection->getTranslation('content_data', config('app.fallback_locale')), 'phones', []) as $phone)
+                    @php
+                        $sourcePhones    = data_get($contactUsSection->getTranslation('content_data', config('app.fallback_locale')), 'phones', []);
+                        $localizedPhones = data_get($contactUsSection->content_data, 'phones', []);
+                        $sourceEmails    = data_get($contactUsSection->getTranslation('content_data', config('app.fallback_locale')), 'emails', []);
+                        $localizedEmails = data_get($contactUsSection->content_data, 'emails', []);
+                    @endphp
+
+                    @foreach($sourcePhones as $i => $sourcePhone)
+                        @php $phoneLabel = $localizedPhones[$i] ?? null; @endphp
                         <p>
-                            <a href="tel:{{ get_only_numbers($phone) }}" class="base-link">{{ $phone }}</a>
+                            <a href="tel:{{ get_only_numbers($sourcePhone) }}" class="base-link">{{ $phoneLabel ?: $sourcePhone }}</a>
                         </p>
                     @endforeach
-                    
-                    @foreach(data_get($contactUsSection->getTranslation('content_data', config('app.fallback_locale')), 'emails', []) as $email)
+
+                    @foreach($sourceEmails as $i => $sourceEmail)
+                        @php $emailLabel = $localizedEmails[$i] ?? null; @endphp
                         <p>
-                            <a href="mailto:{{ $email }}" class="base-link">{{ $email }}</a>
+                            <a href="mailto:{{ $sourceEmail }}" class="base-link">{{ $emailLabel ?: $sourceEmail }}</a>
                         </p>
                     @endforeach
                 </div>
